@@ -1,22 +1,22 @@
 # Euler Contract Verification Reports
 
-## Verified Networks
+## Etherscan Networks (Complete)
 
-| Network | Chain ID | Status | Contracts | Last Updated |
-|---------|----------|--------|-----------|--------------|
-| [Mainnet](mainnet.md) | 1 | ✅ Complete | 26/26 | 2026-01-21 |
-| [Arbitrum](arbitrum.md) | 42161 | ✅ Complete | 26/26 | 2026-01-21 |
-| [Base](base.md) | 8453 | ✅ Complete | 24/26 | 2026-01-21 |
-| [Optimism](optimism.md) | 10 | 🔄 In Progress | - | - |
-| [Polygon](polygon.md) | 137 | 🔄 In Progress | - | - |
-| [BSC](bsc.md) | 56 | 🔄 In Progress | - | - |
-| [Avalanche](avalanche.md) | 43114 | 🔄 In Progress | - | - |
-| [Linea](linea.md) | 59144 | 🔄 In Progress | - | - |
-| [Gnosis](gnosis.md) | 100 | 🔄 In Progress | - | - |
+| Network | Chain ID | Status | Contracts | 
+|---------|----------|--------|-----------|
+| [Mainnet](mainnet.md) | 1 | ✅ | 26/26 |
+| [Arbitrum](arbitrum.md) | 42161 | ✅ | 26/26 |
+| [Base](base.md) | 8453 | ✅ | 24/26 |
+| [BSC](bsc.md) | 56 | ✅ | 26/26 |
+| [Linea](linea.md) | 59144 | ✅ | 22/26 |
+| [Gnosis](gnosis.md) | 100 | ✅ | 14/14 |
+| [Optimism](optimism.md) | 10 | ✅ | 15/17 |
+| [Polygon](polygon.md) | 137 | ✅ | 12/14 |
+| [Avalanche](avalanche.md) | 43114 | ⚠️ | 4/26 (not verified on Snowscan) |
 
 ## Pending Networks (Blockscout API)
 
-These networks use Blockscout instead of Etherscan and need separate handling:
+These networks use Blockscout instead of Etherscan:
 - Swell (1923)
 - Sonic (146)
 - Bob (60808)
