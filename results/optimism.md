@@ -1,81 +1,288 @@
 # Optimism Contract Verification Report
 
-**Chain ID:** 10
-**Explorer:** [https://optimistic.etherscan.io](https://optimistic.etherscan.io)
-
 ## Summary
 
-- **Verified Contracts:** 40/49 ✓
-- **Differences Found:** 9
-- **Not Verified on Explorer:** 0
-- **Errors:** 0
+| Status | Count |
+|--------|-------|
+| ✓ Verified (exact match) | 15 |
+| ✗ No exact commit found | 2 |
+| ~ Standalone with diff | 0 |
+| - Error | 0 |
+| **Total** | **17** |
 
-## Contracts
+## Verified Contracts
 
-| Contract | Address | Explorer Name | Status | Files |
-|----------|---------|---------------|--------|-------|
-| accessControlEmergencyGovernor | [`0xf50F02aA...`](https://optimistic.etherscan.io/address/0xf50F02aA8993dE67D82f729b0662937C55006C61) | GovernorAccessControlEmergency | ✓ 100% | 34/34 |
-| accessControlEmergencyGovernorAdminTimelockController | [`0xCb038F79...`](https://optimistic.etherscan.io/address/0xCb038F7935cD132733a8459553Df15385C266c56) | TimelockController | ✓ 100% | 12/12 |
-| accessControlEmergencyGovernorWildcardTimelockController | [`0xb65d6aEA...`](https://optimistic.etherscan.io/address/0xb65d6aEA01C8039E5fBB32468196dA25AEA9fcc8) | TimelockController | ✓ 100% | 12/12 |
-| eVaultFactoryGovernor | [`0xe4080721...`](https://optimistic.etherscan.io/address/0xe40807215dCcC32D8a264575E91B1fB9873dfC3e) | FactoryGovernor | ✓ 100% | 15/15 |
-| eVaultFactoryTimelockController | [`0x4E589811...`](https://optimistic.etherscan.io/address/0x4E589811e72753B6bFFd9B7c507E1b14F04Aaae1) | TimelockController | ✓ 100% | 12/12 |
-| adaptiveCurveIRMFactory | [`0x36790250...`](https://optimistic.etherscan.io/address/0x367902505cbba03F9c7ac71F8a00a8E252718f45) | EulerIRMAdaptiveCurveFactory | ✓ 100% | 6/6 |
-| capRiskStewardFactory | [`0x50741d6f...`](https://optimistic.etherscan.io/address/0x50741d6feF8Db2d80b0bcBe71dAE6DbbE4641f40) | CapRiskStewardFactory | ✓ 100% | 36/36 |
-| edgeFactory | [`0xEb0a720e...`](https://optimistic.etherscan.io/address/0xEb0a720eCbf1550108CF0189C15853e1ef4Bdb85) | EdgeFactory | ✓ 100% | 24/24 |
-| edgeFactoryPerspective | [`0x0b5301f6...`](https://optimistic.etherscan.io/address/0x0b5301f610F4F04D510B28F5e7234363111c9907) | EdgeFactoryPerspective | ✓ 100% | 9/9 |
-| escrowedCollateralPerspective | [`0xabEcAFaf...`](https://optimistic.etherscan.io/address/0xabEcAFaf0bC41A007a1A3eDAFAAdFA06a0a83eCB) | EscrowedCollateralPerspective | ✓ 100% | 11/11 |
-| eulerEarnFactoryPerspective | [`0xa6eeE314...`](https://optimistic.etherscan.io/address/0xa6eeE314a5aEc21DBDe8C785AA5eE18182331aa4) | EulerEarnFactoryPerspective | ✓ 100% | 15/15 |
-| eulerEarnGovernedPerspective | [`0x14829A32...`](https://optimistic.etherscan.io/address/0x14829A3259f4d2b509A2A7716F0218923BaC16d3) | GovernedPerspective | ✓ 100% | 13/13 |
-| eulerUngoverned0xPerspective | [`0x6DF5324F...`](https://optimistic.etherscan.io/address/0x6DF5324FA7Ec14fAa294cb6961e4EE647A6b73EC) | EulerUngovernedPerspective | ✓ 100% | 26/26 |
-| eulerUngovernedNzxPerspective | [`0x67907760...`](https://optimistic.etherscan.io/address/0x67907760F923897A337a9435e5027242B0E168A9) | EulerUngovernedPerspective | ✓ 100% | 26/26 |
-| evkFactoryPerspective | [`0x044dc4d9...`](https://optimistic.etherscan.io/address/0x044dc4d90fe80f9239dd6493f11a09164Ca78854) | EVKFactoryPerspective | ✓ 100% | 8/8 |
-| externalVaultRegistry | [`0x8cadE280...`](https://optimistic.etherscan.io/address/0x8cadE2806f83198676e89d3e77b97b472F656feb) | SnapshotRegistry | ✓ 100% | 6/6 |
-| feeFlowController | [`0xD04C4B53...`](https://optimistic.etherscan.io/address/0xD04C4B53d086144DB07900792aDB6De5E5813F85) | FeeFlowController | ✓ 100% | 6/6 |
-| fixedCyclicalBinaryIRMFactory | [`0xbdB2D336...`](https://optimistic.etherscan.io/address/0xbdB2D3364F9016F9C9F25f864e17D1F4196653DD) | EulerFixedCyclicalBinaryIRMFactory | ✓ 100% | 6/6 |
-| governedPerspective | [`0x24E9B780...`](https://optimistic.etherscan.io/address/0x24E9B780e9CF56B326A08C81EEAe0242F2754304) | GovernedPerspective | ✓ 100% | 13/13 |
-| governorAccessControlEmergencyFactory | [`0x19dD77f1...`](https://optimistic.etherscan.io/address/0x19dD77f17FaAe0415261E1585Fd1fB79c6CefE48) | GovernorAccessControlEmergencyFactory | ✓ 100% | 48/48 |
-| irmRegistry | [`0xECB79454...`](https://optimistic.etherscan.io/address/0xECB7945403897a575Ee29296F39A6d2b45623b0F) | SnapshotRegistry | ✓ 100% | 6/6 |
-| kinkIRMFactory | [`0xc01c5A25...`](https://optimistic.etherscan.io/address/0xc01c5A25659AF1f9415C15AE2e483C5b0c149041) | EulerKinkIRMFactory | ✓ 100% | 6/6 |
-| kinkyIRMFactory | [`0xE82Df396...`](https://optimistic.etherscan.io/address/0xE82Df3960e0bd1d05b308D21fa8D51aCF664a21d) | EulerKinkyIRMFactory | ✓ 100% | 6/6 |
-| oracleAdapterRegistry | [`0x0f62EBc5...`](https://optimistic.etherscan.io/address/0x0f62EBc542c9c0c4Dbf31f69A8E2d6f4aF93229B) | SnapshotRegistry | ✓ 100% | 6/6 |
-| oracleRouterFactory | [`0xA0F284fe...`](https://optimistic.etherscan.io/address/0xA0F284fe1788c389E5F9897e106e600F1D20ee5c) | EulerRouterFactory | ✓ 100% | 13/13 |
-| swapVerifier | [`0x804C754e...`](https://optimistic.etherscan.io/address/0x804C754ea602B54B28b0D3a10F8122e0a605dAD9) | SwapVerifier | ✓ 100% | 3/3 |
-| swapper | [`0x76B103bE...`](https://optimistic.etherscan.io/address/0x76B103bECa4459C9E0dd35a8E5ad48c8f93e768f) | Swapper | ✓ 100% | 15/15 |
-| termsOfUseSigner | [`0xAC2c4399...`](https://optimistic.etherscan.io/address/0xAC2c4399c27Ac78F5A1400E5062cf90858F75D6A) | TermsOfUseSigner | ✓ 100% | 4/4 |
-| eulOFTAdapter | [`0xf932863E...`](https://optimistic.etherscan.io/address/0xf932863E538aF568dF9C79dA379fd8ffD8525342) | MintBurnOFTAdapter | ✗ Diff | 62/63 |
-| DAO | [`0x02F65C73...`](https://optimistic.etherscan.io/address/0x02F65C73e5FD069A8CbA160188D175767588c7B4) | SafeProxy | ✗ Diff | 0/1 |
-| labs | [`0x24BEc6FE...`](https://optimistic.etherscan.io/address/0x24BEc6FEFF64537d5970D3f568e21e8d5Ea31cB4) | SafeProxy | ✗ Diff | 0/1 |
-| securityCouncil | [`0xff5E6347...`](https://optimistic.etherscan.io/address/0xff5E63472CAB7788f7E6041a71A0c03433E27664) | SafeProxy | ✗ Diff | 0/1 |
-| securityPartnerA | [`0xBC20a9D5...`](https://optimistic.etherscan.io/address/0xBC20a9D5882dF0eB0B7D1f8dc3657B1a35b1c622) | SafeProxy | ✗ Diff | 0/1 |
-| securityPartnerB | [`0xbDd1eA92...`](https://optimistic.etherscan.io/address/0xbDd1eA92E6396Cd88F3C77fADAF5Bc06a1304a63) | SafeProxy | ✗ Diff | 0/1 |
-| EUL | [`0xA8A7c346...`](https://optimistic.etherscan.io/address/0xA8A7c3468Faa6750f1Dc5FDAfdcE03cDEA029304) | ERC20BurnableMintable | ✗ Diff | 27/28 |
-| rEUL | [`0x5Ee4d837...`](https://optimistic.etherscan.io/address/0x5Ee4d837AB84285924AE746Eb5622Bb6774692be) | RewardToken | ✓ 100% | 21/21 |
-| accountLens | [`0xA50b5255...`](https://optimistic.etherscan.io/address/0xA50b5255A83F1cC63f60Ecf512E3021266E26D76) | AccountLens | ✓ 100% | 13/13 |
-| eulerEarnVaultLens | [`0x3920E0EF...`](https://optimistic.etherscan.io/address/0x3920E0EF4888d2D17392647BCc104da236E5F082) | EulerEarnVaultLens | ✓ 100% | 26/26 |
-| irmLens | [`0xf4001bd1...`](https://optimistic.etherscan.io/address/0xf4001bd157b61e75080Ef298b81C19Bb3abfC222) | IRMLens | ✓ 100% | 13/13 |
-| oracleLens | [`0x5409821a...`](https://optimistic.etherscan.io/address/0x5409821a457AA2F746CEc5ab5634696BdF9133f3) | OracleLens | ✗ Diff | 11/14 |
-| utilsLens | [`0x47Eb1950...`](https://optimistic.etherscan.io/address/0x47Eb1950E1edB88AE84172B032d62e3E54045865) | UtilsLens | ✗ Diff | 14/18 |
-| vaultLens | [`0x6De167fc...`](https://optimistic.etherscan.io/address/0x6De167fcfc1153a4584b758F53976c206062bdb2) | VaultLens | ✓ 100% | 45/45 |
-| balanceTracker | [`0x9f1942a3...`](https://optimistic.etherscan.io/address/0x9f1942a30Dd99896945Ff544BE68c8ce790ECb57) | TrackingRewardStreams | ✓ 100% | 17/17 |
-| eVaultFactory | [`0x7943231a...`](https://optimistic.etherscan.io/address/0x7943231a109703937bB7fb3D4dfB55D824deDe99) | GenericFactory | ✓ 100% | 3/3 |
-| eVaultImplementation | [`0x94b14e46...`](https://optimistic.etherscan.io/address/0x94b14e4678B08c3Ee93cA8611672270575f9ead8) | EVault | ✓ 100% | 52/52 |
-| eulerEarnFactory | [`0x83d4459F...`](https://optimistic.etherscan.io/address/0x83d4459F556d612837664117B94Befaf79b0Cc26) | EulerEarnFactory | ✓ 100% | 35/35 |
-| evc | [`0xbfB28650...`](https://optimistic.etherscan.io/address/0xbfB28650Cd13CE879E7D56569Ed4715c299823E4) | EthereumVaultConnector | ✓ 100% | 9/9 |
-| protocolConfig | [`0xAECe407a...`](https://optimistic.etherscan.io/address/0xAECe407aF2DBCd0B6C5Fb522744cCE6beac6Fb72) | ProtocolConfig | ✓ 100% | 2/2 |
-| sequenceRegistry | [`0xb8551503...`](https://optimistic.etherscan.io/address/0xb8551503651FfB86371E750802d4094f7435758A) | SequenceRegistry | ✓ 100% | 2/2 |
+| Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
+|----------|---------|-------------|---------------|---------------|-------|
+| ✓ adaptiveCurveIRMFactory | [`0x36790250...`](https://optimistic.etherscan.io/address/0x367902505cbba03F9c7ac71F8a00a8E252718f45) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`5e066711`](https://github.com/euler-xyz/evk-periphery/tree/5e066711) | [`5e066711`](https://github.com/euler-xyz/evk-periphery/tree/5e066711) | 3/6 |
+| ✓ balanceTracker | [`0x9f1942a3...`](https://optimistic.etherscan.io/address/0x9f1942a30Dd99896945Ff544BE68c8ce790ECb57) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7) | [`9a3f2c59`](https://github.com/euler-xyz/evk-periphery/tree/9a3f2c59) | 14/17 |
+| ✓ eVaultFactory | [`0x7943231a...`](https://optimistic.etherscan.io/address/0x7943231a109703937bB7fb3D4dfB55D824deDe99) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
+| ✓ eVaultImplementation | [`0x94b14e46...`](https://optimistic.etherscan.io/address/0x94b14e4678B08c3Ee93cA8611672270575f9ead8) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 51/52 |
+| ✓ eulOFTAdapter | [`0xf932863E...`](https://optimistic.etherscan.io/address/0xf932863E538aF568dF9C79dA379fd8ffD8525342) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e) | [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e) | 61/63 |
+| ✓ eulerEarnFactory | [`0x83d4459F...`](https://optimistic.etherscan.io/address/0x83d4459F556d612837664117B94Befaf79b0Cc26) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 35/35 |
+| ✓ evc | [`0xbfB28650...`](https://optimistic.etherscan.io/address/0xbfB28650Cd13CE879E7D56569Ed4715c299823E4) | [ethereum-vault-connector](https://github.com/euler-xyz/ethereum-vault-connector) | [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e) | [`master`](https://github.com/euler-xyz/evk-periphery) | 8/9 |
+| ✓ feeFlowController | [`0xD04C4B53...`](https://optimistic.etherscan.io/address/0xD04C4B53d086144DB07900792aDB6De5E5813F85) | [fee-flow](https://github.com/euler-xyz/fee-flow) | - | [`390df787`](https://github.com/euler-xyz/evk-periphery/tree/390df787) | 6/6 |
+| ✓ fixedCyclicalBinaryIRMFactory | [`0xbdB2D336...`](https://optimistic.etherscan.io/address/0xbdB2D3364F9016F9C9F25f864e17D1F4196653DD) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e) | [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e) | 3/6 |
+| ✓ kinkIRMFactory | [`0xc01c5A25...`](https://optimistic.etherscan.io/address/0xc01c5A25659AF1f9415C15AE2e483C5b0c149041) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`494df5fa`](https://github.com/euler-xyz/evk-periphery/tree/494df5fa) | [`494df5fa`](https://github.com/euler-xyz/evk-periphery/tree/494df5fa) | 3/6 |
+| ✓ kinkyIRMFactory | [`0xE82Df396...`](https://optimistic.etherscan.io/address/0xE82Df3960e0bd1d05b308D21fa8D51aCF664a21d) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 3/6 |
+| ✓ protocolConfig | [`0xAECe407a...`](https://optimistic.etherscan.io/address/0xAECe407aF2DBCd0B6C5Fb522744cCE6beac6Fb72) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
+| ✓ rEUL | [`0x5Ee4d837...`](https://optimistic.etherscan.io/address/0x5Ee4d837AB84285924AE746Eb5622Bb6774692be) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`a3abfd5f`](https://github.com/euler-xyz/evk-periphery/tree/a3abfd5f) | [`a3abfd5f`](https://github.com/euler-xyz/evk-periphery/tree/a3abfd5f) | 18/21 |
+| ✓ sequenceRegistry | [`0xb8551503...`](https://optimistic.etherscan.io/address/0xb8551503651FfB86371E750802d4094f7435758A) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
+| ✓ swapVerifier | [`0x804C754e...`](https://optimistic.etherscan.io/address/0x804C754ea602B54B28b0D3a10F8122e0a605dAD9) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 3/3 |
+| ✗ governorAccessControlEmergencyFactory | [`0x19dD77f1...`](https://optimistic.etherscan.io/address/0x19dD77f17FaAe0415261E1585Fd1fB79c6CefE48) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | not found | - | 34/48 |
+| ✗ oracleRouterFactory | [`0xA0F284fe...`](https://optimistic.etherscan.io/address/0xA0F284fe1788c389E5F9897e106e600F1D20ee5c) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | not found | - | 2/13 |
 
-## Differences Found
 
-### eulOFTAdapter
+## Changes Since Deployment
+
+This section shows what has changed in the source code between the deployment commit and current `master`.
+These diffs help identify any changes made to the codebase after deployment.
+
+### ethereum-vault-connector
+
+#### evc
+
+- **Deployed from:** [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e)
+- **Compare to master:** [`a7d3c29e...master`](https://github.com/euler-xyz/ethereum-vault-connector/compare/a7d3c29e...master)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+
+_No diff available - see GitHub compare link above._
+
+### euler-vault-kit
+
+#### eVaultFactory
+
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
+
+_No diff available - see GitHub compare link above._
+
+#### eVaultImplementation
+
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
 ```diff
+diff --git a/src/EVault/modules/Governance.sol b/src/EVault/modules/Governance.sol
+index 5c728ed..08c5c96 100644
+--- a/src/EVault/modules/Governance.sol
++++ b/src/EVault/modules/Governance.sol
+@@ -304,12 +304,6 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+ 
+         if (!currentLTV.isRecognizedCollateral()) vaultStorage.ltvList.push(collateral);
+ 
+-        if (!newLiquidationLTV.isZero()) {
+-            // Ensure that this collateral can be priced by the configured oracle
+-            (, IPriceOracle _oracle, address _unitOfAccount) = ProxyUtils.metadata();
+-            _oracle.getQuote(1e18, collateral, _unitOfAccount);
+-        }
+-
+         emit GovSetLTV(
+             collateral,
+             newLTV.borrowLTV.toUint16(),
 
-============================================================
-FILE: src/ERC20/deployed/ERC20BurnableMintable.sol
-============================================================
---- Etherscan/src/ERC20/deployed/ERC20BurnableMintable.sol
-+++ Local/src/ERC20/deployed/ERC20BurnableMintable.sol
-@@ -45,7 +45,7 @@
+```
+
+#### protocolConfig
+
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
+
+_No diff available - see GitHub compare link above._
+
+#### sequenceRegistry
+
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
+
+_No diff available - see GitHub compare link above._
+
+### evk-periphery
+
+#### adaptiveCurveIRMFactory
+
+- **Deployed from:** [`5e066711`](https://github.com/euler-xyz/evk-periphery/tree/5e066711)
+- **Compare to master:** [`5e066711...master`](https://github.com/euler-xyz/evk-periphery/compare/5e066711...master)
+
+```diff
+diff --git a/src/IRM/IRMAdaptiveCurve.sol b/src/IRM/IRMAdaptiveCurve.sol
+index 00000000..1883b02b
+--- /dev/null
++++ b/src/IRM/IRMAdaptiveCurve.sol
+@@ -0,0 +1,224 @@
++// SPDX-License-Identifier: MIT
++// Copyright (c) 2023 Morpho Association
++
++pragma solidity ^0.8.0;
++
++import {IIRM} from "evk/InterestRateModels/IIRM.sol";
++import {ExpLib} from "./lib/ExpLib.sol";
++
++/// @title IRMAdaptiveCurve
++/// @custom:contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/).
++/// @author Adapted from Morpho Labs (https://github.com/morpho-org/morpho-blue-irm/).
++/// @notice A Linear Kink IRM that adjusts the rate at target utilization based on time spent above/below it.
++/// @dev This implementation intentionally leaves variables names, units and ExpLib unchanged from original.
++/// Returned rates are extended to RAY per second to be compatible with the EVK.
++contract IRMAdaptiveCurve is IIRM {
++    /// @dev Unit for internal precision.
++    int256 internal constant WAD = 1e18;
++    /// @dev Unit for internal precision.
++    int256 internal constant YEAR = int256(365.2425 days);
++    /// @notice The name of the IRM.
++    string public constant name = "IRMAdaptiveCurve";
++    /// @notice The utilization rate targeted by the model.
++    /// @dev In WAD units.
++    int256 public immutable TARGET_UTILIZATION;
++    /// @notice The initial interest rate at target utilization.
++    /// @dev In WAD per second units.
++    /// When the IRM is initialized for a vault this is the rate at target utilization that is assigned.
++    int256 public immutable INITIAL_RATE_AT_TARGET;
++    /// @notice The minimum interest rate at target utilization that the model can adjust to.
++    /// @dev In WAD per second units.
++    int256 public immutable MIN_RATE_AT_TARGET;
++    /// @notice The maximum interest rate at target utilization that the model can adjust to.
++    /// @dev In WAD per second units.
++    int256 public immutable MAX_RATE_AT_TARGET;
++    /// @notice The steepness of the interest rate line.
++    /// @dev In WAD units.
++    int256 public immutable CURVE_STEEPNESS;
++    /// @notice The speed at which the rate at target is adjusted up or down.
++    /// @dev In WAD per second units.
++    /// For example, with `2e18 / 24 hours` the model will 2x `rateAtTarget` if the vault is fully utilized for a day.
++    int256 public immutable ADJUSTMENT_SPEED;
++
++    /// @notice Internal cached state of the interest rate model.
++    struct IRState {
++        /// @dev The current rate at target utilization.
++        uint144 rateAtTarget;
++        /// @dev The previous utilization rate of the vault.
++        int64 lastUtilization;
++        /// @dev The timestamp of the last update to the model.
++        uint48 lastUpdate;
++    }
++
++    /// @notice Get the internal cached state of a vault's irm.
++    mapping(address => IRState) internal irState;
++
++    error InvalidParams();
++
++    /// @notice Deploy IRMAdaptiveCurve.
++    /// @param _TARGET_UTILIZATION The utilization rate targeted by the interest rate model.
++    /// @param _INITIAL_RATE_AT_TARGET The initial interest rate at target utilization.
++    /// @param _MIN_RATE_AT_TARGET The minimum interest rate at target utilization that the model can adjust to.
++    /// @param _MAX_RATE_AT_TARGET The maximum interest rate at target utilization that the model can adjust to.
++    /// @param _CURVE_STEEPNESS The steepness of the interest rate line.
++    /// @param _ADJUSTMENT_SPEED The speed at which the rate at target utilization is adjusted up or down.
++    constructor(
++        int256 _TARGET_UTILIZATION,
++        int256 _INITIAL_RATE_AT_TARGET,
++        int256 _MIN_RATE_AT_TARGET,
++        int256 _MAX_RATE_AT_TARGET,
++        int256 _CURVE_STEEPNESS,
++        int256 _ADJUSTMENT_SPEED
++    ) {
++        // Validate parameters.
++        if (_TARGET_UTILIZATION <= 0 || _TARGET_UTILIZATION > 1e18) {
++            revert InvalidParams();
++        }
++        if (_INITIAL_RATE_AT_TARGET < _MIN_RATE_AT_TARGET || _INITIAL_RATE_AT_TARGET > _MAX_RATE_AT_TARGET) {
++            revert InvalidParams();
++        }
++        if (_MIN_RATE_AT_TARGET < 0.001e18 / YEAR || _MIN_RATE_AT_TARGET > 10e18 / YEAR) {
++            revert InvalidParams();
++        }
++        if (_MAX_RATE_AT_TARGET < 0.001e18 / YEAR || _MAX_RATE_AT_TARGET > 10e18 / YEAR) {
++            revert InvalidParams();
++        }
++        if (_CURVE_STEEPNESS < 1.01e18 || _CURVE_STEEPNESS > 100e18) {
++            revert InvalidParams();
++        }
++        if (_ADJUSTMENT_SPEED < 2e18 / YEAR || _ADJUSTMENT_SPEED > 1000e18 / YEAR) {
++            revert InvalidParams();
++        }
++
++        TARGET_UTILIZATION = _TARGET_UTILIZATION;
++        INITIAL_RATE_AT_TARGET = _INITIAL_RATE_AT_TARGET;
+```
+
+_Showing first 100 of 329 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/5e066711...master)_
+
+#### fixedCyclicalBinaryIRMFactory
+
+- **Deployed from:** [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e)
+- **Compare to master:** [`6fee729e...master`](https://github.com/euler-xyz/evk-periphery/compare/6fee729e...master)
+
+_No diff available - see GitHub compare link above._
+
+#### kinkIRMFactory
+
+- **Deployed from:** [`494df5fa`](https://github.com/euler-xyz/evk-periphery/tree/494df5fa)
+- **Compare to master:** [`494df5fa...master`](https://github.com/euler-xyz/evk-periphery/compare/494df5fa...master)
+
+```diff
+diff --git a/src/IRMFactory/EulerKinkIRMFactory.sol b/src/IRMFactory/EulerKinkIRMFactory.sol
+index 2b651a40..1d7b8fbf 100644
+--- a/src/IRMFactory/EulerKinkIRMFactory.sol
++++ b/src/IRMFactory/EulerKinkIRMFactory.sol
+@@ -4,12 +4,13 @@ pragma solidity ^0.8.0;
+ 
+ import {BaseFactory} from "../BaseFactory/BaseFactory.sol";
+ import {IRMLinearKink} from "evk/InterestRateModels/IRMLinearKink.sol";
++import {IEulerKinkIRMFactory} from "./interfaces/IEulerKinkIRMFactory.sol";
+ 
+ /// @title EulerKinkIRMFactory
+ /// @custom:security-contact security@euler.xyz
+ /// @author Euler Labs (https://www.eulerlabs.com/)
+ /// @notice A minimal factory for Kink IRMs.
+-contract EulerKinkIRMFactory is BaseFactory {
++contract EulerKinkIRMFactory is BaseFactory, IEulerKinkIRMFactory {
+     // corresponds to 1000% APY
+     uint256 internal constant MAX_ALLOWED_INTEREST_RATE = 75986279153383989049;
+ 
+@@ -22,7 +23,11 @@ contract EulerKinkIRMFactory is BaseFactory {
+     /// @param slope2 Slope of the function after the kink
+     /// @param kink Utilization at which the slope of the interest rate function changes. In type(uint32).max scale
+     /// @return The deployment address.
+-    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint32 kink) external returns (address) {
++    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint32 kink)
++        external
++        override
++        returns (address)
++    {
+         IRMLinearKink irm = new IRMLinearKink(baseRate, slope1, slope2, kink);
+ 
+         // verify if the IRM is functional
+diff --git a/src/IRMFactory/interfaces/IEulerKinkIRMFactory.sol b/src/IRMFactory/interfaces/IEulerKinkIRMFactory.sol
+index 14ffd834..29f554a4 100644
+--- a/src/IRMFactory/interfaces/IEulerKinkIRMFactory.sol
++++ b/src/IRMFactory/interfaces/IEulerKinkIRMFactory.sol
+@@ -15,5 +15,5 @@ interface IEulerKinkIRMFactory is IFactory {
+     /// @param slope2 The slope of the IRM at the second kink.
+     /// @param kink The kink of the IRM.
+     /// @return The deployment address.
+-    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint256 kink) external returns (address);
++    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint32 kink) external returns (address);
+ }
+
+```
+
+#### eulOFTAdapter
+
+- **Deployed from:** [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e)
+- **Compare to master:** [`6fee729e...master`](https://github.com/euler-xyz/evk-periphery/compare/6fee729e...master)
+
+```diff
+diff --git a/src/ERC20/deployed/ERC20BurnableMintable.sol b/src/ERC20/deployed/ERC20BurnableMintable.sol
+index 82413624..19bb8e81 100644
+--- a/src/ERC20/deployed/ERC20BurnableMintable.sol
++++ b/src/ERC20/deployed/ERC20BurnableMintable.sol
+@@ -45,7 +45,7 @@ contract ERC20BurnableMintable is AccessControlEnumerable, ERC20Burnable, ERC20P
      /// @notice Mints new tokens and assigns them to an account
      /// @param _account The address that will receive the minted tokens
      /// @param _amount The amount of tokens to mint
@@ -87,204 +294,86 @@ FILE: src/ERC20/deployed/ERC20BurnableMintable.sol
 
 ```
 
-### DAO
+#### rEUL
+
+- **Deployed from:** [`a3abfd5f`](https://github.com/euler-xyz/evk-periphery/tree/a3abfd5f)
+- **Compare to master:** [`a3abfd5f...master`](https://github.com/euler-xyz/evk-periphery/compare/a3abfd5f...master)
 
 ```diff
-
-=== FILE NOT FOUND: contracts/proxies/SafeProxy.sol ===
-
-```
-
-### labs
-
-```diff
-
-=== FILE NOT FOUND: contracts/proxies/SafeProxy.sol ===
-
-```
-
-### securityCouncil
-
-```diff
-
-=== FILE NOT FOUND: contracts/proxies/SafeProxy.sol ===
-
-```
-
-### securityPartnerA
-
-```diff
-
-=== FILE NOT FOUND: contracts/proxies/SafeProxy.sol ===
-
-```
-
-### securityPartnerB
-
-```diff
-
-=== FILE NOT FOUND: contracts/proxies/SafeProxy.sol ===
-
-```
-
-### EUL
-
-```diff
-
-============================================================
-FILE: src/ERC20/deployed/ERC20BurnableMintable.sol
-============================================================
---- Etherscan/src/ERC20/deployed/ERC20BurnableMintable.sol
-+++ Local/src/ERC20/deployed/ERC20BurnableMintable.sol
-@@ -45,7 +45,7 @@
-     /// @notice Mints new tokens and assigns them to an account
-     /// @param _account The address that will receive the minted tokens
-     /// @param _amount The amount of tokens to mint
--    function mint(address _account, uint256 _amount) external onlyRole(MINTER_ROLE) {
-+    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
-         _mint(_account, _amount);
+diff --git a/src/ERC20/implementation/ERC20WrapperLocked.sol b/src/ERC20/implementation/ERC20WrapperLocked.sol
+index b9e19024..3575e41f 100644
+--- a/src/ERC20/implementation/ERC20WrapperLocked.sol
++++ b/src/ERC20/implementation/ERC20WrapperLocked.sol
+@@ -112,6 +115,18 @@ abstract contract ERC20WrapperLocked is EVCUtil, Ownable, ERC20Wrapper {
+         emit RemainderReceiverSet(_remainderReceiver);
      }
  
-
++    /// @notice Disables the ability to renounce ownership of the contract
++    function renounceOwnership() public pure override {
++        revert NotAuthorized();
++    }
++
++    /// @notice Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current
++    /// owner.
++    /// @param newOwner The address of the new owner
++    function transferOwnership(address newOwner) public virtual override onlyEVCAccountOwner {
++        super.transferOwnership(newOwner);
++    }
++
+     /// @notice Sets a new remainder receiver address
+     /// @param _remainderReceiver The address of the new remainder receiver. If zero address, the remainder of the
+     /// tokens
+@@ -320,7 +335,7 @@ abstract contract ERC20WrapperLocked is EVCUtil, Ownable, ERC20Wrapper {
+             bool fromIsWhitelisted = whitelistStatus[from] != WHITELIST_STATUS_NONE;
+             bool toIsWhitelisted = whitelistStatus[to] != WHITELIST_STATUS_NONE;
+ 
+-            if ((from == address(0) || fromIsWhitelisted) && !toIsWhitelisted) {
++            if ((from == address(0) || fromIsWhitelisted) && to != address(0) && !toIsWhitelisted) {
+                 // Covers minting and transfers from whitelisted to non-whitelisted
+                 EnumerableMap.UintToUintMap storage map = lockedAmounts[to];
+                 uint256 normalizedTimestamp = _getNormalizedTimestamp();
 ```
 
-### oracleLens
+### reward-streams
 
-```diff
+#### balanceTracker
 
-============================================================
-FILE: src/Lens/OracleLens.sol
-============================================================
---- Etherscan/src/Lens/OracleLens.sol
-+++ Local/src/Lens/OracleLens.sol
-@@ -34,6 +34,7 @@
-     function cache() external view returns (uint208, uint48);
-     function rate() external view returns (uint256);
-     function rateProvider() external view returns (address);
-+    function rwaOracle() external view returns (address);
-     function resolveOracle(uint256 inAmount, address base, address quote)
-         external
-         view
-@@ -77,22 +78,30 @@
-         }
- 
-         if (_strEq(name, "ChainlinkOracle")) {
-+            (bool success, bytes memory result) =
-+                IOracle(oracleAddress).feed().staticcall(abi.encodeCall(IOracle.description, ()));
-+            string memory feedDescription = success && result.length >= 32 ? abi.decode(result, (string)) : "";
-+
-             oracleInfo = abi.encode(
-                 ChainlinkOracleInfo({
-                     base: IOracle(oracleAddress).base(),
-                     quote: IOracle(oracleAddress).quote(),
-                     feed: IOracle(oracleAddress).feed(),
--                    feedDescription: IOracle(IOracle(oracleAddress).feed()).description(),
-+                    feedDescription: feedDescription,
-                     maxStaleness: IOracle(oracleAddress).maxStaleness()
-                 })
-             );
-         } else if (_strEq(name, "ChainlinkInfrequentOracle")) {
-+            (bool success, bytes memory result) =
-+                IOracle(oracleAddress).feed().staticcall(abi.encodeCall(IOracle.description, ()));
-+            string memory feedDescription = success && result.length >= 32 ? abi.decode(result, (string)) : "";
-+
-             oracleInfo = abi.encode(
-                 ChainlinkInfrequentOracleInfo({
-                     base: IOracle(oracleAddress).base(),
-                     quote: IOracle(oracleAddress).quote(),
-                     feed: IOracle(oracleAddress).feed(),
--                    feedDescription: IOracle(IOracle(oracleAddress).feed()).description(),
-+                    feedDescription: feedDescription,
-                     maxStaleness: IOracle(oracleAddress).maxStaleness()
-                 })
-             );
-@@ -161,6 +170,14 @@
-                     base: IOracle(oracleAddress).base(),
-                     quote: IOracle(oracleAddress).quote(),
-                     rateProvider: IOracle(oracleAddress).rateProvider()
-+                })
-+            );
-+        } else if (_strEq(name, "OndoOracle")) {
-+            oracleInfo = abi.encode(
-+                OndoOracleInfo({
-+                    base: IOracle(oracleAddress).base(),
-+                    quote: IOracle(oracleAddress).quote(),
-+                    rwaOracle: IOracle(oracleAddress).rwaOracle()
-                 })
-             );
-         } else if (_strEq(name, "PendleOracle")) {
+- **Deployed from:** [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7)
+- **Compare to master:** [`9eb7b8a7...master`](https://github.com/euler-xyz/reward-streams/compare/9eb7b8a7...master)
+- **evk-periphery:** [`9a3f2c59`](https://github.com/euler-xyz/evk-periphery/tree/9a3f2c59)
 
-============================================================
-F...(truncated)
-```
+_No diff available - see GitHub compare link above._
 
-### utilsLens
 
-```diff
 
-============================================================
-FILE: src/Lens/UtilsLens.sol
-============================================================
---- Etherscan/src/Lens/UtilsLens.sol
-+++ Local/src/Lens/UtilsLens.sol
-@@ -126,7 +126,7 @@
- 
-         if (adapters.length == 0) {
-             (bool success, bytes memory data) =
--                asset.staticcall(abi.encodeCall(IEVault(asset).convertToAssets, (amountIn)));
-+                asset.staticcall{gas: 100000}(abi.encodeCall(IEVault(asset).convertToAssets, (amountIn)));
- 
-             if (success && data.length >= 32) {
-                 amountIn = abi.decode(data, (uint256));
+## Contracts Without Exact Match
 
-============================================================
-FILE: src/Lens/OracleLens.sol
-============================================================
---- Etherscan/src/Lens/OracleLens.sol
-+++ Local/src/Lens/OracleLens.sol
-@@ -78,22 +78,30 @@
-         }
- 
-         if (_strEq(name, "ChainlinkOracle")) {
-+            (bool success, bytes memory result) =
-+                IOracle(oracleAddress).feed().staticcall(abi.encodeCall(IOracle.description, ()));
-+            string memory feedDescription = success && result.length >= 32 ? abi.decode(result, (string)) : "";
-+
-             oracleInfo = abi.encode(
-                 ChainlinkOracleInfo({
-                     base: IOracle(oracleAddress).base(),
-                     quote: IOracle(oracleAddress).quote(),
-                     feed: IOracle(oracleAddress).feed(),
--                    feedDescription: IOracle(IOracle(oracleAddress).feed()).description(),
-+                    feedDescription: feedDescription,
-                     maxStaleness: IOracle(oracleAddress).maxStaleness()
-                 })
-             );
-         } else if (_strEq(name, "ChainlinkInfrequentOracle")) {
-+            (bool success, bytes memory result) =
-+                IOracle(oracleAddress).feed().staticcall(abi.encodeCall(IOracle.description, ()));
-+            string memory feedDescription = success && result.length >= 32 ? abi.decode(result, (string)) : "";
-+
-             oracleInfo = abi.encode(
-                 ChainlinkInfrequentOracleInfo({
-                     base: IOracle(oracleAddress).base(),
-                     quote: IOracle(oracleAddress).quote(),
-                     feed: IOracle(oracleAddress).feed(),
--                    feedDescription: IOracle(IOracle(oracleAddress).feed()).description(),
-+                    feedDescription: feedDescription,
-                     maxStaleness: IOracle(oracleAddress).maxStaleness()
-                 })
-             );
+These contracts could not be matched to any commit in the repository.
+Showing diff between Etherscan source and current `master`:
 
-============================================================
-FILE: src/Lens/Utils.sol
-============================================================
---- Etherscan/src/Lens/Utils.sol
-+++ Local/src/Lens/Utils.sol
-@@ -43,12 +43,32 @@
-             // bitcoin-specific and test networks
-             if (
-                 block.chainid == 30 || block.chainid == 21000000 || block.chainid == 10143 || block.chainid == 80084
--          ...(truncated)
-```
+### governorAccessControlEmergencyFactory
+
+- **Address:** [`0x19dD77f17FaAe0415261E1585Fd1fB79c6CefE48`](https://optimistic.etherscan.io/address/0x19dD77f17FaAe0415261E1585Fd1fB79c6CefE48)
+- **Etherscan Name:** GovernorAccessControlEmergencyFactory
+- **Source Repo:** [evk-periphery](https://github.com/euler-xyz/evk-periphery)
+- **Files:** 34/48 matched against master
+- **Compared against:** [`evk-periphery @ master`](https://github.com/euler-xyz/evk-periphery)
+
+**External Dependencies (lib/):**
+- `lib/ethereum-vault-connector` - version differences
+- `lib/euler-vault-kit` - version differences
+- `lib/openzeppelin-contracts` - version differences
+
+### oracleRouterFactory
+
+- **Address:** [`0xA0F284fe1788c389E5F9897e106e600F1D20ee5c`](https://optimistic.etherscan.io/address/0xA0F284fe1788c389E5F9897e106e600F1D20ee5c)
+- **Etherscan Name:** EulerRouterFactory
+- **Source Repo:** [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle)
+- **Files:** 2/13 matched against master
+- **Compared against:** [`euler-price-oracle @ master`](https://github.com/euler-xyz/euler-price-oracle)
+
+**External Dependencies (lib/):**
+- `lib/ethereum-vault-connector` - version differences
+- `lib/euler-price-oracle` - version differences
+- `lib/forge-std` - version differences
 
