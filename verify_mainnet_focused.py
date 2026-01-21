@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-BSC Contract Verification
+Focused Mainnet Contract Verification
 
-Verifies Euler contracts on BSC (Chain ID: 56) by:
+Verifies Euler contracts by:
 1. Finding the exact deployment commit (exhaustive search)
 2. Verifying source matches at that commit
 3. Showing diff between deployment commit and master
@@ -27,11 +27,6 @@ RESULTS_DIR = ROOT_DIR / "results"
 CACHE_DIR = ROOT_DIR / "cache" / "etherscan"
 COMMIT_CACHE_FILE = ROOT_DIR / "cache" / "deployment_commits.json"
 
-# Chain Configuration
-CHAIN_ID = 56
-CHAIN_NAME = "bsc"
-EXPLORER_URL = "https://bscscan.com"
-
 # Etherscan V2 API
 ETHERSCAN_V2_API = "https://api.etherscan.io/v2/api"
 
@@ -46,44 +41,44 @@ EULER_SWAP_URL = "https://github.com/euler-xyz/euler-swap"
 
 FOCUSED_CONTRACTS = {
     # Core contracts (from euler-vault-kit via evk-periphery)
-    "evc": "0xb2E5a73CeE08593d1a076a2AE7A6e02925a640ea",
-    "eVaultFactory": "0x7F53E2755eB3c43824E162F7F6F087832B9C9Df6",
-    "eVaultImplementation": "0xB236413f1A8Fd4C5D5545ecAaC5e64fF686afe4e",
-    "protocolConfig": "0xF524F75ad063919B86d6c5D9242847A44337BFCe",
-    "sequenceRegistry": "0x7fD287B3AE3Bf2F6C9871a44b6d9de208B0ABBE5",
-    "balanceTracker": "0x2D13C46FE6c8B6c9ad3C5A78eD51b26733caE350",
+    "evc": "0x0C9a3dd6b8F28529d72d7f9cE918D493519EE383",
+    "eVaultFactory": "0x29a56a1b8214D9Cf7c5561811750D5cBDb45CC8e",
+    "eVaultImplementation": "0x8Ff1C814719096b61aBf00Bb46EAd0c9A529Dd7D",
+    "protocolConfig": "0x4cD6BF1D183264c02Be7748Cb5cd3A47d013351b",
+    "sequenceRegistry": "0xEADDD21618ad5Deb412D3fD23580FD461c106B54",
+    "balanceTracker": "0x0D52d06ceB8Dcdeeb40Cfd9f17489B350dD7F8a3",
     
     # Euler Earn (from euler-earn standalone)
-    "eulerEarnFactory": "0xc456d04E3F43597CC7E5a2AF284fF4C4AdDA0cb1",
+    "eulerEarnFactory": "0x59709B029B140C853FE28d277f83C3a65e308aF4",
     
     # EulerSwap V1 (from euler-swap standalone @ eulerswap-1.0 tag)
-    "eulerSwapV1Factory": "0x3e378e5E339DF5e0Da32964F9EEC2CDb90D28Cc7",
-    "eulerSwapV1Implementation": "0x16BCa43290b77409e6D1c92B929f7A09C0E4EE86",
-    "eulerSwapV1Periphery": "0xa8826Bb29f875Db4c4b482463961776390774525",
+    "eulerSwapV1Factory": "0xb013be1D0D380C13B58e889f412895970A2Cf228",
+    "eulerSwapV1Implementation": "0xc35a0FDA69e9D71e68C0d9CBb541Adfd21D6B117",
+    "eulerSwapV1Periphery": "0x208fF5Eb543814789321DaA1B5Eb551881D16b06",
     
     # EulerSwap V2 (from evk-periphery master via lib/euler-swap)
-    "eulerSwapV2Factory": "0xA1F83E3d1819C912122A1582B4B6D3d2a1E83bb7",
-    "eulerSwapV2Implementation": "0x90Cb0b67f189a3D914DA00f72070531152DBc85F",
-    "eulerSwapV2Periphery": "0x4258A34923CccFa29948881Cf6Aa8FdAD6338485",
-    "eulerSwapV2ProtocolFeeConfig": "0x71dFB7138192B19CDc73487212bf6BB1Ffe3b9A1",
-    "eulerSwapV2Registry": "0xBc0f4dd9B5A10b15e6fA65e939Dbb1f98E7B08B7",
+    "eulerSwapV2Factory": "0xD05213331221fAB8a3C387F2affBb605Bb04DF5F",
+    "eulerSwapV2Implementation": "0x8B0E044E364F2cE913799d53b300e15A6974DC97",
+    "eulerSwapV2Periphery": "0xD3a349EE0A21eA0A7E9513ac236ae614b5FD513E",
+    "eulerSwapV2ProtocolFeeConfig": "0x5171Aed04Fa9551DB484F07c853F252Bc6F53b63",
+    "eulerSwapV2Registry": "0x5FcCB84363F020c0cADE052C9c654aABF932814A",
     
     # IRM Factories (from evk-periphery)
-    "adaptiveCurveIRMFactory": "0x6155921DaEa6a8Dca108c4B434bC66E1c51F6d6E",
-    "fixedCyclicalBinaryIRMFactory": "0x5151a8125B91A220fFe8fEA2Ab2815b46ecaAfFb",
-    "kinkIRMFactory": "0x40739156B75b477f5b4f2D671655492B535B59d2",
-    "kinkyIRMFactory": "0x996E67A00D2dd4e2Ace3c507250524aC66438254",
+    "adaptiveCurveIRMFactory": "0x3EC2d5af936bBB57DD19C292BAfb89da0E377F42",
+    "fixedCyclicalBinaryIRMFactory": "0xa8F8E82C9Da15A991D7BF2486aE26e22743aC8d0",
+    "kinkIRMFactory": "0xcAe0A39B45Ee9C3213f64392FA6DF30CE034C9F9",
+    "kinkyIRMFactory": "0x010102daAB6133d4f8cEB4C8842a70B9899Fc102",
     
     # Periphery (from evk-periphery)
-    "eulerEarnPublicAllocator": "0xD561479477b03720bF485e91B76574374A646531",
-    "feeFlowController": "0xE7Ef8C7CcB6aa81e366F0A0ccd89A298d9893E83",
-    "governorAccessControlEmergencyFactory": "0x71620376630597FA901112821455814a31d39685",
-    "oracleRouterFactory": "0xbe83f65e5e898D482FfAEA251B62647c411576F1",
-    "swapVerifier": "0xA8a4f96EC451f39Eb95913459901f39F5E1C068B",
+    "eulerEarnPublicAllocator": "0x8fdCb80a2894F0dC052c8d52D22544DC90274800",
+    "feeFlowController": "0xFcd3Db06EA814eB21C84304fC7F90798C00D1e32",
+    "governorAccessControlEmergencyFactory": "0x025C8831c6E45420DF8E71F7B6b99F733D120Faf",
+    "oracleRouterFactory": "0x70B3f6F61b7Bf237DF04589DdAA842121072326A",
+    "swapVerifier": "0xae26485ACDDeFd486Fe9ad7C2b34169d360737c7",
     
     # Bridge/Token (from separate repos)
-    "eulOFTAdapter": "0x1633269308F154fbECBb15F91d72D2aFA6af95B4",
-    "rEUL": "0x5e13d41913aDF18bb2acAe34228E8D21f3c2f2Eb",
+    "eulOFTAdapter": "0x4d7e09f73843Bd4735AaF7A74b6d877bac75a531",
+    "rEUL": "0xf3e621395fc714B90dA337AA9108771597b4E696",
 }
 
 # Known deployment commits (hints for faster search)
@@ -178,10 +173,6 @@ STANDALONE_COMMITS = {
 
 
 @dataclass
-# =============================================================================
-# DATA CLASSES
-# =============================================================================
-
 class VerificationResult:
     contract_name: str
     address: str
@@ -199,10 +190,6 @@ class VerificationResult:
     evk_periphery_commit: Optional[str] = None  # The evk-periphery commit (for reference)
     error_message: Optional[str] = None
 
-
-# =============================================================================
-# GIT UTILITIES
-# =============================================================================
 
 def get_git_commits(repo_dir: Path, limit: int = 100) -> List[str]:
     """Get recent commits from a repo"""
@@ -386,10 +373,6 @@ def get_source_repo_diff(contract_key: str, source_commit: str, etherscan_files:
         return f"Error generating diff: {e}"
 
 
-# =============================================================================
-# DIFF PROCESSING
-# =============================================================================
-
 def summarize_lib_changes(diff: str) -> Tuple[str, List[str]]:
     """
     Separate lib/ changes from source changes.
@@ -545,10 +528,6 @@ def filter_comment_only_changes(diff: str) -> str:
     return '\n'.join(result_lines)
 
 
-# =============================================================================
-# CACHING
-# =============================================================================
-
 def load_commit_cache() -> Dict[str, str]:
     """Load cached deployment commits"""
     if COMMIT_CACHE_FILE.exists():
@@ -567,14 +546,10 @@ def save_commit_cache(cache: Dict[str, str]):
         json.dump(cache, f, indent=2)
 
 
-# =============================================================================
-# ETHERSCAN API
-# =============================================================================
-
 class EtherscanFetcher:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("ETHERSCAN_API_KEY", "")
-        self.cache_dir = CACHE_DIR / str(CHAIN_ID)
+        self.cache_dir = CACHE_DIR / "1"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
     
     def get_verified_source(self, address: str) -> Optional[Dict[str, Any]]:
@@ -585,7 +560,7 @@ class EtherscanFetcher:
                 return json.load(f)
         
         print(f"    Fetching from Etherscan...", flush=True)
-        url = f"{ETHERSCAN_V2_API}?chainid={CHAIN_ID}&module=contract&action=getsourcecode&address={address}&apikey={self.api_key}"
+        url = f"{ETHERSCAN_V2_API}?chainid=1&module=contract&action=getsourcecode&address={address}&apikey={self.api_key}"
         
         try:
             response = requests.get(url, timeout=30)
@@ -626,10 +601,6 @@ class EtherscanFetcher:
             print(f"    Error: {e}", flush=True)
             return None
 
-
-# =============================================================================
-# SOURCE COMPARISON
-# =============================================================================
 
 class SourceComparator:
     def __init__(self, repo_path: Path, submodule_paths: Optional[List[str]] = None):
@@ -727,10 +698,6 @@ class SourceComparator:
         
         return diff, files_checked, files_matched
 
-
-# =============================================================================
-# COMMIT SEARCH & VERIFICATION
-# =============================================================================
 
 def exhaustive_commit_search(address: str, contract_key: str, fetcher: EtherscanFetcher,
                              repo_dir: Path, submodule_paths: List[str],
@@ -928,10 +895,6 @@ def verify_evk_periphery_contract(contract_key: str, address: str, fetcher: Ethe
         )
 
 
-# =============================================================================
-# REPORT GENERATION
-# =============================================================================
-
 def generate_report(results: List[VerificationResult]) -> str:
     """Generate verification report with deployment commits and diffs to master"""
     
@@ -940,7 +903,7 @@ def generate_report(results: List[VerificationResult]) -> str:
     diff_found = [r for r in results if r.status == "diff_found"]
     errors = [r for r in results if r.status == "error"]
     
-    report = f"""# BSC Contract Verification Report
+    report = f"""# Mainnet Contract Verification Report
 
 ## Summary
 
@@ -959,7 +922,7 @@ def generate_report(results: List[VerificationResult]) -> str:
 """
     
     for r in sorted(results, key=lambda x: (x.status != "exact_match", x.contract_name)):
-        addr_link = f"[`{r.address[:10]}...`]({EXPLORER_URL}/address/{r.address})"
+        addr_link = f"[`{r.address[:10]}...`](https://etherscan.io/address/{r.address})"
         
         # Source repo with link
         source_repo_link = f"[{r.source_repo_name}]({r.source_repo_url})"
@@ -1072,7 +1035,7 @@ Showing diff between Etherscan source and current `master`:
         for r in no_match:
             report += f"""### {r.contract_name}
 
-- **Address:** [`{r.address}`]({EXPLORER_URL}/address/{r.address})
+- **Address:** [`{r.address}`](https://etherscan.io/address/{r.address})
 - **Etherscan Name:** {r.etherscan_name}
 - **Source Repo:** [{r.source_repo_name}]({r.source_repo_url})
 - **Files:** {r.files_matched}/{r.files_checked} matched against master
@@ -1109,17 +1072,13 @@ Showing diff between Etherscan source and current `master`:
     return report
 
 
-# =============================================================================
-# MAIN ENTRY POINT
-# =============================================================================
-
 def main():
     # Force unbuffered output
     import sys
     sys.stdout.reconfigure(line_buffering=True)
     
     print("="*60, flush=True)
-    print(f"BSC CONTRACT VERIFICATION (Chain ID: {CHAIN_ID})", flush=True)
+    print("MAINNET CONTRACT VERIFICATION", flush=True)
     print("="*60, flush=True)
     
     api_key = os.getenv("ETHERSCAN_API_KEY", "")
@@ -1177,7 +1136,7 @@ def main():
     # Generate report
     report = generate_report(results)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    report_path = RESULTS_DIR / f"{CHAIN_NAME}.md"
+    report_path = RESULTS_DIR / "mainnet.md"
     report_path.write_text(report)
     
     # Summary

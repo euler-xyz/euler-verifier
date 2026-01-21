@@ -1,0 +1,67 @@
+============================================================
+BASE CONTRACT VERIFICATION (Chain ID: 8453)
+============================================================
+✓ ETHERSCAN_API_KEY set (HBP9GP57...)
+✓ evk-periphery found at /Users/erik/euler/euler-verifier/repos/evk-periphery
+
+Verifying 26 contracts...
+
+──────────────────────────────────────────────────
+evc (0x5301c7dD20...)
+    Trying cached commit master...
+  ✓ VERIFIED @ master (8/9 files)
+──────────────────────────────────────────────────
+eVaultFactory (0x7F321498A8...)
+    Trying cached commit 2b087370...
+  ✓ VERIFIED @ 2b087370 (3/3 files)
+──────────────────────────────────────────────────
+eVaultImplementation (0x30a9A96548...)
+    Trying cached commit 2b087370...
+    Searching 108 commits...
+    ✓ Found exact match at commit 2b087370
+  ✓ VERIFIED @ 2b087370 (52/52 files)
+    → Changes since deployment: 1342 chars diff
+──────────────────────────────────────────────────
+protocolConfig (0x1D4b9e6ACA...)
+    Trying cached commit 2b087370...
+    Searching 109 commits...
+    ✓ Found exact match at commit 2b087370
+  ✓ VERIFIED @ 2b087370 (2/2 files)
+──────────────────────────────────────────────────
+sequenceRegistry (0xfE9011FD09...)
+    Trying cached commit 2b087370...
+  ✓ VERIFIED @ 2b087370 (2/2 files)
+──────────────────────────────────────────────────
+balanceTracker (0x029fDEe85B...)
+    Searching 109 commits...
+    ✓ Found exact match at commit a6a8024b90b334806c0d99b7bab3b10b45a74bc5
+  ✓ VERIFIED @ a6a8024b90b334806c0d99b7bab3b10b45a74bc5 (17/17 files)
+──────────────────────────────────────────────────
+eulerEarnFactory (0x75F49a2621...)
+  Using euler-earn standalone...
+  ✓ VERIFIED @ master (35/35 files)
+──────────────────────────────────────────────────
+eulerSwapV1Factory (0xf0CFe22d23...)
+  Using euler-swap-v1 standalone...
+  ✓ VERIFIED @ eulerswap-1.0 (55/55 files)
+    → Changes since deployment: 81686 chars diff
+──────────────────────────────────────────────────
+eulerSwapV1Implementation (0x3Ce63C16CB...)
+  Using euler-swap-v1 standalone...
+  ✓ VERIFIED @ eulerswap-1.0 (46/46 files)
+    → Changes since deployment: 62565 chars diff
+──────────────────────────────────────────────────
+eulerSwapV1Periphery (0x18e5F5C1ff...)
+  Using euler-swap-v1 standalone...
+  ✓ VERIFIED @ eulerswap-1.0 (9/9 files)
+    → Changes since deployment: 7364 chars diff
+──────────────────────────────────────────────────
+eulerSwapV2Factory (0x6C5f4c239c...)
+    Searching 109 commits...
+    ...checked 20/109 commits
+    ✓ Found exact match at commit a186bd7c
+  ✓ VERIFIED @ a186bd7c (32/57 files)
+──────────────────────────────────────────────────
+eulerSwapV2Implementation (0x6F1C1a3eAF...)
+    Searching 108 commits...
+    ...checked 20/108 commits

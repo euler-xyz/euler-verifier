@@ -46,44 +46,44 @@ EULER_SWAP_URL = "https://github.com/euler-xyz/euler-swap"
 
 FOCUSED_CONTRACTS = {
     # Core contracts (from euler-vault-kit via evk-periphery)
-    "evc": "0x6302ef0F34100CDDFb5489fbcB6eE1AA95CD1066",
-    "eVaultFactory": "0x78Df1CF5bf06a7f27f2ACc580B934238C1b80D50",
-    "eVaultImplementation": "0x832fF4011A3164ea76ceA06A313EE0B6CD72ba96",
-    "protocolConfig": "0x06c1Ab0A1672E8FC7F7D10BD7B869B4116D18a2c",
-    "sequenceRegistry": "0x924C73abAa350800fc22c11ffdFB09641106E3ce",
-    "balanceTracker": "0xbCD29c1B596d9fFAfaa6F90780956b4D3d47832f",
+    "evc": "0xddcbe30A761Edd2e19bba930A977475265F36Fa1",
+    "eVaultFactory": "0xaf4B4c18B17F6a2B32F6c398a3910bdCD7f26181",
+    "eVaultImplementation": "0x29E9b639e165d919FEcf02521F8A9dA0492D4f21",
+    "protocolConfig": "0x8564160f30926eA1229DCcf24118c6De155D2e30",
+    "sequenceRegistry": "0x9C38f923baC407C818312EADEf69AdC116fd16FD",
+    "balanceTracker": "0xAf5659428FEF1F6a701FaB46d8f3aF8371A9913D",
     
     # Euler Earn (from euler-earn standalone)
-    "eulerEarnFactory": "0xB9B5d62B9fE9E1B505466e75817aB178A1D2ec9d",
+    "eulerEarnFactory": "0x574B00f5a0C56D370F19fa887a5545d74F52fAC2",
     
     # EulerSwap V1 (from euler-swap standalone @ eulerswap-1.0 tag)
-    "eulerSwapV1Factory": "0x7949bE8B154D7B5ce6E75cBfc646AeF3a25970E2",
-    "eulerSwapV1Implementation": "0x04671F895c7d9EAbF33FF1dfF41269E6Fea835D1",
-    "eulerSwapV1Periphery": "0x804485f5B6c293f8d63f697E9662CD4a8765858A",
+    "eulerSwapV1Factory": "0x8A1D3a4850ed7deeC9003680Cf41b8E75D27e440",
+    "eulerSwapV1Implementation": "0x4F4FDeE3568aC31C46634fb2Df3FF44A156Be351",
+    "eulerSwapV1Periphery": "0x31F34124a37f94efd17201A1B88d5008cD444c72",
     
     # EulerSwap V2 (from evk-periphery master via lib/euler-swap)
-    "eulerSwapV2Factory": "0x138AB9B33741B25bb7BcDa466175c8B2E2b96dc4",
-    "eulerSwapV2Implementation": "0xAF6412D58024874b0Ffc4138FfF95fc73b372977",
-    "eulerSwapV2Periphery": "0x223c1a20A6992a0F1E7066eD924619c3156DDA15",
-    "eulerSwapV2ProtocolFeeConfig": "0xA6fCC47f8D930f096F8749C7C7D335871bc71C0D",
-    "eulerSwapV2Registry": "0x99C341F07098ba70aC1130c479103Dc2366dbBD7",
+    "eulerSwapV2Factory": "0xd80e68B39e4408cb7D6c8E3343Bde46587013F62",
+    "eulerSwapV2Implementation": "0x2836825daeC3D5d8fD3ad71d61f72345bB868110",
+    "eulerSwapV2Periphery": "0x4fef2f7146c0b4e6C0b1433badC6B7a2E1E7ECDb",
+    "eulerSwapV2ProtocolFeeConfig": "0x1C0e8b841DA677C685D2a8376773e8A872C1ce5C",
+    "eulerSwapV2Registry": "0xF9f2dF8A5Cc71a0424dfA9EbdfdfF8A082C19184",
     
     # IRM Factories (from evk-periphery)
-    "adaptiveCurveIRMFactory": "0x148B1DC3168C73907D9F00165Ceab62Fd81f3E9D",
-    "fixedCyclicalBinaryIRMFactory": "0xe962595391F481c4EB2cB8Adef7a064B1F76C36f",
-    "kinkIRMFactory": "0xE055ea126c7704fFCf3Bd8a8F46aC93A6965560E",
-    "kinkyIRMFactory": "0x1abB566e1cc1efd19594fF2dCF1219F71e06558A",
+    "adaptiveCurveIRMFactory": "0x104BA4D746cf71F23341a7c855271A5E7dD19F58",
+    "fixedCyclicalBinaryIRMFactory": "0x53A37B5d8a30a49bCB463eF33d610d5E5040C64A",
+    "kinkIRMFactory": "0xcad498936E09f38f18eD8375AeCD1d46689e7086",
+    "kinkyIRMFactory": "0x34E21196d7A303EE06c25aEF3B9CCD111c15c9aC",
     
     # Periphery (from evk-periphery)
-    "eulerEarnPublicAllocator": "0x0161FE2CA6ED39b5D0811a94b87AC628677Ae020",
-    "feeFlowController": "0xA1585dc7Cd4EF33f7a855fDE39771b37838B0bFE",
-    "governorAccessControlEmergencyFactory": "0x27369477130C8bC49CeeAe8ACb9cE50a2a7De616",
-    "oracleRouterFactory": "0x22d51Db42A59862D4F8c135C4406AEf9854ABFF3",
-    "swapVerifier": "0x7b16DAaFa76CfeC8C08D7a68aF31949B37ebfdF5",
+    "eulerEarnPublicAllocator": "0x2524762ddb853AB1e572B81E5E6377a8a1536aA5",
+    "feeFlowController": "0x95F21cD90057BBdC6fAc3f9b94D06b53C24B278c",
+    "governorAccessControlEmergencyFactory": "0xcA14D397219808F39724607e6401bD8C46CbF65f",
+    "oracleRouterFactory": "0x80528F014E84658e85D3C6D4896A29Fa933Be696",
+    "swapVerifier": "0x0d7938D9c31Cd7dD693752074284af133c1142de",
     
     # Bridge/Token (from separate repos)
-    "eulOFTAdapter": "0x174834a9DE4C2f0c13c7353e62C229E8D607c808",
-    "rEUL": "0xFA31599a4928c2d57C0dd77DFCA5DA1E94E6D2D2",
+    "eulOFTAdapter": "0xF1A5F97AB84158Cf6d8ba8dEF68780Fc2Fd64310",
+    "rEUL": "0x2e3b32730B4F6b6502BdAa9122df3B026eDE5391",
 }
 
 # Known deployment commits (hints for faster search)

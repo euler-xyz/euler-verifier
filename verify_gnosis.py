@@ -46,44 +46,26 @@ EULER_SWAP_URL = "https://github.com/euler-xyz/euler-swap"
 
 FOCUSED_CONTRACTS = {
     # Core contracts (from euler-vault-kit via evk-periphery)
-    "evc": "0x6302ef0F34100CDDFb5489fbcB6eE1AA95CD1066",
-    "eVaultFactory": "0x78Df1CF5bf06a7f27f2ACc580B934238C1b80D50",
-    "eVaultImplementation": "0x832fF4011A3164ea76ceA06A313EE0B6CD72ba96",
-    "protocolConfig": "0x06c1Ab0A1672E8FC7F7D10BD7B869B4116D18a2c",
-    "sequenceRegistry": "0x924C73abAa350800fc22c11ffdFB09641106E3ce",
-    "balanceTracker": "0xbCD29c1B596d9fFAfaa6F90780956b4D3d47832f",
-    
-    # Euler Earn (from euler-earn standalone)
-    "eulerEarnFactory": "0xB9B5d62B9fE9E1B505466e75817aB178A1D2ec9d",
-    
-    # EulerSwap V1 (from euler-swap standalone @ eulerswap-1.0 tag)
-    "eulerSwapV1Factory": "0x7949bE8B154D7B5ce6E75cBfc646AeF3a25970E2",
-    "eulerSwapV1Implementation": "0x04671F895c7d9EAbF33FF1dfF41269E6Fea835D1",
-    "eulerSwapV1Periphery": "0x804485f5B6c293f8d63f697E9662CD4a8765858A",
-    
-    # EulerSwap V2 (from evk-periphery master via lib/euler-swap)
-    "eulerSwapV2Factory": "0x138AB9B33741B25bb7BcDa466175c8B2E2b96dc4",
-    "eulerSwapV2Implementation": "0xAF6412D58024874b0Ffc4138FfF95fc73b372977",
-    "eulerSwapV2Periphery": "0x223c1a20A6992a0F1E7066eD924619c3156DDA15",
-    "eulerSwapV2ProtocolFeeConfig": "0xA6fCC47f8D930f096F8749C7C7D335871bc71C0D",
-    "eulerSwapV2Registry": "0x99C341F07098ba70aC1130c479103Dc2366dbBD7",
+    "evc": "0xD1446CDaa29b342C04c6162023f3A645CB318736",
+    "eVaultFactory": "0x4CB405C3515841c9BBFB363CD3105479e15ce5B0",
+    "eVaultImplementation": "0x80fF02a2b6b945D3127C21275c0D10116B737731",
+    "protocolConfig": "0xcB7c8afbE09307Be5cdB668274137a92145353D7",
+    "sequenceRegistry": "0x1CF12927ea07abA188bAB81B90Ab535E49A694eB",
+    "balanceTracker": "0xc3688DE625abE9231ca004D6dE78438Da5496Fa9",
     
     # IRM Factories (from evk-periphery)
-    "adaptiveCurveIRMFactory": "0x148B1DC3168C73907D9F00165Ceab62Fd81f3E9D",
-    "fixedCyclicalBinaryIRMFactory": "0xe962595391F481c4EB2cB8Adef7a064B1F76C36f",
-    "kinkIRMFactory": "0xE055ea126c7704fFCf3Bd8a8F46aC93A6965560E",
-    "kinkyIRMFactory": "0x1abB566e1cc1efd19594fF2dCF1219F71e06558A",
+    "adaptiveCurveIRMFactory": "0x890E00FEB4A811B1a96F3A6F965c4F230462b66A",
+    "kinkIRMFactory": "0x6F9A745EdBdD5F205B75286F50EB95701539a99d",
     
     # Periphery (from evk-periphery)
-    "eulerEarnPublicAllocator": "0x0161FE2CA6ED39b5D0811a94b87AC628677Ae020",
-    "feeFlowController": "0xA1585dc7Cd4EF33f7a855fDE39771b37838B0bFE",
-    "governorAccessControlEmergencyFactory": "0x27369477130C8bC49CeeAe8ACb9cE50a2a7De616",
-    "oracleRouterFactory": "0x22d51Db42A59862D4F8c135C4406AEf9854ABFF3",
-    "swapVerifier": "0x7b16DAaFa76CfeC8C08D7a68aF31949B37ebfdF5",
+    "feeFlowController": "0x36ADfebbE0c65aEA3B01e58441e1E7b0c342E665",
+    "governorAccessControlEmergencyFactory": "0x6895f5E26d7ae3D47eA30C0727F5c04896622B3d",
+    "oracleRouterFactory": "0x8438A93e8d4Fc14882CBBDb0263a70988dF25C10",
+    "swapVerifier": "0xf730e013eA862e91baD957Bc8F8837441259a4D2",
     
     # Bridge/Token (from separate repos)
-    "eulOFTAdapter": "0x174834a9DE4C2f0c13c7353e62C229E8D607c808",
-    "rEUL": "0xFA31599a4928c2d57C0dd77DFCA5DA1E94E6D2D2",
+    "eulOFTAdapter": "0x97e839139877C7c122f962ed69563a50B717C013",
+    "rEUL": "0x33f3D7916615EBDeEE66943ed1024D2444eFd9FB",
 }
 
 # Known deployment commits (hints for faster search)
@@ -99,20 +81,14 @@ DEPLOYMENT_HINTS = {
     "swapVerifier": "2b087370",
     "oracleRouterFactory": "5e066711",
     "adaptiveCurveIRMFactory": "master",
-    "fixedCyclicalBinaryIRMFactory": "master",
-    "kinkyIRMFactory": "master",
     "governorAccessControlEmergencyFactory": "master",
     # rEUL - found the correct commit
     "rEUL": "f61809fd",
 }
 
 # Contracts from standalone repos (not evk-periphery)
+# Note: Gnosis has no EulerSwap or EulerEarn deployments
 STANDALONE_CONTRACTS = {
-    "eulerEarnFactory": ("euler-earn", EULER_EARN_DIR),
-    "eulerEarnPublicAllocator": ("euler-earn", EULER_EARN_DIR),
-    "eulerSwapV1Factory": ("euler-swap-v1", EULER_SWAP_DIR),
-    "eulerSwapV1Implementation": ("euler-swap-v1", EULER_SWAP_DIR),
-    "eulerSwapV1Periphery": ("euler-swap-v1", EULER_SWAP_DIR),
 }
 
 # =============================================================================
@@ -140,40 +116,20 @@ SOURCE_REPOS = {
     # Fee Flow
     "feeFlowController": ("fee-flow", "https://github.com/euler-xyz/fee-flow", "lib/fee-flow"),
     
-    # Euler Earn
-    "eulerEarnFactory": ("euler-earn", "https://github.com/euler-xyz/euler-earn", "lib/euler-earn"),
-    "eulerEarnPublicAllocator": ("euler-earn", "https://github.com/euler-xyz/euler-earn", "lib/euler-earn"),
-    
-    # Euler Swap V1 (from standalone repo, tag eulerswap-1.0)
-    "eulerSwapV1Factory": ("euler-swap", "https://github.com/euler-xyz/euler-swap", None),
-    "eulerSwapV1Implementation": ("euler-swap", "https://github.com/euler-xyz/euler-swap", None),
-    "eulerSwapV1Periphery": ("euler-swap", "https://github.com/euler-xyz/euler-swap", None),
-    
-    # Euler Swap V2 (via evk-periphery submodule)
-    "eulerSwapV2Factory": ("euler-swap", "https://github.com/euler-xyz/euler-swap", "lib/euler-swap"),
-    "eulerSwapV2Implementation": ("euler-swap", "https://github.com/euler-xyz/euler-swap", "lib/euler-swap"),
-    "eulerSwapV2Periphery": ("euler-swap", "https://github.com/euler-xyz/euler-swap", "lib/euler-swap"),
-    "eulerSwapV2ProtocolFeeConfig": ("euler-swap", "https://github.com/euler-xyz/euler-swap", "lib/euler-swap"),
-    "eulerSwapV2Registry": ("euler-swap", "https://github.com/euler-xyz/euler-swap", "lib/euler-swap"),
-    
     # Price Oracle
     "oracleRouterFactory": ("euler-price-oracle", "https://github.com/euler-xyz/euler-price-oracle", "lib/euler-price-oracle"),
     
     # Native evk-periphery contracts (source IS evk-periphery)
     "adaptiveCurveIRMFactory": ("evk-periphery", "https://github.com/euler-xyz/evk-periphery", None),
-    "fixedCyclicalBinaryIRMFactory": ("evk-periphery", "https://github.com/euler-xyz/evk-periphery", None),
     "kinkIRMFactory": ("evk-periphery", "https://github.com/euler-xyz/evk-periphery", None),
-    "kinkyIRMFactory": ("evk-periphery", "https://github.com/euler-xyz/evk-periphery", None),
     "governorAccessControlEmergencyFactory": ("evk-periphery", "https://github.com/euler-xyz/evk-periphery", None),
     "swapVerifier": ("evk-periphery", "https://github.com/euler-xyz/evk-periphery", None),
     "eulOFTAdapter": ("evk-periphery", "https://github.com/euler-xyz/evk-periphery", None),
 }
 
 # Known source commits for standalone deployments
+# Note: Gnosis has no standalone deployments
 STANDALONE_COMMITS = {
-    "eulerSwapV1Factory": "eulerswap-1.0",
-    "eulerSwapV1Implementation": "eulerswap-1.0",
-    "eulerSwapV1Periphery": "eulerswap-1.0",
 }
 
 
