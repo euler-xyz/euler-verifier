@@ -65,3 +65,94 @@ eulerSwapV2Factory (0x6C5f4c239c...)
 eulerSwapV2Implementation (0x6F1C1a3eAF...)
     Searching 108 commits...
     ...checked 20/108 commits
+    ...checked 40/108 commits
+    ...checked 60/108 commits
+    ✓ Found exact match at commit 8d3c6b2e
+  ✓ VERIFIED @ 8d3c6b2e (51/54 files)
+──────────────────────────────────────────────────
+eulerSwapV2Periphery (0xA564dAe65e...)
+    Searching 110 commits...
+    ✓ Found exact match at commit master
+  ✓ VERIFIED @ master (11/11 files)
+──────────────────────────────────────────────────
+eulerSwapV2ProtocolFeeConfig (0x78bCCFA312...)
+    Searching 109 commits...
+    ✓ Found exact match at commit master
+  ✓ VERIFIED @ master (4/5 files)
+──────────────────────────────────────────────────
+eulerSwapV2Registry (0x35D410A505...)
+    Searching 109 commits...
+    ✓ Found exact match at commit 2b087370
+  ✓ VERIFIED @ 2b087370 (13/35 files)
+──────────────────────────────────────────────────
+adaptiveCurveIRMFactory (0xae752d786e...)
+    Searching 108 commits...
+    ✓ Found exact match at commit a11037fa
+  ✓ VERIFIED @ a11037fa (3/6 files)
+    → Changes since deployment: 16522 chars diff
+──────────────────────────────────────────────────
+fixedCyclicalBinaryIRMFactory (0xf44333b5A3...)
+    Searching 110 commits...
+    ✓ Found exact match at commit 5e066711
+  ✓ VERIFIED @ 5e066711 (3/6 files)
+    → Changes since deployment: 7340 chars diff
+──────────────────────────────────────────────────
+kinkIRMFactory (0x2d94C898a1...)
+    Searching 109 commits...
+    ✓ Found exact match at commit master
+  ✓ VERIFIED @ master (5/5 files)
+──────────────────────────────────────────────────
+kinkyIRMFactory (0x9907E7F663...)
+    Searching 109 commits...
+    ✓ Found exact match at commit 4cc0478d
+  ✓ VERIFIED @ 4cc0478d (3/6 files)
+    → Changes since deployment: 7731 chars diff
+──────────────────────────────────────────────────
+eulerEarnPublicAllocator (0x0dFFc3A536...)
+  Using euler-earn standalone...
+  ✓ VERIFIED @ master (14/14 files)
+──────────────────────────────────────────────────
+feeFlowController (0xbF4906E2F2...)
+    Searching 110 commits...
+    ✓ Found exact match at commit 2b087370
+  ✓ VERIFIED @ 2b087370 (5/6 files)
+──────────────────────────────────────────────────
+governorAccessControlEmergencyFactory (0x424d5C3e00...)
+    Searching 108 commits...
+    ...checked 20/108 commits
+    ...checked 40/108 commits
+    ...checked 60/108 commits
+    ...checked 80/108 commits
+    ✗ No exact match found, showing diff vs master
+  ✗ NO MATCH (38/48 files vs master)
+──────────────────────────────────────────────────
+oracleRouterFactory (0xA928785398...)
+    Searching 110 commits...
+    ...checked 20/110 commits
+    ...checked 40/110 commits
+    ...checked 60/110 commits
+    ...checked 100/110 commits
+    ✗ No exact match found, showing diff vs master
+  ✗ NO MATCH (5/13 files vs master)
+──────────────────────────────────────────────────
+swapVerifier (0x30660764A7...)
+    Searching 72 commits...
+    ✓ Found exact match at commit 6fee729e
+  ✓ VERIFIED @ 6fee729e (3/3 files)
+──────────────────────────────────────────────────
+eulOFTAdapter (0x9ff7ea0Cf9...)
+    Searching 109 commits...
+    ...checked 60/109 commits
+    ✓ Found exact match at commit 25cda480
+  ✓ VERIFIED @ 25cda480 (54/63 files)
+    → Changes since deployment: 7941 chars diff
+──────────────────────────────────────────────────
+rEUL (0xE08e1f00D3...)
+    Searching 110 commits...
+    ✓ Found exact match at commit master
+  ✓ VERIFIED @ master (21/21 files)
+
+============================================================
+COMPLETE: 24/26 verified with exact commit match
+Report: /Users/erik/euler/euler-verifier/results/base.md
+============================================================

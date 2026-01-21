@@ -1,1467 +1,705 @@
 # Linea Contract Verification Report
 
-**Chain ID:** 59144
-**Explorer:** [https://lineascan.build](https://lineascan.build)
-
 ## Summary
 
-- **Verified Contracts:** 29/55 ✓
-- **Differences Found:** 25
-- **Not Verified on Explorer:** 1
-- **Errors:** 0
+| Status | Count |
+|--------|-------|
+| ✓ Verified (exact match) | 20 |
+| ✗ No exact commit found | 2 |
+| ~ Standalone with diff | 4 |
+| - Error | 0 |
+| **Total** | **26** |
 
-## Contracts
+## Verified Contracts
 
-| Contract | Address | Explorer Name | Status | Files |
-|----------|---------|---------------|--------|-------|
-| accessControlEmergencyGovernor | [`0x703AB67C...`](https://lineascan.build/address/0x703AB67Cd644165503551Dfbf90727D3Bc47887D) | GovernorAccessControlEmergency | ✓ 100% | 34/34 |
-| accessControlEmergencyGovernorAdminTimelockController | [`0x194B4dbe...`](https://lineascan.build/address/0x194B4dbe883B5afB1AbB3CA909b4F5f450c65305) | TimelockController | ✓ 100% | 12/12 |
-| accessControlEmergencyGovernorWildcardTimelockController | [`0x413C28f6...`](https://lineascan.build/address/0x413C28f66fF7Fa72E1458D8A79A312e80eF6CB3D) | TimelockController | ✓ 100% | 12/12 |
-| capRiskSteward | [`0x556f0E24...`](https://lineascan.build/address/0x556f0E249a6c035DBBc1BF83930feD5eA7d11486) | CapRiskSteward | ✓ 100% | 34/34 |
-| eVaultFactoryGovernor | [`0x353A47A8...`](https://lineascan.build/address/0x353A47A85b7c943B2f450990Ed25c8E199D1f0e4) | FactoryGovernor | ✓ 100% | 15/15 |
-| eVaultFactoryTimelockController | [`0x389DE0Fb...`](https://lineascan.build/address/0x389DE0Fb94d30dfC9dB83e9Ff8b0184738f47812) | TimelockController | ✓ 100% | 12/12 |
-| eulerSwapV1Factory | [`0x970B065B...`](https://lineascan.build/address/0x970B065B572CC0118535Ad1101663CDBE7Db1e21) | EulerSwapFactory | ✗ Diff | 55/57 |
-| eulerSwapV1Implementation | [`0x2b07caff...`](https://lineascan.build/address/0x2b07caff83C15c5a70C4C0867DFE7A0BE01025B0) | EulerSwap | ✗ Diff | 46/48 |
-| eulerSwapV1Periphery | [`0x0de305aB...`](https://lineascan.build/address/0x0de305aB93902914909951A00079ea1df3FD98eA) | EulerSwapPeriphery | ✗ Diff | 9/11 |
-| adaptiveCurveIRMFactory | [`0xc65a0e2a...`](https://lineascan.build/address/0xc65a0e2a410Ca52B0a5b57b1d239a857b3cd618b) | EulerIRMAdaptiveCurveFactory | ✓ 100% | 6/6 |
-| capRiskStewardFactory | [`0xec1b7502...`](https://lineascan.build/address/0xec1b75024AFDe61492b514489DA6eEB02844c1Bb) | CapRiskStewardFactory | ✓ 100% | 36/36 |
-| edgeFactory | [`0x2BeB74b6...`](https://lineascan.build/address/0x2BeB74b6845Ec05A78F642262CaA8e7e3f00C42a) | EdgeFactory | ✗ Diff | 23/24 |
-| edgeFactoryPerspective | [`0xdcE47c28...`](https://lineascan.build/address/0xdcE47c28B8B34E0370b1DAe8067B8b2b9D24E3df) | EdgeFactoryPerspective | ✗ Diff | 8/9 |
-| escrowedCollateralPerspective | [`0xc8d904FE...`](https://lineascan.build/address/0xc8d904FE94b65612AED5A73203C0eF8f3A0308C0) | EscrowedCollateralPerspective | ✗ Diff | 10/11 |
-| eulerEarnFactoryPerspective | [`0xC19CeA18...`](https://lineascan.build/address/0xC19CeA1886Bc1876A85572bE4041082808936B26) | EulerEarnFactoryPerspective | ✗ Diff | 14/15 |
-| eulerEarnGovernedPerspective | [`0xb42a9DD6...`](https://lineascan.build/address/0xb42a9DD67bD6b48940A862C0f0c8a6C5DD26582f) | GovernedPerspective | ✗ Diff | 12/13 |
-| eulerEarnPublicAllocator | [`0x4148f90e...`](https://lineascan.build/address/0x4148f90e03facFF8D2d5EFb475E36F94b4Ab4994) | PublicAllocator | ✓ 100% | 14/14 |
-| eulerUngoverned0xPerspective | [`0xA3B087CC...`](https://lineascan.build/address/0xA3B087CC842749e2dC251DE7Ea1967a936C5335a) | EulerUngovernedPerspective | ✗ Diff | 25/26 |
-| eulerUngovernedNzxPerspective | [`0x246667c6...`](https://lineascan.build/address/0x246667c6f8119E64b5d88cC963Ef9d4391C77C81) | EulerUngovernedPerspective | ✗ Diff | 25/26 |
-| evkFactoryPerspective | [`0x832ca1e2...`](https://lineascan.build/address/0x832ca1e2FCBedf717b9C71C00Dd26805e3bE4270) | EVKFactoryPerspective | ✗ Diff | 7/8 |
-| externalVaultRegistry | [`0x28aF9ba9...`](https://lineascan.build/address/0x28aF9ba9152832A5B22f51510556801baDa96bBC) | SnapshotRegistry | ✓ 100% | 6/6 |
-| feeFlowController | [`0xbF939812...`](https://lineascan.build/address/0xbF939812A673CB088f466d610c4b120b13eA5fAB) | FeeFlowController | ✓ 100% | 6/6 |
-| feeFlowControllerUtil | [`0x79af541a...`](https://lineascan.build/address/0x79af541a66DDe9b177e76839344Ea9DC2ff746aB) | FeeFlowControllerUtil | ✓ 100% | 18/18 |
-| fixedCyclicalBinaryIRMFactory | [`0x13697701...`](https://lineascan.build/address/0x13697701ff322367417469AB0497ea9C38b8A875) | EulerFixedCyclicalBinaryIRMFactory | ✓ 100% | 6/6 |
-| governedPerspective | [`0x74f9fD22...`](https://lineascan.build/address/0x74f9fD22aA0Dd5Bbf6006a4c9818248eb476C50A) | GovernedPerspective | ✗ Diff | 12/13 |
-| governorAccessControlEmergencyFactory | [`0x1Fa52975...`](https://lineascan.build/address/0x1Fa5297507c725f91479f3fa033a81c7f2E2d52D) | GovernorAccessControlEmergencyFactory | ✓ 100% | 48/48 |
-| irmRegistry | [`0xe47732e6...`](https://lineascan.build/address/0xe47732e6BAB2ae02D35879C061ac1751e7BE7aF9) | SnapshotRegistry | ✓ 100% | 6/6 |
-| kinkIRMFactory | [`0x2940Df42...`](https://lineascan.build/address/0x2940Df424dBDc697de86212eAb665721B6d32338) | EulerKinkIRMFactory | ✓ 100% | 6/6 |
-| kinkyIRMFactory | [`0x054bF58e...`](https://lineascan.build/address/0x054bF58ec4531D6be9674558871f89C5867c6BfB) | EulerKinkyIRMFactory | ✓ 100% | 6/6 |
-| oracleAdapterRegistry | [`0x5f81DdA3...`](https://lineascan.build/address/0x5f81DdA3f9155c31f552ABC3eb4B47676ba09680) | SnapshotRegistry | ✓ 100% | 6/6 |
-| oracleRouterFactory | [`0xf0125F63...`](https://lineascan.build/address/0xf0125F638c7134e6997e4F825b78c324CcF289aF) | EulerRouterFactory | ✓ 100% | 13/13 |
-| swapVerifier | [`0x77C9B0E7...`](https://lineascan.build/address/0x77C9B0E7Ac0405797F04E5230Ed0A54DB39f98f0) | SwapVerifier | ✓ 100% | 3/3 |
-| swapper | [`0x1480Cfff...`](https://lineascan.build/address/0x1480Cfff566f27BbB2AEAd6eeABEc4BA068e5405) | Swapper | ✗ Diff | 14/15 |
-| termsOfUseSigner | [`0x47613A45...`](https://lineascan.build/address/0x47613A45370f7C7021025Bad0DAe65be213678b9) | TermsOfUseSigner | ✓ 100% | 4/4 |
-| eulOFTAdapter | [`0xd048d4e3...`](https://lineascan.build/address/0xd048d4e39e13482ECcE115E7BB71128d26ca19f1) | MintBurnOFTAdapter | ✗ Diff | 62/63 |
-| DAO | [`0x89Ad331C...`](https://lineascan.build/address/0x89Ad331C4B69d7b251C9937DD9A9CEA6E357997a) | SafeProxy | ✗ Diff | 0/1 |
-| labs | [`0xC9C469aE...`](https://lineascan.build/address/0xC9C469aE8d8e8d29368100aE91275deE9Dbc0865) | SafeProxy | ✗ Diff | 0/1 |
-| securityCouncil | [`0x1070c6db...`](https://lineascan.build/address/0x1070c6dbB619853D52093dF5ceEa49E029adb61A) | SafeProxy | ✗ Diff | 0/1 |
-| securityPartnerA | [`0x519F6d7F...`](https://lineascan.build/address/0x519F6d7F9feE220188CE6D27225CbBA0F2082a58) | SafeProxy | ✗ Diff | 0/1 |
-| securityPartnerB | [`0xBe90E020...`](https://lineascan.build/address/0xBe90E0208b1BD19007b39B33cc40e8e6d26D3990) | SafeProxy | ✗ Diff | 0/1 |
-| EUL | [`0x3eBd0148...`](https://lineascan.build/address/0x3eBd0148BADAb9388936E4472C4415D5700478A5) | ERC20BurnableMintable | ✗ Diff | 27/28 |
-| rEUL | [`0xe15C5F31...`](https://lineascan.build/address/0xe15C5F31cd7B767883F5654CDD3aFac28966B0a9) | RewardToken | ✓ 100% | 21/21 |
-| accountLens | [`0xdeB31DCf...`](https://lineascan.build/address/0xdeB31DCfDe72abf31b571AfB022840dCB5D73FCf) | AccountLens | ✓ 100% | 13/13 |
-| eulerEarnVaultLens | [`0x06019976...`](https://lineascan.build/address/0x06019976448Fadc735616f42ED6D02a098561A07) | EulerEarnVaultLens | ✗ Diff | 22/26 |
-| irmLens | [`0x294F6f07...`](https://lineascan.build/address/0x294F6f07752Afb3470c5c2B86271C43BB3Df6284) | IRMLens | ✗ Diff | 11/13 |
-| oracleLens | [`0xFf1177B9...`](https://lineascan.build/address/0xFf1177B9e483b21820052dF2B39DebB9584855d1) | N/A | - N/A | 0/0 |
-| utilsLens | [`0x64aD120b...`](https://lineascan.build/address/0x64aD120b92d5562d72Af42eE39B82c56fD23d206) | UtilsLens | ✗ Diff | 14/18 |
-| vaultLens | [`0xd20E9D6c...`](https://lineascan.build/address/0xd20E9D6cfa0431aC306cC9906896a7BC0BE0Db64) | VaultLens | ✗ Diff | 40/45 |
-| balanceTracker | [`0xB9E491A3...`](https://lineascan.build/address/0xB9E491A3BB9d4B155d31a9cA6B9dE245CA16AAe6) | TrackingRewardStreams | ✓ 100% | 17/17 |
-| eVaultFactory | [`0x84711986...`](https://lineascan.build/address/0x84711986Fd3BF0bFe4a8e6d7f4E22E67f7f27F04) | GenericFactory | ✓ 100% | 3/3 |
-| eVaultImplementation | [`0x58270C41...`](https://lineascan.build/address/0x58270C41552Bb2bef3Dc4e103b6f0c226032f007) | EVault | ✓ 100% | 52/52 |
-| eulerEarnFactory | [`0x377879A0...`](https://lineascan.build/address/0x377879A039343FEc7564e54616e519328951DA6D) | EulerEarnFactory | ✗ Diff | 33/35 |
-| evc | [`0xd8CeCEe9...`](https://lineascan.build/address/0xd8CeCEe9A04eA3d941a959F68fb4486f23271d09) | EthereumVaultConnector | ✓ 100% | 9/9 |
-| protocolConfig | [`0x91868601...`](https://lineascan.build/address/0x91868601df03ED8E134EaAaB5E06F7183CC8383f) | ProtocolConfig | ✓ 100% | 2/2 |
-| sequenceRegistry | [`0xcB1bB0A8...`](https://lineascan.build/address/0xcB1bB0A8A7ddeb09983dC1e7F880DCEdc39362BA) | SequenceRegistry | ✓ 100% | 2/2 |
+| Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
+|----------|---------|-------------|---------------|---------------|-------|
+| ✓ adaptiveCurveIRMFactory | [`0xc65a0e2a...`](https://lineascan.build/address/0xc65a0e2a410Ca52B0a5b57b1d239a857b3cd618b) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`f61809fd`](https://github.com/euler-xyz/evk-periphery/tree/f61809fd) | [`f61809fd`](https://github.com/euler-xyz/evk-periphery/tree/f61809fd) | 6/6 |
+| ✓ balanceTracker | [`0xB9E491A3...`](https://lineascan.build/address/0xB9E491A3BB9d4B155d31a9cA6B9dE245CA16AAe6) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7) | [`2b51b21c`](https://github.com/euler-xyz/evk-periphery/tree/2b51b21c) | 17/17 |
+| ✓ eVaultFactory | [`0x84711986...`](https://lineascan.build/address/0x84711986Fd3BF0bFe4a8e6d7f4E22E67f7f27F04) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
+| ✓ eVaultImplementation | [`0x58270C41...`](https://lineascan.build/address/0x58270C41552Bb2bef3Dc4e103b6f0c226032f007) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244) | [`master`](https://github.com/euler-xyz/evk-periphery) | 51/52 |
+| ✓ eulOFTAdapter | [`0xd048d4e3...`](https://lineascan.build/address/0xd048d4e39e13482ECcE115E7BB71128d26ca19f1) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`e296136b`](https://github.com/euler-xyz/evk-periphery/tree/e296136b) | [`e296136b`](https://github.com/euler-xyz/evk-periphery/tree/e296136b) | 63/63 |
+| ✓ eulerEarnPublicAllocator | [`0x4148f90e...`](https://lineascan.build/address/0x4148f90e03facFF8D2d5EFb475E36F94b4Ab4994) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 14/14 |
+| ✓ eulerSwapV2Factory | [`0xB0cc1D8e...`](https://lineascan.build/address/0xB0cc1D8e6fAc157c76d2c08B7D55Eca1573BcBDF) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) | [`1917d867`](https://github.com/euler-xyz/evk-periphery/tree/1917d867) | 34/57 |
+| ✓ eulerSwapV2Periphery | [`0x57729d78...`](https://lineascan.build/address/0x57729d78650cA751C9dB41f2536cA86da0032351) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) | [`master`](https://github.com/euler-xyz/evk-periphery) | 9/11 |
+| ✓ eulerSwapV2ProtocolFeeConfig | [`0xe3ac3685...`](https://lineascan.build/address/0xe3ac3685D607308D4b4e26546EaDf675c37dd3dE) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) | [`master`](https://github.com/euler-xyz/evk-periphery) | 5/5 |
+| ✓ eulerSwapV2Registry | [`0xEA3050E8...`](https://lineascan.build/address/0xEA3050E8A25f56AD0dbc90C3dCf016d8f5EfFE25) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) | [`master`](https://github.com/euler-xyz/evk-periphery) | 35/35 |
+| ✓ evc | [`0xd8CeCEe9...`](https://lineascan.build/address/0xd8CeCEe9A04eA3d941a959F68fb4486f23271d09) | [ethereum-vault-connector](https://github.com/euler-xyz/ethereum-vault-connector) | [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 9/9 |
+| ✓ feeFlowController | [`0xbF939812...`](https://lineascan.build/address/0xbF939812A673CB088f466d610c4b120b13eA5fAB) | [fee-flow](https://github.com/euler-xyz/fee-flow) | [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 5/6 |
+| ✓ fixedCyclicalBinaryIRMFactory | [`0x13697701...`](https://lineascan.build/address/0x13697701ff322367417469AB0497ea9C38b8A875) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`7a1b8a67`](https://github.com/euler-xyz/evk-periphery/tree/7a1b8a67) | [`7a1b8a67`](https://github.com/euler-xyz/evk-periphery/tree/7a1b8a67) | 3/6 |
+| ✓ kinkIRMFactory | [`0x2940Df42...`](https://lineascan.build/address/0x2940Df424dBDc697de86212eAb665721B6d32338) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`5e066711`](https://github.com/euler-xyz/evk-periphery/tree/5e066711) | [`5e066711`](https://github.com/euler-xyz/evk-periphery/tree/5e066711) | 4/6 |
+| ✓ kinkyIRMFactory | [`0x054bF58e...`](https://lineascan.build/address/0x054bF58ec4531D6be9674558871f89C5867c6BfB) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb`](https://github.com/euler-xyz/evk-periphery/tree/2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb) | [`2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb`](https://github.com/euler-xyz/evk-periphery/tree/2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb) | 6/6 |
+| ✓ oracleRouterFactory | [`0xf0125F63...`](https://lineascan.build/address/0xf0125F638c7134e6997e4F825b78c324CcF289aF) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | [`c4074ab7`](https://github.com/euler-xyz/euler-price-oracle/tree/c4074ab7) | [`b8012356`](https://github.com/euler-xyz/evk-periphery/tree/b8012356) | 9/13 |
+| ✓ protocolConfig | [`0x91868601...`](https://lineascan.build/address/0x91868601df03ED8E134EaAaB5E06F7183CC8383f) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
+| ✓ rEUL | [`0xe15C5F31...`](https://lineascan.build/address/0xe15C5F31cd7B767883F5654CDD3aFac28966B0a9) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 21/21 |
+| ✓ sequenceRegistry | [`0xcB1bB0A8...`](https://lineascan.build/address/0xcB1bB0A8A7ddeb09983dC1e7F880DCEdc39362BA) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`a11037fa`](https://github.com/euler-xyz/evk-periphery/tree/a11037fa) | 2/2 |
+| ✓ swapVerifier | [`0x77C9B0E7...`](https://lineascan.build/address/0x77C9B0E7Ac0405797F04E5230Ed0A54DB39f98f0) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
+| ~ eulerEarnFactory | [`0x377879A0...`](https://lineascan.build/address/0x377879A039343FEc7564e54616e519328951DA6D) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 33/35 |
+| ~ eulerSwapV1Factory | [`0x970B065B...`](https://lineascan.build/address/0x970B065B572CC0118535Ad1101663CDBE7Db1e21) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 55/57 |
+| ~ eulerSwapV1Implementation | [`0x2b07caff...`](https://lineascan.build/address/0x2b07caff83C15c5a70C4C0867DFE7A0BE01025B0) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 46/48 |
+| ~ eulerSwapV1Periphery | [`0x0de305aB...`](https://lineascan.build/address/0x0de305aB93902914909951A00079ea1df3FD98eA) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 9/11 |
+| ✗ eulerSwapV2Implementation | [`0x476A2ad4...`](https://lineascan.build/address/0x476A2ad4a7c5Ac4DF1CaA429Cb70db865A160c11) | [euler-swap](https://github.com/euler-xyz/euler-swap) | not found | - | 32/54 |
+| ✗ governorAccessControlEmergencyFactory | [`0x1Fa52975...`](https://lineascan.build/address/0x1Fa5297507c725f91479f3fa033a81c7f2E2d52D) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | not found | - | 38/48 |
 
-## Differences Found
 
-### eulerSwapV1Factory
+## Changes Since Deployment
+
+This section shows what has changed in the source code between the deployment commit and current `master`.
+These diffs help identify any changes made to the codebase after deployment.
+
+### ethereum-vault-connector
+
+#### evc
+
+- **Deployed from:** [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e)
+- **Compare to master:** [`a7d3c29e...master`](https://github.com/euler-xyz/ethereum-vault-connector/compare/a7d3c29e...master)
+- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+
+_No diff available - see GitHub compare link above._
+
+### euler-price-oracle
+
+#### oracleRouterFactory
+
+- **Deployed from:** [`c4074ab7`](https://github.com/euler-xyz/euler-price-oracle/tree/c4074ab7)
+- **Compare to master:** [`c4074ab7...master`](https://github.com/euler-xyz/euler-price-oracle/compare/c4074ab7...master)
+- **evk-periphery:** [`b8012356`](https://github.com/euler-xyz/evk-periphery/tree/b8012356)
 
 ```diff
-
-============================================================
-FILE: lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-============================================================
---- Etherscan/lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-+++ Local/lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-@@ -5,7 +5,6 @@
+diff --git a/src/EulerRouter.sol b/src/EulerRouter.sol
+index 87dd6dc..dd062c7 100644
+--- a/src/EulerRouter.sol
++++ b/src/EulerRouter.sol
+@@ -1,10 +1,10 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+-pragma solidity 0.8.23;
++pragma solidity ^0.8.0;
  
- import {IERC20} from "../IERC20.sol";
- import {IERC1363} from "../../../interfaces/IERC1363.sol";
--import {Address} from "../../../utils/Address.sol";
+ import {IERC4626} from "forge-std/interfaces/IERC4626.sol";
+-import {IPriceOracle} from "src/interfaces/IPriceOracle.sol";
+-import {Errors} from "src/lib/Errors.sol";
+-import {Governable} from "src/lib/Governable.sol";
++import {IPriceOracle} from "./interfaces/IPriceOracle.sol";
++import {Errors} from "./lib/Errors.sol";
++import {Governable} from "./lib/Governable.sol";
  
- /**
-  * @title SafeERC20
-
-============================================================
-FILE: lib/openzeppelin-contracts/contracts/utils/Address.sol
-============================================================
---- Etherscan/lib/openzeppelin-contracts/contracts/utils/Address.sol
-+++ Local/lib/openzeppelin-contracts/contracts/utils/Address.sol
-@@ -35,9 +35,9 @@
-             revert Errors.InsufficientBalance(address(this).balance, amount);
-         }
+ /// @title EulerRouter
+ /// @custom:security-contact security@euler.xyz
+@@ -44,7 +44,7 @@ contract EulerRouter is Governable, IPriceOracle {
  
--        (bool success, ) = recipient.call{value: amount}("");
-+        (bool success, bytes memory returndata) = recipient.call{value: amount}("");
-         if (!success) {
--            revert Errors.FailedCall();
-+            _revert(returndata);
-         }
+     /// @notice Deploy EulerRouter.
+     /// @param _governor The address of the governor.
+-    constructor(address _governor) Governable(_governor) {
++    constructor(address _evc, address _governor) Governable(_evc, _governor) {
+         if (_governor == address(0)) revert Errors.PriceOracle_InvalidConfiguration();
      }
  
-
-```
-
-### eulerSwapV1Implementation
-
-```diff
-
-============================================================
-FILE: lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-============================================================
---- Etherscan/lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-+++ Local/lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-@@ -5,7 +5,6 @@
+@@ -53,7 +53,7 @@ contract EulerRouter is Governable, IPriceOracle {
+     /// @param quote The address of the quote token.
+     /// @param oracle The address of the PriceOracle to resolve the pair.
+     /// @dev Callable only by the governor.
+-    function govSetConfig(address base, address quote, address oracle) external onlyGovernor {
++    function govSetConfig(address base, address quote, address oracle) external onlyEVCAccountOwner onlyGovernor {
+         // This case is handled by `resolveOracle`.
+         if (base == quote) revert Errors.PriceOracle_InvalidConfiguration();
+         (address asset0, address asset1) = _sort(base, quote);
+@@ -66,7 +66,7 @@ contract EulerRouter is Governable, IPriceOracle {
+     /// @param set True to configure the vault, false to clear the record.
+     /// @dev Callable only by the governor. Vault must implement ERC4626.
+     /// Note: Before configuring a vault verify that its `convertToAssets` is secure.
+-    function govSetResolvedVault(address vault, bool set) external onlyGovernor {
++    function govSetResolvedVault(address vault, bool set) external onlyEVCAccountOwner onlyGovernor {
+         address asset = set ? IERC4626(vault).asset() : address(0);
+         resolvedVaults[vault] = asset;
+         emit ResolvedVaultSet(vault, asset);
+@@ -75,7 +75,7 @@ contract EulerRouter is Governable, IPriceOracle {
+     /// @notice Set a PriceOracle as a fallback resolver.
+     /// @param _fallbackOracle The address of the PriceOracle that is called when base/quote is not configured.
+     /// @dev Callable only by the governor. `address(0)` removes the fallback.
+-    function govSetFallbackOracle(address _fallbackOracle) external onlyGovernor {
++    function govSetFallbackOracle(address _fallbackOracle) external onlyEVCAccountOwner onlyGovernor {
+         fallbackOracle = _fallbackOracle;
+         emit FallbackOracleSet(_fallbackOracle);
+     }
+diff --git a/src/lib/Errors.sol b/src/lib/Errors.sol
+index 337e696..8fa36b6 100644
+--- a/src/lib/Errors.sol
++++ b/src/lib/Errors.sol
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+-pragma solidity 0.8.23;
++pragma solidity ^0.8.0;
  
- import {IERC20} from "../IERC20.sol";
- import {IERC1363} from "../../../interfaces/IERC1363.sol";
--import {Address} from "../../../utils/Address.sol";
+ /// @title Errors
+ /// @custom:security-contact security@euler.xyz
+diff --git a/src/lib/Governable.sol b/src/lib/Governable.sol
+index b8f66b5..57b8159 100644
+--- a/src/lib/Governable.sol
++++ b/src/lib/Governable.sol
+@@ -1,13 +1,14 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+-pragma solidity 0.8.23;
++pragma solidity ^0.8.0;
  
- /**
-  * @title SafeERC20
-
-============================================================
-FILE: lib/openzeppelin-contracts/contracts/utils/Address.sol
-============================================================
---- Etherscan/lib/openzeppelin-contracts/contracts/utils/Address.sol
-+++ Local/lib/openzeppelin-contracts/contracts/utils/Address.sol
-@@ -35,9 +35,9 @@
-             revert Errors.InsufficientBalance(address(this).balance, amount);
-         }
+-import {Errors} from "src/lib/Errors.sol";
++import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
++import {Errors} from "./Errors.sol";
  
--        (bool success, ) = recipient.call{value: amount}("");
-+        (bool success, bytes memory returndata) = recipient.call{value: amount}("");
-         if (!success) {
--            revert Errors.FailedCall();
-+            _revert(returndata);
-         }
+ /// @title Governable
+ /// @custom:security-contact security@euler.xyz
+ /// @author Euler Labs (https://www.eulerlabs.com/)
+-/// @notice Contract mixin for governance.
+-abstract contract Governable {
++/// @notice Contract mixin for governance, compatible with EVC.
++abstract contract Governable is EVCUtil {
+     /// @notice The active governor address. If `address(0)` then the role is renounced.
+     address public governor;
+ 
+@@ -16,20 +17,21 @@ abstract contract Governable {
+     /// @param newGovernor The address of the newly appointed governor.
+     event GovernorSet(address indexed oldGovernor, address indexed newGovernor);
+ 
+-    constructor(address _governor) {
++    constructor(address _evc, address _governor) EVCUtil(_evc) {
+         _setGovernor(_governor);
      }
  
-
+     /// @notice Transfer the governor role to another address.
+     /// @param newGovernor The address of the next governor.
 ```
 
-### eulerSwapV1Periphery
+_Showing first 100 of 115 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-price-oracle/compare/c4074ab7...master)_
+
+### euler-swap
+
+#### eulerSwapV2Factory
+
+- **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
+- **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
+- **evk-periphery:** [`1917d867`](https://github.com/euler-xyz/evk-periphery/tree/1917d867)
+
+_No diff available - see GitHub compare link above._
+
+#### eulerSwapV2Periphery
+
+- **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
+- **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+
+_No diff available - see GitHub compare link above._
+
+#### eulerSwapV2ProtocolFeeConfig
+
+- **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
+- **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+
+_No diff available - see GitHub compare link above._
+
+#### eulerSwapV2Registry
+
+- **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
+- **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+
+_No diff available - see GitHub compare link above._
+
+### euler-vault-kit
+
+#### eVaultFactory
+
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
+
+_No diff available - see GitHub compare link above._
+
+#### eVaultImplementation
+
+- **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
+- **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+
+_No diff available - see GitHub compare link above._
+
+#### protocolConfig
+
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
+
+_No diff available - see GitHub compare link above._
+
+#### sequenceRegistry
+
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`a11037fa`](https://github.com/euler-xyz/evk-periphery/tree/a11037fa)
+
+_No diff available - see GitHub compare link above._
+
+### evk-periphery
+
+#### adaptiveCurveIRMFactory
+
+- **Deployed from:** [`f61809fd`](https://github.com/euler-xyz/evk-periphery/tree/f61809fd)
+- **Compare to master:** [`f61809fd...master`](https://github.com/euler-xyz/evk-periphery/compare/f61809fd...master)
 
 ```diff
-
-============================================================
-FILE: lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-============================================================
---- Etherscan/lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-+++ Local/lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-@@ -5,7 +5,6 @@
- 
- import {IERC20} from "../IERC20.sol";
- import {IERC1363} from "../../../interfaces/IERC1363.sol";
--import {Address} from "../../../utils/Address.sol";
- 
- /**
-  * @title SafeERC20
-
-============================================================
-FILE: lib/openzeppelin-contracts/contracts/utils/Address.sol
-============================================================
---- Etherscan/lib/openzeppelin-contracts/contracts/utils/Address.sol
-+++ Local/lib/openzeppelin-contracts/contracts/utils/Address.sol
-@@ -35,9 +35,9 @@
-             revert Errors.InsufficientBalance(address(this).balance, amount);
-         }
- 
--        (bool success, ) = recipient.call{value: amount}("");
-+        (bool success, bytes memory returndata) = recipient.call{value: amount}("");
-         if (!success) {
--            revert Errors.FailedCall();
-+            _revert(returndata);
-         }
-     }
- 
-
-```
-
-### edgeFactory
-
-```diff
-
-============================================================
-FILE: src/Perspectives/implementation/BasePerspective.sol
-============================================================
---- Etherscan/src/Perspectives/implementation/BasePerspective.sol
-+++ Local/src/Perspectives/implementation/BasePerspective.sol
-@@ -45,7 +45,7 @@
-             transientVerifiedHash := keccak256(0, 64)
- 
-             // if optimistically verified, return
--            if eq(sload(transientVerifiedHash), true) { return(0, 0) }
-+            if eq(tload(transientVerifiedHash), true) { return(0, 0) }
-         }
- 
-         // if already verified, return
-@@ -54,13 +54,13 @@
-         address _vault;
-         bool _failEarly;
-         assembly {
--            _vault := sload(transientVault.slot)
--            _failEarly := sload(transientFailEarly.slot)
--            sstore(transientVault.slot, vault)
--            sstore(transientFailEarly.slot, failEarly)
-+            _vault := tload(transientVault.slot)
-+            _failEarly := tload(transientFailEarly.slot)
-+            tstore(transientVault.slot, vault)
-+            tstore(transientFailEarly.slot, failEarly)
- 
-             // optimistically assume that the vault is verified
--            sstore(transientVerifiedHash, true)
-+            tstore(transientVerifiedHash, true)
-         }
- 
-         // perform the perspective verification
-@@ -69,14 +69,10 @@
-         uint256 errors;
-         assembly {
-             // restore the cached values
--            sstore(transientVault.slot, _vault)
--            sstore(transientFailEarly.slot, _failEarly)
-+            tstore(transientVault.slot, _vault)
-+            tstore(transientFailEarly.slot, _failEarly)
- 
--            errors := sload(transientErrors.slot)
--
--            // clear the transient storage
--            sstore(transientErrors.slot, 0)
--            sstore(transientVerifiedHash, false)
-+            errors := tload(transientErrors.slot)
-         }
- 
-         // if early fail was not requested, we need to check for any property errors that may have occurred.
-@@ -118,19 +114,19 @@
- 
-         bool failEarly;
-         assembly {
--            failEarly := sload(transientFailEarly.slot)
-+            failEarly := tload(transientFailEarly.slot)
-         }
- 
-         if (failEarly) {
-             address vault;
-             assembly {
--                vault := sload(transientVault.slot)
-+                vault := tload(transientVault.slot)
-             }
-             revert PerspectiveError(address(this), vault, errorCode);
-         } else {
-             assembly {
--                let errors := sload(transientErrors.slot)
--                sstore(transientErrors.slot, or(errors, errorCode))
-+                let errors := tload(transientErrors.slot)
-+                tstore(transientErrors.slot, or(errors, errorCode))
-             }
-         }
-     }
-
-```
-
-### edgeFactoryPerspective
-
-```diff
-
-============================================================
-FILE: src/Perspectives/implementation/BasePerspective.sol
-============================================================
---- Etherscan/src/Perspectives/implementation/BasePerspective.sol
-+++ Local/src/Perspectives/implementation/BasePerspective.sol
-@@ -45,7 +45,7 @@
-             transientVerifiedHash := keccak256(0, 64)
- 
-             // if optimistically verified, return
--            if eq(sload(transientVerifiedHash), true) { return(0, 0) }
-+            if eq(tload(transientVerifiedHash), true) { return(0, 0) }
-         }
- 
-         // if already verified, return
-@@ -54,13 +54,13 @@
-         address _vault;
-         bool _failEarly;
-         assembly {
--            _vault := sload(transientVault.slot)
--            _failEarly := sload(transientFailEarly.slot)
--            sstore(transientVault.slot, vault)
--            sstore(transientFailEarly.slot, failEarly)
-+            _vault := tload(transientVault.slot)
-+            _failEarly := tload(transientFailEarly.slot)
-+            tstore(transientVault.slot, vault)
-+            tstore(transientFailEarly.slot, failEarly)
- 
-             // optimistically assume that the vault is verified
--            sstore(transientVerifiedHash, true)
-+            tstore(transientVerifiedHash, true)
-         }
- 
-         // perform the perspective verification
-@@ -69,14 +69,10 @@
-         uint256 errors;
-         assembly {
-             // restore the cached values
--            sstore(transientVault.slot, _vault)
--            sstore(transientFailEarly.slot, _failEarly)
-+            tstore(transientVault.slot, _vault)
-+            tstore(transientFailEarly.slot, _failEarly)
- 
--            errors := sload(transientErrors.slot)
--
--            // clear the transient storage
--            sstore(transientErrors.slot, 0)
--            sstore(transientVerifiedHash, false)
-+            errors := tload(transientErrors.slot)
-         }
- 
-         // if early fail was not requested, we need to check for any property errors that may have occurred.
-@@ -118,19 +114,19 @@
- 
-         bool failEarly;
-         assembly {
--            failEarly := sload(transientFailEarly.slot)
-+            failEarly := tload(transientFailEarly.slot)
-         }
- 
-         if (failEarly) {
-             address vault;
-             assembly {
--                vault := sload(transientVault.slot)
-+                vault := tload(transientVault.slot)
-             }
-             revert PerspectiveError(address(this), vault, errorCode);
-         } else {
-             assembly {
--                let errors := sload(transientErrors.slot)
--                sstore(transientErrors.slot, or(errors, errorCode))
-+                let errors := tload(transientErrors.slot)
-+                tstore(transientErrors.slot, or(errors, errorCode))
-             }
-         }
-     }
-
-```
-
-### escrowedCollateralPerspective
-
-```diff
-
-============================================================
-FILE: src/Perspectives/implementation/BasePerspective.sol
-============================================================
---- Etherscan/src/Perspectives/implementation/BasePerspective.sol
-+++ Local/src/Perspectives/implementation/BasePerspective.sol
-@@ -45,7 +45,7 @@
-             transientVerifiedHash := keccak256(0, 64)
- 
-             // if optimistically verified, return
--            if eq(sload(transientVerifiedHash), true) { return(0, 0) }
-+            if eq(tload(transientVerifiedHash), true) { return(0, 0) }
-         }
- 
-         // if already verified, return
-@@ -54,13 +54,13 @@
-         address _vault;
-         bool _failEarly;
-         assembly {
--            _vault := sload(transientVault.slot)
--            _failEarly := sload(transientFailEarly.slot)
--            sstore(transientVault.slot, vault)
--            sstore(transientFailEarly.slot, failEarly)
-+            _vault := tload(transientVault.slot)
-+            _failEarly := tload(transientFailEarly.slot)
-+            tstore(transientVault.slot, vault)
-+            tstore(transientFailEarly.slot, failEarly)
- 
-             // optimistically assume that the vault is verified
--            sstore(transientVerifiedHash, true)
-+            tstore(transientVerifiedHash, true)
-         }
- 
-         // perform the perspective verification
-@@ -69,14 +69,10 @@
-         uint256 errors;
-         assembly {
-             // restore the cached values
--            sstore(transientVault.slot, _vault)
--            sstore(transientFailEarly.slot, _failEarly)
-+            tstore(transientVault.slot, _vault)
-+            tstore(transientFailEarly.slot, _failEarly)
- 
--            errors := sload(transientErrors.slot)
--
--            // clear the transient storage
--            sstore(transientErrors.slot, 0)
--            sstore(transientVerifiedHash, false)
-+            errors := tload(transientErrors.slot)
-         }
- 
-         // if early fail was not requested, we need to check for any property errors that may have occurred.
-@@ -118,19 +114,19 @@
- 
-         bool failEarly;
-         assembly {
--            failEarly := sload(transientFailEarly.slot)
-+            failEarly := tload(transientFailEarly.slot)
-         }
- 
-         if (failEarly) {
-             address vault;
-             assembly {
--                vault := sload(transientVault.slot)
-+                vault := tload(transientVault.slot)
-             }
-             revert PerspectiveError(address(this), vault, errorCode);
-         } else {
-             assembly {
--                let errors := sload(transientErrors.slot)
--                sstore(transientErrors.slot, or(errors, errorCode))
-+                let errors := tload(transientErrors.slot)
-+                tstore(transientErrors.slot, or(errors, errorCode))
-             }
-         }
-     }
-
-```
-
-### eulerEarnFactoryPerspective
-
-```diff
-
-============================================================
-FILE: src/Perspectives/implementation/BasePerspective.sol
-============================================================
---- Etherscan/src/Perspectives/implementation/BasePerspective.sol
-+++ Local/src/Perspectives/implementation/BasePerspective.sol
-@@ -45,7 +45,7 @@
-             transientVerifiedHash := keccak256(0, 64)
- 
-             // if optimistically verified, return
--            if eq(sload(transientVerifiedHash), true) { return(0, 0) }
-+            if eq(tload(transientVerifiedHash), true) { return(0, 0) }
-         }
- 
-         // if already verified, return
-@@ -54,13 +54,13 @@
-         address _vault;
-         bool _failEarly;
-         assembly {
--            _vault := sload(transientVault.slot)
--            _failEarly := sload(transientFailEarly.slot)
--            sstore(transientVault.slot, vault)
--            sstore(transientFailEarly.slot, failEarly)
-+            _vault := tload(transientVault.slot)
-+            _failEarly := tload(transientFailEarly.slot)
-+            tstore(transientVault.slot, vault)
-+            tstore(transientFailEarly.slot, failEarly)
- 
-             // optimistically assume that the vault is verified
--            sstore(transientVerifiedHash, true)
-+            tstore(transientVerifiedHash, true)
-         }
- 
-         // perform the perspective verification
-@@ -69,14 +69,10 @@
-         uint256 errors;
-         assembly {
-             // restore the cached values
--            sstore(transientVault.slot, _vault)
--            sstore(transientFailEarly.slot, _failEarly)
-+            tstore(transientVault.slot, _vault)
-+            tstore(transientFailEarly.slot, _failEarly)
- 
--            errors := sload(transientErrors.slot)
--
--            // clear the transient storage
--            sstore(transientErrors.slot, 0)
--            sstore(transientVerifiedHash, false)
-+            errors := tload(transientErrors.slot)
-         }
- 
-         // if early fail was not requested, we need to check for any property errors that may have occurred.
-@@ -118,19 +114,19 @@
- 
-         bool failEarly;
-         assembly {
--            failEarly := sload(transientFailEarly.slot)
-+            failEarly := tload(transientFailEarly.slot)
-         }
- 
-         if (failEarly) {
-             address vault;
-             assembly {
--                vault := sload(transientVault.slot)
-+                vault := tload(transientVault.slot)
-             }
-             revert PerspectiveError(address(this), vault, errorCode);
-         } else {
-             assembly {
--                let errors := sload(transientErrors.slot)
--                sstore(transientErrors.slot, or(errors, errorCode))
-+                let errors := tload(transientErrors.slot)
-+                tstore(transientErrors.slot, or(errors, errorCode))
-             }
-         }
-     }
-
-```
-
-### eulerEarnGovernedPerspective
-
-```diff
-
-============================================================
-FILE: src/Perspectives/implementation/BasePerspective.sol
-============================================================
---- Etherscan/src/Perspectives/implementation/BasePerspective.sol
-+++ Local/src/Perspectives/implementation/BasePerspective.sol
-@@ -45,7 +45,7 @@
-             transientVerifiedHash := keccak256(0, 64)
- 
-             // if optimistically verified, return
--            if eq(sload(transientVerifiedHash), true) { return(0, 0) }
-+            if eq(tload(transientVerifiedHash), true) { return(0, 0) }
-         }
- 
-         // if already verified, return
-@@ -54,13 +54,13 @@
-         address _vault;
-         bool _failEarly;
-         assembly {
--            _vault := sload(transientVault.slot)
--            _failEarly := sload(transientFailEarly.slot)
--            sstore(transientVault.slot, vault)
--            sstore(transientFailEarly.slot, failEarly)
-+            _vault := tload(transientVault.slot)
-+            _failEarly := tload(transientFailEarly.slot)
-+            tstore(transientVault.slot, vault)
-+            tstore(transientFailEarly.slot, failEarly)
- 
-             // optimistically assume that the vault is verified
--            sstore(transientVerifiedHash, true)
-+            tstore(transientVerifiedHash, true)
-         }
- 
-         // perform the perspective verification
-@@ -69,14 +69,10 @@
-         uint256 errors;
-         assembly {
-             // restore the cached values
--            sstore(transientVault.slot, _vault)
--            sstore(transientFailEarly.slot, _failEarly)
-+            tstore(transientVault.slot, _vault)
-+            tstore(transientFailEarly.slot, _failEarly)
- 
--            errors := sload(transientErrors.slot)
--
--            // clear the transient storage
--            sstore(transientErrors.slot, 0)
--            sstore(transientVerifiedHash, false)
-+            errors := tload(transientErrors.slot)
-         }
- 
-         // if early fail was not requested, we need to check for any property errors that may have occurred.
-@@ -118,19 +114,19 @@
- 
-         bool failEarly;
-         assembly {
--            failEarly := sload(transientFailEarly.slot)
-+            failEarly := tload(transientFailEarly.slot)
-         }
- 
-         if (failEarly) {
-             address vault;
-             assembly {
--                vault := sload(transientVault.slot)
-+                vault := tload(transientVault.slot)
-             }
-             revert PerspectiveError(address(this), vault, errorCode);
-         } else {
-             assembly {
--                let errors := sload(transientErrors.slot)
--                sstore(transientErrors.slot, or(errors, errorCode))
-+                let errors := tload(transientErrors.slot)
-+                tstore(transientErrors.slot, or(errors, errorCode))
-             }
-         }
-     }
-
-```
-
-### eulerUngoverned0xPerspective
-
-```diff
-
-============================================================
-FILE: src/Perspectives/implementation/BasePerspective.sol
-============================================================
---- Etherscan/src/Perspectives/implementation/BasePerspective.sol
-+++ Local/src/Perspectives/implementation/BasePerspective.sol
-@@ -45,7 +45,7 @@
-             transientVerifiedHash := keccak256(0, 64)
- 
-             // if optimistically verified, return
--            if eq(sload(transientVerifiedHash), true) { return(0, 0) }
-+            if eq(tload(transientVerifiedHash), true) { return(0, 0) }
-         }
- 
-         // if already verified, return
-@@ -54,13 +54,13 @@
-         address _vault;
-         bool _failEarly;
-         assembly {
--            _vault := sload(transientVault.slot)
--            _failEarly := sload(transientFailEarly.slot)
--            sstore(transientVault.slot, vault)
--            sstore(transientFailEarly.slot, failEarly)
-+            _vault := tload(transientVault.slot)
-+            _failEarly := tload(transientFailEarly.slot)
-+            tstore(transientVault.slot, vault)
-+            tstore(transientFailEarly.slot, failEarly)
- 
-             // optimistically assume that the vault is verified
--            sstore(transientVerifiedHash, true)
-+            tstore(transientVerifiedHash, true)
-         }
- 
-         // perform the perspective verification
-@@ -69,14 +69,10 @@
-         uint256 errors;
-         assembly {
-             // restore the cached values
--            sstore(transientVault.slot, _vault)
--            sstore(transientFailEarly.slot, _failEarly)
-+            tstore(transientVault.slot, _vault)
-+            tstore(transientFailEarly.slot, _failEarly)
- 
--            errors := sload(transientErrors.slot)
--
--            // clear the transient storage
--            sstore(transientErrors.slot, 0)
--            sstore(transientVerifiedHash, false)
-+            errors := tload(transientErrors.slot)
-         }
- 
-         // if early fail was not requested, we need to check for any property errors that may have occurred.
-@@ -118,19 +114,19 @@
- 
-         bool failEarly;
-         assembly {
--            failEarly := sload(transientFailEarly.slot)
-+            failEarly := tload(transientFailEarly.slot)
-         }
- 
-         if (failEarly) {
-             address vault;
-             assembly {
--                vault := sload(transientVault.slot)
-+                vault := tload(transientVault.slot)
-             }
-             revert PerspectiveError(address(this), vault, errorCode);
-         } else {
-             assembly {
--                let errors := sload(transientErrors.slot)
--                sstore(transientErrors.slot, or(errors, errorCode))
-+                let errors := tload(transientErrors.slot)
-+                tstore(transientErrors.slot, or(errors, errorCode))
-             }
-         }
-     }
-
-```
-
-### eulerUngovernedNzxPerspective
-
-```diff
-
-============================================================
-FILE: src/Perspectives/implementation/BasePerspective.sol
-============================================================
---- Etherscan/src/Perspectives/implementation/BasePerspective.sol
-+++ Local/src/Perspectives/implementation/BasePerspective.sol
-@@ -45,7 +45,7 @@
-             transientVerifiedHash := keccak256(0, 64)
- 
-             // if optimistically verified, return
--            if eq(sload(transientVerifiedHash), true) { return(0, 0) }
-+            if eq(tload(transientVerifiedHash), true) { return(0, 0) }
-         }
- 
-         // if already verified, return
-@@ -54,13 +54,13 @@
-         address _vault;
-         bool _failEarly;
-         assembly {
--            _vault := sload(transientVault.slot)
--            _failEarly := sload(transientFailEarly.slot)
--            sstore(transientVault.slot, vault)
--            sstore(transientFailEarly.slot, failEarly)
-+            _vault := tload(transientVault.slot)
-+            _failEarly := tload(transientFailEarly.slot)
-+            tstore(transientVault.slot, vault)
-+            tstore(transientFailEarly.slot, failEarly)
- 
-             // optimistically assume that the vault is verified
--            sstore(transientVerifiedHash, true)
-+            tstore(transientVerifiedHash, true)
-         }
- 
-         // perform the perspective verification
-@@ -69,14 +69,10 @@
-         uint256 errors;
-         assembly {
-             // restore the cached values
--            sstore(transientVault.slot, _vault)
--            sstore(transientFailEarly.slot, _failEarly)
-+            tstore(transientVault.slot, _vault)
-+            tstore(transientFailEarly.slot, _failEarly)
- 
--            errors := sload(transientErrors.slot)
--
--            // clear the transient storage
--            sstore(transientErrors.slot, 0)
--            sstore(transientVerifiedHash, false)
-+            errors := tload(transientErrors.slot)
-         }
- 
-         // if early fail was not requested, we need to check for any property errors that may have occurred.
-@@ -118,19 +114,19 @@
- 
-         bool failEarly;
-         assembly {
--            failEarly := sload(transientFailEarly.slot)
-+            failEarly := tload(transientFailEarly.slot)
-         }
- 
-         if (failEarly) {
-             address vault;
-             assembly {
--                vault := sload(transientVault.slot)
-+                vault := tload(transientVault.slot)
-             }
-             revert PerspectiveError(address(this), vault, errorCode);
-         } else {
-             assembly {
--                let errors := sload(transientErrors.slot)
--                sstore(transientErrors.slot, or(errors, errorCode))
-+                let errors := tload(transientErrors.slot)
-+                tstore(transientErrors.slot, or(errors, errorCode))
-             }
-         }
-     }
-
-```
-
-### evkFactoryPerspective
-
-```diff
-
-============================================================
-FILE: src/Perspectives/implementation/BasePerspective.sol
-============================================================
---- Etherscan/src/Perspectives/implementation/BasePerspective.sol
-+++ Local/src/Perspectives/implementation/BasePerspective.sol
-@@ -45,7 +45,7 @@
-             transientVerifiedHash := keccak256(0, 64)
- 
-             // if optimistically verified, return
--            if eq(sload(transientVerifiedHash), true) { return(0, 0) }
-+            if eq(tload(transientVerifiedHash), true) { return(0, 0) }
-         }
- 
-         // if already verified, return
-@@ -54,13 +54,13 @@
-         address _vault;
-         bool _failEarly;
-         assembly {
--            _vault := sload(transientVault.slot)
--            _failEarly := sload(transientFailEarly.slot)
--            sstore(transientVault.slot, vault)
--            sstore(transientFailEarly.slot, failEarly)
-+            _vault := tload(transientVault.slot)
-+            _failEarly := tload(transientFailEarly.slot)
-+            tstore(transientVault.slot, vault)
-+            tstore(transientFailEarly.slot, failEarly)
- 
-             // optimistically assume that the vault is verified
--            sstore(transientVerifiedHash, true)
-+            tstore(transientVerifiedHash, true)
-         }
- 
-         // perform the perspective verification
-@@ -69,14 +69,10 @@
-         uint256 errors;
-         assembly {
-             // restore the cached values
--            sstore(transientVault.slot, _vault)
--            sstore(transientFailEarly.slot, _failEarly)
-+            tstore(transientVault.slot, _vault)
-+            tstore(transientFailEarly.slot, _failEarly)
- 
--            errors := sload(transientErrors.slot)
--
--            // clear the transient storage
--            sstore(transientErrors.slot, 0)
--            sstore(transientVerifiedHash, false)
-+            errors := tload(transientErrors.slot)
-         }
- 
-         // if early fail was not requested, we need to check for any property errors that may have occurred.
-@@ -118,19 +114,19 @@
- 
-         bool failEarly;
-         assembly {
--            failEarly := sload(transientFailEarly.slot)
-+            failEarly := tload(transientFailEarly.slot)
-         }
- 
-         if (failEarly) {
-             address vault;
-             assembly {
--                vault := sload(transientVault.slot)
-+                vault := tload(transientVault.slot)
-             }
-             revert PerspectiveError(address(this), vault, errorCode);
-         } else {
-             assembly {
--                let errors := sload(transientErrors.slot)
--                sstore(transientErrors.slot, or(errors, errorCode))
-+                let errors := tload(transientErrors.slot)
-+                tstore(transientErrors.slot, or(errors, errorCode))
-             }
-         }
-     }
-
-```
-
-### governedPerspective
-
-```diff
-
-============================================================
-FILE: src/Perspectives/implementation/BasePerspective.sol
-============================================================
---- Etherscan/src/Perspectives/implementation/BasePerspective.sol
-+++ Local/src/Perspectives/implementation/BasePerspective.sol
-@@ -45,7 +45,7 @@
-             transientVerifiedHash := keccak256(0, 64)
- 
-             // if optimistically verified, return
--            if eq(sload(transientVerifiedHash), true) { return(0, 0) }
-+            if eq(tload(transientVerifiedHash), true) { return(0, 0) }
-         }
- 
-         // if already verified, return
-@@ -54,13 +54,13 @@
-         address _vault;
-         bool _failEarly;
-         assembly {
--            _vault := sload(transientVault.slot)
--            _failEarly := sload(transientFailEarly.slot)
--            sstore(transientVault.slot, vault)
--            sstore(transientFailEarly.slot, failEarly)
-+            _vault := tload(transientVault.slot)
-+            _failEarly := tload(transientFailEarly.slot)
-+            tstore(transientVault.slot, vault)
-+            tstore(transientFailEarly.slot, failEarly)
- 
-             // optimistically assume that the vault is verified
--            sstore(transientVerifiedHash, true)
-+            tstore(transientVerifiedHash, true)
-         }
- 
-         // perform the perspective verification
-@@ -69,14 +69,10 @@
-         uint256 errors;
-         assembly {
-             // restore the cached values
--            sstore(transientVault.slot, _vault)
--            sstore(transientFailEarly.slot, _failEarly)
-+            tstore(transientVault.slot, _vault)
-+            tstore(transientFailEarly.slot, _failEarly)
- 
--            errors := sload(transientErrors.slot)
--
--            // clear the transient storage
--            sstore(transientErrors.slot, 0)
--            sstore(transientVerifiedHash, false)
-+            errors := tload(transientErrors.slot)
-         }
- 
-         // if early fail was not requested, we need to check for any property errors that may have occurred.
-@@ -118,19 +114,19 @@
- 
-         bool failEarly;
-         assembly {
--            failEarly := sload(transientFailEarly.slot)
-+            failEarly := tload(transientFailEarly.slot)
-         }
- 
-         if (failEarly) {
-             address vault;
-             assembly {
--                vault := sload(transientVault.slot)
-+                vault := tload(transientVault.slot)
-             }
-             revert PerspectiveError(address(this), vault, errorCode);
-         } else {
-             assembly {
--                let errors := sload(transientErrors.slot)
--                sstore(transientErrors.slot, or(errors, errorCode))
-+                let errors := tload(transientErrors.slot)
-+                tstore(transientErrors.slot, or(errors, errorCode))
-             }
-         }
-     }
-
-```
-
-### swapper
-
-```diff
-
-============================================================
-FILE: src/Swaps/Swapper.sol
-============================================================
---- Etherscan/src/Swaps/Swapper.sol
-+++ Local/src/Swaps/Swapper.sol
-@@ -50,7 +50,7 @@
-     {}
- 
-     /// @inheritdoc ISwapper
--    function swap(SwapParams memory params) public externalLock {
-+    function swap(SwapParams memory params) public virtual externalLock {
-         if (params.mode >= MODE_MAX_VALUE) revert Swapper_UnknownMode();
- 
-         if (params.handler == HANDLER_GENERIC) {
-@@ -77,7 +77,7 @@
- 
-     /// @inheritdoc ISwapper
-     /// @dev in case of over-swapping to repay, pass max uint amount
--    function repay(address token, address vault, uint256 repayAmount, address account) public externalLock {
-+    function repay(address token, address vault, uint256 repayAmount, address account) public virtual externalLock {
-         setMaxAllowance(token, vault);
-         uint256 balance = IERC20(token).balanceOf(address(this));
-         repayAmount = _capRepayToBalance(repayAmount, balance);
-@@ -86,17 +86,21 @@
-     }
- 
-     /// @inheritdoc ISwapper
--    function repayAndDeposit(address token, address vault, uint256 repayAmount, address account) public externalLock {
-+    function repayAndDeposit(address token, address vault, uint256 repayAmount, address account)
-+        public
-+        virtual
-+        externalLock
-+    {
-         _repayAndDeposit(token, vault, repayAmount, account);
-     }
- 
-     /// @inheritdoc ISwapper
--    function deposit(address token, address vault, uint256 amountMin, address account) public externalLock {
-+    function deposit(address token, address vault, uint256 amountMin, address account) public virtual externalLock {
-         _deposit(token, vault, amountMin, account);
-     }
- 
-     /// @inheritdoc ISwapper
--    function sweep(address token, uint256 amountMin, address to) public externalLock {
-+    function sweep(address token, uint256 amountMin, address to) public virtual externalLock {
-         uint256 balance = IERC20(token).balanceOf(address(this));
-         if (balance >= amountMin) {
-             SafeERC20Lib.safeTransfer(IERC20(token), to, balance);
-@@ -104,7 +108,7 @@
-     }
- 
-     /// @inheritdoc ISwapper
--    function multicall(bytes[] memory calls) external externalLock {
-+    function multicall(bytes[] memory calls) public virtual externalLock {
-         for (uint256 i; i < calls.length; i++) {
-             (bool success, bytes memory result) = address(this).call(calls[i]);
-             if (!success) RevertBytes.revertBytes(result);
-
-```
-
-### eulOFTAdapter
-
-```diff
-
-============================================================
-FILE: src/ERC20/deployed/ERC20BurnableMintable.sol
-============================================================
---- Etherscan/src/ERC20/deployed/ERC20BurnableMintable.sol
-+++ Local/src/ERC20/deployed/ERC20BurnableMintable.sol
-@@ -45,7 +45,7 @@
-     /// @notice Mints new tokens and assigns them to an account
-     /// @param _account The address that will receive the minted tokens
-     /// @param _amount The amount of tokens to mint
--    function mint(address _account, uint256 _amount) external onlyRole(MINTER_ROLE) {
-+    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
-         _mint(_account, _amount);
-     }
- 
-
-```
-
-### DAO
-
-```diff
-
-=== FILE NOT FOUND: SafeProxy ===
-
-```
-
-### labs
-
-```diff
-
-=== FILE NOT FOUND: SafeProxy ===
-
-```
-
-### securityCouncil
-
-```diff
-
-=== FILE NOT FOUND: SafeProxy ===
-
-```
-
-### securityPartnerA
-
-```diff
-
-=== FILE NOT FOUND: SafeProxy ===
-
-```
-
-### securityPartnerB
-
-```diff
-
-=== FILE NOT FOUND: SafeProxy ===
-
-```
-
-### EUL
-
-```diff
-
-============================================================
-FILE: src/ERC20/deployed/ERC20BurnableMintable.sol
-============================================================
---- Etherscan/src/ERC20/deployed/ERC20BurnableMintable.sol
-+++ Local/src/ERC20/deployed/ERC20BurnableMintable.sol
-@@ -45,7 +45,7 @@
-     /// @notice Mints new tokens and assigns them to an account
-     /// @param _account The address that will receive the minted tokens
-     /// @param _amount The amount of tokens to mint
--    function mint(address _account, uint256 _amount) external onlyRole(MINTER_ROLE) {
-+    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
-         _mint(_account, _amount);
-     }
- 
-
-```
-
-### eulerEarnVaultLens
-
-```diff
-
-============================================================
-FILE: src/Lens/UtilsLens.sol
-============================================================
---- Etherscan/src/Lens/UtilsLens.sol
-+++ Local/src/Lens/UtilsLens.sol
-@@ -126,7 +126,7 @@
- 
-         if (adapters.length == 0) {
-             (bool success, bytes memory data) =
--                asset.staticcall(abi.encodeCall(IEVault(asset).convertToAssets, (amountIn)));
-+                asset.staticcall{gas: 100000}(abi.encodeCall(IEVault(asset).convertToAssets, (amountIn)));
- 
-             if (success && data.length >= 32) {
-                 amountIn = abi.decode(data, (uint256));
-
-============================================================
-FILE: src/Lens/Utils.sol
-============================================================
---- Etherscan/src/Lens/Utils.sol
-+++ Local/src/Lens/Utils.sol
-@@ -37,15 +37,13 @@
-             return 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
-         } else if (block.chainid == 43114) {
-             return 0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB;
--        } else if (block.chainid == 59144) {
--            return 0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f;
-         } else if (block.chainid == 80094) {
-             return 0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590;
-         } else {
-             // bitcoin-specific and test networks
-             if (
-                 block.chainid == 30 || block.chainid == 21000000 || block.chainid == 10143 || block.chainid == 80084
--                    || block.chainid == 2390
-+                    || block.chainid == 2390 || block.chainid == 998
-             ) {
-                 return address(0);
-             }
-@@ -56,6 +54,21 @@
- 
-             // TAC
-             if (block.chainid == 239) {
-+                return address(0);
-+            }
+diff --git a/src/IRM/IRMAdaptiveCurve.sol b/src/IRM/IRMAdaptiveCurve.sol
+index 00000000..1883b02b
+--- /dev/null
++++ b/src/IRM/IRMAdaptiveCurve.sol
+@@ -0,0 +1,224 @@
++// SPDX-License-Identifier: MIT
++// Copyright (c) 2023 Morpho Association
 +
-+            // Plasma
-+            if (block.chainid == 9745) {
-+                return address(0);
-+            }
++pragma solidity ^0.8.0;
 +
-+            // Monad
-+            if (block.chainid == 143) {
-+                return address(0);
-+            }
++import {IIRM} from "evk/InterestRateModels/IIRM.sol";
++import {ExpLib} from "./lib/ExpLib.sol";
 +
-+            // Sepolia
-+            if (block.chainid == 11155111) {
-                 return address(0);
-             }
-         }
-
-============================================================
-FILE: src/Lens/LensTypes.sol
-============================================================
---- Etherscan/src/Lens/LensTypes.sol
-+++ Local/src/Lens/LensTypes.sol
-@@ -49,19 +49,19 @@
- struct AccountLiquidityInfo {
-     bool queryFailure;
-     bytes queryFailureReason;
-+    address account;
-+    address vault;
-+    address unitOfAccount;
-     int256 timeToLiquidation;
--    uint256 liabilityValue;
-+    uint256 liabilityValueBorrowing;
-+    uint256 liabilityValueLiquidation;
-     uint256 collateralValueBorrowing;
-     uint256 collateralValueLiquidation;
-     uint256 collateralValueRaw;
--    CollateralLiquidityInfo[] collateralLiquidityBorrowingInfo;
--    CollateralLiquidityInfo[] collateralLiquidityLiquidationInfo;
--    CollateralLiquidityInfo[] collateralLiquidityRawInfo;
--}
--
-...(truncated)
-```
-
-### irmLens
-
-```diff
-
-============================================================
-FILE: src/Lens/Utils.sol
-============================================================
---- Etherscan/src/Lens/Utils.sol
-+++ Local/src/Lens/Utils.sol
-@@ -37,15 +37,13 @@
-             return 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
-         } else if (block.chainid == 43114) {
-             return 0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB;
--        } else if (block.chainid == 59144) {
--            return 0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f;
-         } else if (block.chainid == 80094) {
-             return 0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590;
-         } else {
-             // bitcoin-specific and test networks
-             if (
-                 block.chainid == 30 || block.chainid == 21000000 || block.chainid == 10143 || block.chainid == 80084
--                    || block.chainid == 2390
-+                    || block.chainid == 2390 || block.chainid == 998
-             ) {
-                 return address(0);
-             }
-@@ -56,6 +54,21 @@
- 
-             // TAC
-             if (block.chainid == 239) {
-+                return address(0);
-+            }
++/// @title IRMAdaptiveCurve
++/// @custom:contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/).
++/// @author Adapted from Morpho Labs (https://github.com/morpho-org/morpho-blue-irm/).
++/// @notice A Linear Kink IRM that adjusts the rate at target utilization based on time spent above/below it.
++/// @dev This implementation intentionally leaves variables names, units and ExpLib unchanged from original.
++/// Returned rates are extended to RAY per second to be compatible with the EVK.
++contract IRMAdaptiveCurve is IIRM {
++    /// @dev Unit for internal precision.
++    int256 internal constant WAD = 1e18;
++    /// @dev Unit for internal precision.
++    int256 internal constant YEAR = int256(365.2425 days);
++    /// @notice The name of the IRM.
++    string public constant name = "IRMAdaptiveCurve";
++    /// @notice The utilization rate targeted by the model.
++    /// @dev In WAD units.
++    int256 public immutable TARGET_UTILIZATION;
++    /// @notice The initial interest rate at target utilization.
++    /// @dev In WAD per second units.
++    /// When the IRM is initialized for a vault this is the rate at target utilization that is assigned.
++    int256 public immutable INITIAL_RATE_AT_TARGET;
++    /// @notice The minimum interest rate at target utilization that the model can adjust to.
++    /// @dev In WAD per second units.
++    int256 public immutable MIN_RATE_AT_TARGET;
++    /// @notice The maximum interest rate at target utilization that the model can adjust to.
++    /// @dev In WAD per second units.
++    int256 public immutable MAX_RATE_AT_TARGET;
++    /// @notice The steepness of the interest rate line.
++    /// @dev In WAD units.
++    int256 public immutable CURVE_STEEPNESS;
++    /// @notice The speed at which the rate at target is adjusted up or down.
++    /// @dev In WAD per second units.
++    /// For example, with `2e18 / 24 hours` the model will 2x `rateAtTarget` if the vault is fully utilized for a day.
++    int256 public immutable ADJUSTMENT_SPEED;
 +
-+            // Plasma
-+            if (block.chainid == 9745) {
-+                return address(0);
-+            }
-+
-+            // Monad
-+            if (block.chainid == 143) {
-+                return address(0);
-+            }
-+
-+            // Sepolia
-+            if (block.chainid == 11155111) {
-                 return address(0);
-             }
-         }
-
-============================================================
-FILE: src/Lens/LensTypes.sol
-============================================================
---- Etherscan/src/Lens/LensTypes.sol
-+++ Local/src/Lens/LensTypes.sol
-@@ -49,19 +49,19 @@
- struct AccountLiquidityInfo {
-     bool queryFailure;
-     bytes queryFailureReason;
-+    address account;
-+    address vault;
-+    address unitOfAccount;
-     int256 timeToLiquidation;
--    uint256 liabilityValue;
-+    uint256 liabilityValueBorrowing;
-+    uint256 liabilityValueLiquidation;
-     uint256 collateralValueBorrowing;
-     uint256 collateralValueLiquidation;
-     uint256 collateralValueRaw;
--    CollateralLiquidityInfo[] collateralLiquidityBorrowingInfo;
--    CollateralLiquidityInfo[] collateralLiquidityLiquidationInfo;
--    CollateralLiquidityInfo[] collateralLiquidityRawInfo;
--}
--
--struct CollateralLiquidityInfo {
--    address collateral;
--    uint256 collateralValue;
-+    address[] collaterals;
-+    uint256[] collateralValuesBorrowing;
-+    uint256[] collateralValuesLiquidation;
-+    uint256[] collateralValuesRaw;
- }
- 
- struct VaultInfoERC4626 {
-@@ -77,6 +77,60 @@
-     uint256 totalShares;
-     uint256 totalAssets;
-     bool isEVault;
-+}
-+
-+struct VaultInfoStatic {
-+    uint256 timestamp;
-+    address vault;
-+    string vaultName;
-+    string vaultSymbol;
-+    uint256 vaultDecimals;
-+    address asset;
-+    string assetName;
-+    string assetSymbol;
-+    uint256 assetDecimals;
-+    address unitOfAccount;
-+   ...(truncated)
-```
-
-### utilsLens
-
-```diff
-
-============================================================
-FILE: src/Lens/UtilsLens.sol
-============================================================
---- Etherscan/src/Lens/UtilsLens.sol
-+++ Local/src/Lens/UtilsLens.sol
-@@ -126,7 +126,7 @@
- 
-         if (adapters.length == 0) {
-             (bool success, bytes memory data) =
--                asset.staticcall(abi.encodeCall(IEVault(asset).convertToAssets, (amountIn)));
-+                asset.staticcall{gas: 100000}(abi.encodeCall(IEVault(asset).convertToAssets, (amountIn)));
- 
-             if (success && data.length >= 32) {
-                 amountIn = abi.decode(data, (uint256));
-
-============================================================
-FILE: src/Lens/OracleLens.sol
-============================================================
---- Etherscan/src/Lens/OracleLens.sol
-+++ Local/src/Lens/OracleLens.sol
-@@ -78,22 +78,30 @@
-         }
- 
-         if (_strEq(name, "ChainlinkOracle")) {
-+            (bool success, bytes memory result) =
-+                IOracle(oracleAddress).feed().staticcall(abi.encodeCall(IOracle.description, ()));
-+            string memory feedDescription = success && result.length >= 32 ? abi.decode(result, (string)) : "";
-+
-             oracleInfo = abi.encode(
-                 ChainlinkOracleInfo({
-                     base: IOracle(oracleAddress).base(),
-                     quote: IOracle(oracleAddress).quote(),
-                     feed: IOracle(oracleAddress).feed(),
--                    feedDescription: IOracle(IOracle(oracleAddress).feed()).description(),
-+                    feedDescription: feedDescription,
-                     maxStaleness: IOracle(oracleAddress).maxStaleness()
-                 })
-             );
-         } else if (_strEq(name, "ChainlinkInfrequentOracle")) {
-+            (bool success, bytes memory result) =
-+                IOracle(oracleAddress).feed().staticcall(abi.encodeCall(IOracle.description, ()));
-+            string memory feedDescription = success && result.length >= 32 ? abi.decode(result, (string)) : "";
-+
-             oracleInfo = abi.encode(
-                 ChainlinkInfrequentOracleInfo({
-                     base: IOracle(oracleAddress).base(),
-                     quote: IOracle(oracleAddress).quote(),
-                     feed: IOracle(oracleAddress).feed(),
--                    feedDescription: IOracle(IOracle(oracleAddress).feed()).description(),
-+                    feedDescription: feedDescription,
-                     maxStaleness: IOracle(oracleAddress).maxStaleness()
-                 })
-             );
-
-============================================================
-FILE: src/Lens/Utils.sol
-============================================================
---- Etherscan/src/Lens/Utils.sol
-+++ Local/src/Lens/Utils.sol
-@@ -37,20 +37,38 @@
-             return 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
-         } else if (block.chainid == 43114) {
-             return 0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB;
--        } else if (bloc...(truncated)
-```
-
-### vaultLens
-
-```diff
-
-============================================================
-FILE: src/Lens/VaultLens.sol
-============================================================
---- Etherscan/src/Lens/VaultLens.sol
-+++ Local/src/Lens/VaultLens.sol
-@@ -29,12 +29,12 @@
-         backupUnitOfAccounts.push(0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB);
-     }
- 
--    function getVaultInfoFull(address vault) public view returns (VaultInfoFull memory) {
--        VaultInfoFull memory result;
-+    function getVaultInfoStatic(address vault) public view returns (VaultInfoStatic memory) {
-+        VaultInfoStatic memory result;
- 
-         result.timestamp = block.timestamp;
--
-         result.vault = vault;
-+
-         result.vaultName = IEVault(vault).name();
-         result.vaultSymbol = IEVault(vault).symbol();
-         result.vaultDecimals = IEVault(vault).decimals();
-@@ -49,6 +49,27 @@
-         result.unitOfAccountSymbol = _getStringOrBytes32(result.unitOfAccount, IEVault(vault).symbol.selector);
-         result.unitOfAccountDecimals = _getDecimals(result.unitOfAccount);
- 
-+        result.dToken = IEVault(vault).dToken();
-+        result.oracle = IEVault(vault).oracle();
-+        result.evc = IEVault(vault).EVC();
-+        result.protocolConfig = IEVault(vault).protocolConfigAddress();
-+        result.balanceTracker = IEVault(vault).balanceTrackerAddress();
-+        result.permit2 = IEVault(vault).permit2Address();
-+        result.creator = IEVault(vault).creator();
-+
-+        return result;
++    /// @notice Internal cached state of the interest rate model.
++    struct IRState {
++        /// @dev The current rate at target utilization.
++        uint144 rateAtTarget;
++        /// @dev The previous utilization rate of the vault.
++        int64 lastUtilization;
++        /// @dev The timestamp of the last update to the model.
++        uint48 lastUpdate;
 +    }
 +
-+    function getVaultInfoDynamic(address vault) public view returns (VaultInfoDynamic memory) {
-+        VaultInfoDynamic memory result;
++    /// @notice Get the internal cached state of a vault's irm.
++    mapping(address => IRState) internal irState;
 +
-+        address asset = IEVault(vault).asset();
-+        address unitOfAccount = IEVault(vault).unitOfAccount();
-+        address oracle = IEVault(vault).oracle();
++    error InvalidParams();
 +
-+        result.timestamp = block.timestamp;
-+        result.vault = vault;
++    /// @notice Deploy IRMAdaptiveCurve.
++    /// @param _TARGET_UTILIZATION The utilization rate targeted by the interest rate model.
++    /// @param _INITIAL_RATE_AT_TARGET The initial interest rate at target utilization.
++    /// @param _MIN_RATE_AT_TARGET The minimum interest rate at target utilization that the model can adjust to.
++    /// @param _MAX_RATE_AT_TARGET The maximum interest rate at target utilization that the model can adjust to.
++    /// @param _CURVE_STEEPNESS The steepness of the interest rate line.
++    /// @param _ADJUSTMENT_SPEED The speed at which the rate at target utilization is adjusted up or down.
++    constructor(
++        int256 _TARGET_UTILIZATION,
++        int256 _INITIAL_RATE_AT_TARGET,
++        int256 _MIN_RATE_AT_TARGET,
++        int256 _MAX_RATE_AT_TARGET,
++        int256 _CURVE_STEEPNESS,
++        int256 _ADJUSTMENT_SPEED
++    ) {
++        // Validate parameters.
++        if (_TARGET_UTILIZATION <= 0 || _TARGET_UTILIZATION > 1e18) {
++            revert InvalidParams();
++        }
++        if (_INITIAL_RATE_AT_TARGET < _MIN_RATE_AT_TARGET || _INITIAL_RATE_AT_TARGET > _MAX_RATE_AT_TARGET) {
++            revert InvalidParams();
++        }
++        if (_MIN_RATE_AT_TARGET < 0.001e18 / YEAR || _MIN_RATE_AT_TARGET > 10e18 / YEAR) {
++            revert InvalidParams();
++        }
++        if (_MAX_RATE_AT_TARGET < 0.001e18 / YEAR || _MAX_RATE_AT_TARGET > 10e18 / YEAR) {
++            revert InvalidParams();
++        }
++        if (_CURVE_STEEPNESS < 1.01e18 || _CURVE_STEEPNESS > 100e18) {
++            revert InvalidParams();
++        }
++        if (_ADJUSTMENT_SPEED < 2e18 / YEAR || _ADJUSTMENT_SPEED > 1000e18 / YEAR) {
++            revert InvalidParams();
++        }
 +
-         result.totalShares = IEVault(vault).totalSupply();
-         result.totalCash = IEVault(vault).cash();
-         result.totalBorrowed = IEVault(vault).totalBorrows();
-@@ -72,16 +93,7 @@
-         result.supplyCap = AmountCapLib.resolve(AmountCap.wrap(uint16(result.supplyCap)));
-         result.borrowCap = AmountCapLib.resolve(AmountCap.wrap(uint16(result.borrowCap)));
- 
--        result.dToken = IEVault(vault).dToken();
--        result.oracle = IEVault(vault).oracle();
-         result.interestRateModel = IEVault(vault).interestRateModel();
--
--        result.evc = IEVault(vault).EVC();
--        result.protocolConfig = IEVault(vault).protocolConfigAddress();
--        result.balanceTracker = IEVault(vault).balanceTrackerAddress();
--        result.permit2 = IEVault(vault).permit2Address();
--
--        result.creator = IEVault(vault).creator();
-         result.governorAdmin = IEVault(vault).governorAdmin();
- 
-         if (result.interestRateModel == address(0)) {
-@@ -101,33 +113,33 @@
- 
-         result.collateralLTVInfo = getRecognizedCollateralsLTVInfo(vault);
- 
--        result.liabilityPriceInfo = utilsLens.g...(truncated)
++        TARGET_UTILIZATION = _TARGET_UTILIZATION;
++        INITIAL_RATE_AT_TARGET = _INITIAL_RATE_AT_TARGET;
 ```
 
-### eulerEarnFactory
+_Showing first 100 of 329 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/f61809fd...master)_
+
+#### fixedCyclicalBinaryIRMFactory
+
+- **Deployed from:** [`7a1b8a67`](https://github.com/euler-xyz/evk-periphery/tree/7a1b8a67)
+- **Compare to master:** [`7a1b8a67...master`](https://github.com/euler-xyz/evk-periphery/compare/7a1b8a67...master)
 
 ```diff
-
-============================================================
-FILE: src/interfaces/IEulerEarn.sol
-============================================================
---- Etherscan/src/interfaces/IEulerEarn.sol
-+++ Local/src/interfaces/IEulerEarn.sol
-@@ -120,10 +120,10 @@
-     function revokePendingMarketRemoval(IERC4626 id) external;
- 
-     /// @notice Sets the name of the Earn vault.
--    //function setName(string memory newName) external;
-+    function setName(string memory newName) external;
- 
-     /// @notice Sets the symbol of the Earn vault.
--    //function setSymbol(string memory newSymbol) external;
-+    function setSymbol(string memory newSymbol) external;
- 
-     /// @notice Submits a `newGuardian`.
-     /// @notice Warning: a malicious guardian could disrupt the Earn vault's operation, and would have the power to revoke
-
-============================================================
-FILE: src/EulerEarn.sol
-============================================================
---- Etherscan/src/EulerEarn.sol
-+++ Local/src/EulerEarn.sol
-@@ -190,8 +190,7 @@
-     }
- 
-     /* ONLY OWNER FUNCTIONS */
--// commented out not to exceed 24kB limit
--/*
+diff --git a/src/IRM/IRMFixedCyclicalBinary.sol b/src/IRM/IRMFixedCyclicalBinary.sol
+index 00000000..d6aae2cb
+--- /dev/null
++++ b/src/IRM/IRMFixedCyclicalBinary.sol
+@@ -0,0 +1,72 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
 +
-     /// @inheritdoc IEulerEarnBase
-     function setName(string memory newName) external onlyOwner {
-         _name = newName;
-@@ -205,7 +204,7 @@
- 
-         emit EventsLib.SetSymbol(newSymbol);
-     }
--*/
++pragma solidity ^0.8.0;
 +
-     /// @inheritdoc IEulerEarnBase
-     function setCurator(address newCurator) external onlyOwner {
-         if (newCurator == curator) revert ErrorsLib.AlreadySet();
++import {IIRM} from "evk/InterestRateModels/IIRM.sol";
++
++/// @title IRMFixedCyclicalBinary
++/// @custom:security-contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/)
++/// @notice Implementation of an interest rate model, where interest rate cycles between two fixed values,
++contract IRMFixedCyclicalBinary is IIRM {
++    /// @notice Interest rate applied during the first part of the cycle
++    uint256 public immutable primaryRate;
++    /// @notice Interest rate applied during the second part of the cycle
++    uint256 public immutable secondaryRate;
++    /// @notice Duration of the primary part of the cycle in seconds
++    uint256 public immutable primaryDuration;
++    /// @notice Duration of the secondary part of the cycle in seconds
++    uint256 public immutable secondaryDuration;
++    /// @notice Timestamp of the start of the first cycle
++    uint256 public immutable startTimestamp;
++
++    /// @notice Error thrown when start timestamp is in the future
++    error BadStartTimestamp();
++    /// @notice Error thrown when duration of either primary or secondary part of the cycle is zero
++    /// or when the whole cycle duration overflows uint
++    error BadDuration();
++
++    /// @notice Creates a fixed cyclical binary interest rate model
++    /// @param primaryRate_ Interest rate applied during the first part of the cycle
++    /// @param secondaryRate_ Interest rate applied during the second part of the cycle
++    /// @param primaryDuration_ Duration of the primary part of the cycle in seconds
++    /// @param secondaryDuration_ Duration of the secondary part of the cycle in seconds
++    /// @param startTimestamp_ Timestamp of the start of the first cycle
++    constructor(
++        uint256 primaryRate_,
++        uint256 secondaryRate_,
++        uint256 primaryDuration_,
++        uint256 secondaryDuration_,
++        uint256 startTimestamp_
++    ) {
++        if (startTimestamp_ > block.timestamp) revert BadStartTimestamp();
++        if (
++            primaryDuration_ == 0 || secondaryDuration_ == 0
++                || (type(uint256).max - primaryDuration_ < secondaryDuration_)
++        ) revert BadDuration();
++
++        primaryRate = primaryRate_;
++        secondaryRate = secondaryRate_;
++        primaryDuration = primaryDuration_;
++        secondaryDuration = secondaryDuration_;
++        startTimestamp = startTimestamp_;
++    }
++
++    /// @inheritdoc IIRM
++    function computeInterestRate(address vault, uint256, uint256) external view override returns (uint256) {
++        if (msg.sender != vault) revert E_IRMUpdateUnauthorized();
++
++        return computeInterestRateInternal();
++    }
++
++    /// @inheritdoc IIRM
++    function computeInterestRateView(address, uint256, uint256) external view override returns (uint256) {
++        return computeInterestRateInternal();
++    }
++
++    function computeInterestRateInternal() internal view returns (uint256) {
++        uint256 timeSinceStart = block.timestamp - startTimestamp;
++
++        return timeSinceStart % (primaryDuration + secondaryDuration) <= primaryDuration ? primaryRate : secondaryRate;
++    }
++}
+diff --git a/src/IRMFactory/EulerFixedCyclicalBinaryIRMFactory.sol b/src/IRMFactory/EulerFixedCyclicalBinaryIRMFactory.sol
+index 00000000..3093e521
+--- /dev/null
++++ b/src/IRMFactory/EulerFixedCyclicalBinaryIRMFactory.sol
+@@ -0,0 +1,46 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++
++pragma solidity ^0.8.0;
++
++import {BaseFactory} from "../BaseFactory/BaseFactory.sol";
++import {IRMFixedCyclicalBinary} from "../IRM/IRMFixedCyclicalBinary.sol";
++import {IEulerFixedCyclicalBinaryIRMFactory} from "./interfaces/IEulerFixedCyclicalBinaryIRMFactory.sol";
++
++/// @title EulerFixedCyclicalBinaryIRMFactory
++/// @custom:security-contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/)
++/// @notice A minimal factory for Fixed Cyclical Binary IRMs.
++contract EulerFixedCyclicalBinaryIRMFactory is BaseFactory, IEulerFixedCyclicalBinaryIRMFactory {
++    // corresponds to 1000% APY
++    uint256 internal constant MAX_ALLOWED_INTEREST_RATE = 75986279153383989049;
++
++    /// @notice Error thrown when the computed interest rate exceeds the maximum allowed limit.
++    error IRMFactory_ExcessiveInterestRate();
+```
+
+_Showing first 100 of 160 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/7a1b8a67...master)_
+
+#### kinkIRMFactory
+
+- **Deployed from:** [`5e066711`](https://github.com/euler-xyz/evk-periphery/tree/5e066711)
+- **Compare to master:** [`5e066711...master`](https://github.com/euler-xyz/evk-periphery/compare/5e066711...master)
+
+```diff
+diff --git a/src/IRMFactory/EulerKinkIRMFactory.sol b/src/IRMFactory/EulerKinkIRMFactory.sol
+index 2b651a40..1d7b8fbf 100644
+--- a/src/IRMFactory/EulerKinkIRMFactory.sol
++++ b/src/IRMFactory/EulerKinkIRMFactory.sol
+@@ -4,12 +4,13 @@ pragma solidity ^0.8.0;
+ 
+ import {BaseFactory} from "../BaseFactory/BaseFactory.sol";
+ import {IRMLinearKink} from "evk/InterestRateModels/IRMLinearKink.sol";
++import {IEulerKinkIRMFactory} from "./interfaces/IEulerKinkIRMFactory.sol";
+ 
+ /// @title EulerKinkIRMFactory
+ /// @custom:security-contact security@euler.xyz
+ /// @author Euler Labs (https://www.eulerlabs.com/)
+ /// @notice A minimal factory for Kink IRMs.
+-contract EulerKinkIRMFactory is BaseFactory {
++contract EulerKinkIRMFactory is BaseFactory, IEulerKinkIRMFactory {
+     // corresponds to 1000% APY
+     uint256 internal constant MAX_ALLOWED_INTEREST_RATE = 75986279153383989049;
+ 
+@@ -22,7 +23,11 @@ contract EulerKinkIRMFactory is BaseFactory {
+     /// @param slope2 Slope of the function after the kink
+     /// @param kink Utilization at which the slope of the interest rate function changes. In type(uint32).max scale
+     /// @return The deployment address.
+-    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint32 kink) external returns (address) {
++    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint32 kink)
++        external
++        override
++        returns (address)
++    {
+         IRMLinearKink irm = new IRMLinearKink(baseRate, slope1, slope2, kink);
+ 
+         // verify if the IRM is functional
+diff --git a/src/IRMFactory/interfaces/IEulerKinkIRMFactory.sol b/src/IRMFactory/interfaces/IEulerKinkIRMFactory.sol
+index 14ffd834..29f554a4 100644
+--- a/src/IRMFactory/interfaces/IEulerKinkIRMFactory.sol
++++ b/src/IRMFactory/interfaces/IEulerKinkIRMFactory.sol
+@@ -15,5 +15,5 @@ interface IEulerKinkIRMFactory is IFactory {
+     /// @param slope2 The slope of the IRM at the second kink.
+     /// @param kink The kink of the IRM.
+     /// @return The deployment address.
+-    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint256 kink) external returns (address);
++    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint32 kink) external returns (address);
+ }
 
 ```
 
+#### kinkyIRMFactory
 
-## Not Verified on Explorer
+- **Deployed from:** [`2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb`](https://github.com/euler-xyz/evk-periphery/tree/2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb)
+- **Compare to master:** [`2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb...master`](https://github.com/euler-xyz/evk-periphery/compare/2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb...master)
 
-- oracleLens: `0xFf1177B9e483b21820052dF2B39DebB9584855d1`
+```diff
+diff --git a/src/IRM/IRMLinearKinky.sol b/src/IRM/IRMLinearKinky.sol
+index 00000000..f902fd25
+--- /dev/null
++++ b/src/IRM/IRMLinearKinky.sol
+@@ -0,0 +1,95 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++
++pragma solidity ^0.8.0;
++
++import {IIRM} from "evk/InterestRateModels/IIRM.sol";
++
++/// @title IRMLinearKinky
++/// @custom:security-contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/)
++/// @notice Implementation of an interest rate model, where interest rate grows linearly with utilization, and spikes
++/// non-linearly after reaching kink
++contract IRMLinearKinky is IIRM {
++    /// @notice Base interest rate applied when utilization is equal zero
++    uint256 public immutable baseRate;
++    /// @notice Slope of the function before the kink
++    uint256 public immutable slope;
++    /// @notice Shape parameter for the non-linear part of the curve. Typically between 0 and 100.
++    uint256 public immutable shape;
++    /// @notice Utilization at which the slope of the interest rate function changes. In type(uint32).max scale.
++    uint256 public immutable kink;
++    /// @notice Interest rate in second percent yield (SPY) at which the interest rate function is capped
++    uint256 public immutable cutoff;
++
++    /// @notice Remaining kink helper constant.
++    uint256 internal immutable kinkRemaining;
++
++    /// @notice Creates a new linear kinky interest rate model
++    /// @param baseRate_ Base interest rate applied when utilization is equal zero
++    /// @param slope_ Slope of the function before the kink
++    /// @param shape_ Shape parameter for the non-linear part of the curve. Typically between 0 and 100
++    /// @param kink_ Utilization at which the slope of the interest rate function changes. In type(uint32).max scale
++    /// @param cutoff_ Interest rate in second percent yield (SPY) at which the interest rate function is capped
++    constructor(uint256 baseRate_, uint256 slope_, uint256 shape_, uint32 kink_, uint256 cutoff_) {
++        baseRate = baseRate_;
++        slope = slope_;
++        shape = shape_;
++        kink = kink_;
++        cutoff = cutoff_;
++        kinkRemaining = type(uint32).max - kink;
++    }
++
++    /// @inheritdoc IIRM
++    function computeInterestRate(address vault, uint256 cash, uint256 borrows)
++        external
++        view
++        override
++        returns (uint256)
++    {
++        if (msg.sender != vault) revert E_IRMUpdateUnauthorized();
++
++        return computeInterestRateInternal(vault, cash, borrows);
++    }
++
++    /// @inheritdoc IIRM
++    function computeInterestRateView(address vault, uint256 cash, uint256 borrows)
++        external
++        view
++        override
++        returns (uint256)
++    {
++        return computeInterestRateInternal(vault, cash, borrows);
++    }
++
++    function computeInterestRateInternal(address, uint256 cash, uint256 borrows) internal view returns (uint256) {
++        uint256 totalAssets = cash + borrows;
++
++        uint32 utilization = totalAssets == 0
++            ? 0 // empty pool arbitrarily given utilization of 0
++            : uint32(borrows * type(uint32).max / totalAssets);
++
++        uint256 ir = baseRate;
++
++        if (utilization <= kink) {
++            ir += utilization * slope;
++        } else {
++            ir += kink * slope;
++
++            uint256 utilizationOverKink;
++            uint256 utilizationRemaining;
++            unchecked {
++                utilizationOverKink = utilization - kink;
++                utilizationRemaining = type(uint32).max - utilization;
++            }
++
++            if (utilizationRemaining == 0) return cutoff;
++
++            uint256 slopeUtilizationOverKink = slope * utilizationOverKink;
++
++            ir += slopeUtilizationOverKink * kinkRemaining * (1 + shape) / utilizationRemaining
++                - slopeUtilizationOverKink * shape;
++        }
++
++        return ir > cutoff ? cutoff : ir;
++    }
++}
+```
+
+_Showing first 100 of 179 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb...master)_
+
+#### swapVerifier
+
+- **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
+- **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
+
+_No diff available - see GitHub compare link above._
+
+#### eulOFTAdapter
+
+- **Deployed from:** [`e296136b`](https://github.com/euler-xyz/evk-periphery/tree/e296136b)
+- **Compare to master:** [`e296136b...master`](https://github.com/euler-xyz/evk-periphery/compare/e296136b...master)
+
+```diff
+diff --git a/src/ERC20/deployed/ERC20BurnableMintable.sol b/src/ERC20/deployed/ERC20BurnableMintable.sol
+index 82413624..19bb8e81 100644
+--- a/src/ERC20/deployed/ERC20BurnableMintable.sol
++++ b/src/ERC20/deployed/ERC20BurnableMintable.sol
+@@ -45,7 +45,7 @@ contract ERC20BurnableMintable is AccessControlEnumerable, ERC20Burnable, ERC20P
+     /// @notice Mints new tokens and assigns them to an account
+     /// @param _account The address that will receive the minted tokens
+     /// @param _amount The amount of tokens to mint
+-    function mint(address _account, uint256 _amount) external onlyRole(MINTER_ROLE) {
++    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
+         _mint(_account, _amount);
+     }
+ 
+
+```
+
+### fee-flow
+
+#### feeFlowController
+
+- **Deployed from:** [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94)
+- **Compare to master:** [`4a419c94...master`](https://github.com/euler-xyz/fee-flow/compare/4a419c94...master)
+- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+
+_No diff available - see GitHub compare link above._
+
+### reward-streams
+
+#### balanceTracker
+
+- **Deployed from:** [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7)
+- **Compare to master:** [`9eb7b8a7...master`](https://github.com/euler-xyz/reward-streams/compare/9eb7b8a7...master)
+- **evk-periphery:** [`2b51b21c`](https://github.com/euler-xyz/evk-periphery/tree/2b51b21c)
+
+_No diff available - see GitHub compare link above._
+
+
+
+## Contracts Without Exact Match
+
+These contracts could not be matched to any commit in the repository.
+Showing diff between Etherscan source and current `master`:
+
+### eulerSwapV2Implementation
+
+- **Address:** [`0x476A2ad4a7c5Ac4DF1CaA429Cb70db865A160c11`](https://lineascan.build/address/0x476A2ad4a7c5Ac4DF1CaA429Cb70db865A160c11)
+- **Etherscan Name:** EulerSwap
+- **Source Repo:** [euler-swap](https://github.com/euler-xyz/euler-swap)
+- **Files:** 32/54 matched against master
+- **Compared against:** [`euler-swap @ master`](https://github.com/euler-xyz/euler-swap)
+
+**External Dependencies (lib/):**
+- `lib/euler-swap` - version differences
+- `lib/euler-vault-kit` - version differences
+- `lib/openzeppelin-contracts` - version differences
+
+### governorAccessControlEmergencyFactory
+
+- **Address:** [`0x1Fa5297507c725f91479f3fa033a81c7f2E2d52D`](https://lineascan.build/address/0x1Fa5297507c725f91479f3fa033a81c7f2E2d52D)
+- **Etherscan Name:** GovernorAccessControlEmergencyFactory
+- **Source Repo:** [evk-periphery](https://github.com/euler-xyz/evk-periphery)
+- **Files:** 38/48 matched against master
+- **Compared against:** [`evk-periphery @ master`](https://github.com/euler-xyz/evk-periphery)
+
+**External Dependencies (lib/):**
+- `lib/euler-vault-kit` - version differences
+- `lib/openzeppelin-contracts` - version differences
+
