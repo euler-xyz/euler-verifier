@@ -200,42 +200,9 @@ index 9953a0b..735bd58 100644
 -        if (s.reserve0 != 0) require(!CurveLib.verify(p, s.reserve0 - 1, s.reserve1), CurveLib.CurveViolation());
 -        if (s.reserve1 != 0) require(!CurveLib.verify(p, s.reserve0, s.reserve1 - 1), CurveLib.CurveViolation());
 -
--        // Configure external contracts
--
--        FundsLib.approveVault(p.vault0);
--        FundsLib.approveVault(p.vault1);
-+    function setManager(address, bool) external {
-+        _delegateToManagementImpl();
-+    }
- 
--        IEVC(evc).enableCollateral(p.eulerAccount, p.vault0);
--        IEVC(evc).enableCollateral(p.eulerAccount, p.vault1);
-+    /// @inheritdoc IEulerSwap
-+    function reconfigure(DynamicParams calldata, InitialState calldata) external {
-+        _delegateToManagementImpl();
-+    }
- 
--        // Uniswap hooks
-+    /// @inheritdoc IEulerSwap
-+    function managers(address manager) external view returns (bool installed) {
-+        CtxLib.State storage s = CtxLib.getState();
-+        return s.managers[manager];
-+    }
- 
--        if (address(poolManager) != address(0)) activateHook(p);
-+    /// @inheritdoc IEulerSwap
-+    function getStaticParams() external pure returns (StaticParams memory) {
-+        return CtxLib.getStaticParams();
-     }
- 
-     /// @inheritdoc IEulerSwap
--    function getParams() external pure returns (Params memory) {
--        return CtxLib.getParams();
-+    function getDynamicParams() external pure returns (DynamicParams memory) {
-
-
-... (80063 total characters, truncated)
 ```
+
+_Showing first 100 of 1768 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-swap/compare/eulerswap-1.0...master)_
 
 #### eulerSwapV1Implementation
 
@@ -343,42 +310,9 @@ index 9953a0b..735bd58 100644
 -        if (s.reserve0 != 0) require(!CurveLib.verify(p, s.reserve0 - 1, s.reserve1), CurveLib.CurveViolation());
 -        if (s.reserve1 != 0) require(!CurveLib.verify(p, s.reserve0, s.reserve1 - 1), CurveLib.CurveViolation());
 -
--        // Configure external contracts
--
--        FundsLib.approveVault(p.vault0);
--        FundsLib.approveVault(p.vault1);
-+    function setManager(address, bool) external {
-+        _delegateToManagementImpl();
-+    }
- 
--        IEVC(evc).enableCollateral(p.eulerAccount, p.vault0);
--        IEVC(evc).enableCollateral(p.eulerAccount, p.vault1);
-+    /// @inheritdoc IEulerSwap
-+    function reconfigure(DynamicParams calldata, InitialState calldata) external {
-+        _delegateToManagementImpl();
-+    }
- 
--        // Uniswap hooks
-+    /// @inheritdoc IEulerSwap
-+    function managers(address manager) external view returns (bool installed) {
-+        CtxLib.State storage s = CtxLib.getState();
-+        return s.managers[manager];
-+    }
- 
--        if (address(poolManager) != address(0)) activateHook(p);
-+    /// @inheritdoc IEulerSwap
-+    function getStaticParams() external pure returns (StaticParams memory) {
-+        return CtxLib.getStaticParams();
-     }
- 
-     /// @inheritdoc IEulerSwap
--    function getParams() external pure returns (Params memory) {
--        return CtxLib.getParams();
-+    function getDynamicParams() external pure returns (DynamicParams memory) {
-
-
-... (61306 total characters, truncated)
 ```
+
+_Showing first 100 of 1356 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-swap/compare/eulerswap-1.0...master)_
 
 #### eulerSwapV1Periphery
 
@@ -486,32 +420,9 @@ index ce71a2c..6281886 100644
 +    /// @return installed Whether the address is currently a manager of this pool
 +    function managers(address manager) external view returns (bool installed);
  
--    /// @notice Retrieves the pool's immutable parameters.
--    function getParams() external view returns (Params memory);
-+    /// @notice Reconfigured the pool's parameters. Only callable by the owner (eulerAccount)
-+    /// or a manager.
-+    function reconfigure(DynamicParams calldata dParams, InitialState calldata initialState) external;
-+
-+    /// @notice Retrieves the pool's static parameters.
-+    function getStaticParams() external view returns (StaticParams memory);
-+
-+    /// @notice Retrieves the pool's dynamic parameters.
-+    function getDynamicParams() external view returns (DynamicParams memory);
- 
-     /// @notice Retrieves the underlying assets supported by this pool.
-     function getAssets() external view returns (address asset0, address asset1);
-@@ -44,6 +70,10 @@ interface IEulerSwap {
-     /// @return status The status of the pool (0 = unactivated, 1 = unlocked, 2 = locked)
-     function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 status);
- 
-+    /// @notice Whether or not this EulerSwap instance is installed as an operator of
-+    /// the eulerAccount in the EVC.
-+    function isInstalled() external view returns (bool installed);
-+
-     /// @notice Generates a quote for how
-
-... (6804 total characters, truncated)
 ```
+
+_Showing first 100 of 155 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-swap/compare/eulerswap-1.0...master)_
 
 #### eulerSwapV2Factory
 

@@ -173,6 +173,10 @@ STANDALONE_COMMITS = {
 
 
 @dataclass
+# =============================================================================
+# DATA CLASSES
+# =============================================================================
+
 class VerificationResult:
     contract_name: str
     address: str
@@ -190,6 +194,10 @@ class VerificationResult:
     evk_periphery_commit: Optional[str] = None  # The evk-periphery commit (for reference)
     error_message: Optional[str] = None
 
+
+# =============================================================================
+# GIT UTILITIES
+# =============================================================================
 
 def get_git_commits(repo_dir: Path, limit: int = 100) -> List[str]:
     """Get recent commits from a repo"""
@@ -373,6 +381,10 @@ def get_source_repo_diff(contract_key: str, source_commit: str, etherscan_files:
         return f"Error generating diff: {e}"
 
 
+# =============================================================================
+# DIFF PROCESSING
+# =============================================================================
+
 def summarize_lib_changes(diff: str) -> Tuple[str, List[str]]:
     """
     Separate lib/ changes from source changes.
@@ -528,6 +540,10 @@ def filter_comment_only_changes(diff: str) -> str:
     return '\n'.join(result_lines)
 
 
+# =============================================================================
+# CACHING
+# =============================================================================
+
 def load_commit_cache() -> Dict[str, str]:
     """Load cached deployment commits"""
     if COMMIT_CACHE_FILE.exists():
@@ -545,6 +561,10 @@ def save_commit_cache(cache: Dict[str, str]):
     with open(COMMIT_CACHE_FILE, "w") as f:
         json.dump(cache, f, indent=2)
 
+
+# =============================================================================
+# ETHERSCAN API
+# =============================================================================
 
 class EtherscanFetcher:
     def __init__(self, api_key: Optional[str] = None):
@@ -601,6 +621,10 @@ class EtherscanFetcher:
             print(f"    Error: {e}", flush=True)
             return None
 
+
+# =============================================================================
+# SOURCE COMPARISON
+# =============================================================================
 
 class SourceComparator:
     def __init__(self, repo_path: Path, submodule_paths: Optional[List[str]] = None):
@@ -698,6 +722,10 @@ class SourceComparator:
         
         return diff, files_checked, files_matched
 
+
+# =============================================================================
+# COMMIT SEARCH & VERIFICATION
+# =============================================================================
 
 def exhaustive_commit_search(address: str, contract_key: str, fetcher: EtherscanFetcher,
                              repo_dir: Path, submodule_paths: List[str],
@@ -895,6 +923,10 @@ def verify_evk_periphery_contract(contract_key: str, address: str, fetcher: Ethe
         )
 
 
+# =============================================================================
+# REPORT GENERATION
+# =============================================================================
+
 def generate_report(results: List[VerificationResult]) -> str:
     """Generate verification report with deployment commits and diffs to master"""
     
@@ -1009,11 +1041,14 @@ These diffs help identify any changes made to the codebase after deployment.
                     filtered_diff = filter_comment_only_changes(r.diff_vs_master)
                     
                     if filtered_diff.strip():
-                        # Truncate long diffs
-                        diff_preview = filtered_diff[:5000]
-                        if len(filtered_diff) > 5000:
-                            diff_preview += f"\n\n... ({len(filtered_diff)} total characters, truncated)"
-                        report += f"```diff\n{diff_preview}\n```\n\n"
+                        # Truncate to ~100 lines
+                        diff_lines = filtered_diff.split('\n')
+                        if len(diff_lines) > 100:
+                            diff_preview = '\n'.join(diff_lines[:100])
+                            report += f"```diff\n{diff_preview}\n```\n\n"
+                            report += f"_Showing first 100 of {len(diff_lines)} lines. [View full diff on GitHub]({compare_url})_\n\n"
+                        else:
+                            report += f"```diff\n{filtered_diff}\n```\n\n"
                     else:
                         report += "_Only comment/documentation changes - see GitHub compare link for details._\n\n"
                 else:
@@ -1056,15 +1091,22 @@ Showing diff between Etherscan source and current `master`:
                 
                 if filtered_diff.strip():
                     report += "**Source Code Differences:**\n\n"
-                    diff_preview = filtered_diff[:5000]
-                    if len(filtered_diff) > 5000:
-                        diff_preview += f"\n\n... ({len(filtered_diff)} total characters, truncated)"
-                    report += f"```diff\n{diff_preview}\n```\n\n"
+                    diff_lines = filtered_diff.split('\n')
+                    if len(diff_lines) > 100:
+                        diff_preview = '\n'.join(diff_lines[:100])
+                        report += f"```diff\n{diff_preview}\n```\n\n"
+                        report += f"_Showing first 100 of {len(diff_lines)} lines. [View full diff on GitHub]({r.source_repo_url}/compare/master...master)_\n\n"
+                    else:
+                        report += f"```diff\n{filtered_diff}\n```\n\n"
                 elif not lib_dirs:
                     report += "_No significant differences found._\n\n"
     
     return report
 
+
+# =============================================================================
+# MAIN ENTRY POINT
+# =============================================================================
 
 def main():
     # Force unbuffered output
@@ -1130,7 +1172,7 @@ def main():
     # Generate report
     report = generate_report(results)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    report_path = RESULTS_DIR / "mainnet-focused-verification.md"
+    report_path = RESULTS_DIR / "mainnet.md"
     report_path.write_text(report)
     
     # Summary
