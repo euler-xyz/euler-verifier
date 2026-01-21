@@ -14,10 +14,10 @@
 
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
-| ✓ eulerSwapV2Factory | [`0xd80e68B3...`](https://snowscan.xyz/address/0xd80e68B39e4408cb7D6c8E3343Bde46587013F62) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f405) | [`1e81743b`](https://github.com/euler-xyz/evk-periphery/tree/1e81743b) | 57/57 |
-| ✓ eulerSwapV2Periphery | [`0x4fef2f71...`](https://snowscan.xyz/address/0x4fef2f7146c0b4e6C0b1433badC6B7a2E1E7ECDb) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) | [`master`](https://github.com/euler-xyz/evk-periphery) | 9/11 |
-| ✓ eulerSwapV2ProtocolFeeConfig | [`0x1C0e8b84...`](https://snowscan.xyz/address/0x1C0e8b841DA677C685D2a8376773e8A872C1ce5C) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f405) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 2/5 |
-| ✓ eulerSwapV2Registry | [`0xF9f2dF8A...`](https://snowscan.xyz/address/0xF9f2dF8A5Cc71a0424dfA9EbdfdfF8A082C19184) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f405) | [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e) | 35/35 |
+| ✓ eulerSwapV2Factory | [`0xd80e68B3...`](https://snowscan.xyz/address/0xd80e68B39e4408cb7D6c8E3343Bde46587013F62) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) | [`master`](https://github.com/euler-xyz/evk-periphery) | 57/57 |
+| ✓ eulerSwapV2Periphery | [`0x4fef2f71...`](https://snowscan.xyz/address/0x4fef2f7146c0b4e6C0b1433badC6B7a2E1E7ECDb) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) | [`master`](https://github.com/euler-xyz/evk-periphery) | 11/11 |
+| ✓ eulerSwapV2ProtocolFeeConfig | [`0x1C0e8b84...`](https://snowscan.xyz/address/0x1C0e8b841DA677C685D2a8376773e8A872C1ce5C) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) | [`master`](https://github.com/euler-xyz/evk-periphery) | 5/5 |
+| ✓ eulerSwapV2Registry | [`0xF9f2dF8A...`](https://snowscan.xyz/address/0xF9f2dF8A5Cc71a0424dfA9EbdfdfF8A082C19184) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) | [`master`](https://github.com/euler-xyz/evk-periphery) | 35/35 |
 | - adaptiveCurveIRMFactory | [`0x104BA4D7...`](https://snowscan.xyz/address/0x104BA4D746cf71F23341a7c855271A5E7dD19F58) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | - | - | 0/0 |
 | - balanceTracker | [`0xAf565942...`](https://snowscan.xyz/address/0xAf5659428FEF1F6a701FaB46d8f3aF8371A9913D) | [reward-streams](https://github.com/euler-xyz/reward-streams) | - | - | 0/0 |
 | - eVaultFactory | [`0xaf4B4c18...`](https://snowscan.xyz/address/0xaf4B4c18B17F6a2B32F6c398a3910bdCD7f26181) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | - | - | 0/0 |
@@ -51,114 +51,11 @@ These diffs help identify any changes made to the codebase after deployment.
 
 #### eulerSwapV2Factory
 
-- **Deployed from:** [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f405)
-- **Compare to master:** [`b948f405...master`](https://github.com/euler-xyz/euler-swap/compare/b948f405...master)
-- **evk-periphery:** [`1e81743b`](https://github.com/euler-xyz/evk-periphery/tree/1e81743b)
+- **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
+- **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
 
-```diff
-diff --git a/src/EulerSwap.sol b/src/EulerSwap.sol
-index 9953a0b..735bd58 100644
---- a/src/EulerSwap.sol
-+++ b/src/EulerSwap.sol
-@@ -1,115 +1,86 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
-+// SPDX-License-Identifier: BUSL-1.1
- pragma solidity ^0.8.27;
- 
--import {IEulerSwapCallee} from "./interfaces/IEulerSwapCallee.sol";
-+import {IERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
- 
--import {EVCUtil} from "evc/utils/EVCUtil.sol";
--import {IEVC} from "evc/interfaces/IEthereumVaultConnector.sol";
-+import {IEulerSwapCallee} from "./interfaces/IEulerSwapCallee.sol";
- import {IEVault} from "evk/EVault/IEVault.sol";
- 
- import {IEulerSwap} from "./interfaces/IEulerSwap.sol";
- import {UniswapHook} from "./UniswapHook.sol";
--import "./Events.sol";
- import {CtxLib} from "./libraries/CtxLib.sol";
--import {FundsLib} from "./libraries/FundsLib.sol";
--import {CurveLib} from "./libraries/CurveLib.sol";
- import {QuoteLib} from "./libraries/QuoteLib.sol";
-+import {SwapLib} from "./libraries/SwapLib.sol";
- 
--contract EulerSwap is IEulerSwap, EVCUtil, UniswapHook {
--    bytes32 public constant curve = bytes32("EulerSwap v1");
-+contract EulerSwap is IEulerSwap, UniswapHook {
-+    bytes32 public constant curve = bytes32("EulerSwap v2");
-+    address public immutable managementImpl;
- 
--    error Locked();
--    error AlreadyActivated();
--    error BadParam();
-     error AmountTooBig();
--    error AssetsOutOfOrderOrEqual();
--
--    constructor(address evc_, address poolManager_) EVCUtil(evc_) UniswapHook(evc_, poolManager_) {
--        CtxLib.Storage storage s = CtxLib.getStorage();
- 
--        s.status = 2; // can only be used via delegatecall proxy
-+    constructor(address evc_, address protocolFeeConfig_, address poolManager_, address managementImpl_)
-+        UniswapHook(evc_, protocolFeeConfig_, poolManager_)
-+    {
-+        managementImpl = managementImpl_;
-     }
- 
--    modifier nonReentrant() {
--        CtxLib.Storage storage s = CtxLib.getStorage();
--
--        require(s.status == 1, Locked());
--        s.status = 2;
--        _;
--        s.status = 1;
--    }
-+    /// @inheritdoc IEulerSwap
-+    function activate(DynamicParams calldata, InitialState calldata) external {
-+        _delegateToManagementImpl();
- 
--    modifier nonReentrantView() {
--        CtxLib.Storage storage s = CtxLib.getStorage();
--        require(s.status != 2, Locked());
-+        // Uniswap hook activation
- 
--        _;
-+        activateHook(CtxLib.getStaticParams());
-     }
- 
-     /// @inheritdoc IEulerSwap
--    function activate(InitialState calldata initialState) external {
--        CtxLib.Storage storage s = CtxLib.getStorage();
--        Params memory p = CtxLib.getParams();
--
--        require(s.status == 0, AlreadyActivated());
--        s.status = 1;
--
--        // Parameter validation
--
--        require(p.fee < 1e18, BadParam());
--        require(p.priceX > 0 && p.priceY > 0, BadParam());
--        require(p.priceX <= 1e25 && p.priceY <= 1e25, BadParam());
--        require(p.concentrationX <= 1e18 && p.concentrationY <= 1e18, BadParam());
--
--        {
--            address asset0Addr = IEVault(p.vault0).asset();
--            address asset1Addr = IEVault(p.vault1).asset();
--            require(asset0Addr < asset1Addr, AssetsOutOfOrderOrEqual());
--            emit EulerSwapActivated(asset0Addr, asset1Addr);
--        }
--
--        // Initial state
--
--        s.reserve0 = initialState.currReserve0;
--        s.reserve1 = initialState.currReserve1;
--
--        require(CurveLib.verify(p, s.reserve0, s.reserve1), CurveLib.CurveViolation());
--        if (s.reserve0 != 0) require(!CurveLib.verify(p, s.reserve0 - 1, s.reserve1), CurveLib.CurveViolation());
--        if (s.reserve1 != 0) require(!CurveLib.verify(p, s.reserve0, s.reserve1 - 1), CurveLib.CurveViolation());
--
-```
-
-_Showing first 100 of 2728 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-swap/compare/b948f405...master)_
+_No diff available - see GitHub compare link above._
 
 #### eulerSwapV2Periphery
 
@@ -170,223 +67,17 @@ _No diff available - see GitHub compare link above._
 
 #### eulerSwapV2ProtocolFeeConfig
 
-- **Deployed from:** [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f405)
-- **Compare to master:** [`b948f405...master`](https://github.com/euler-xyz/euler-swap/compare/b948f405...master)
-- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+- **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
+- **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
 
-```diff
-diff --git a/src/EulerSwapProtocolFeeConfig.sol b/src/EulerSwapProtocolFeeConfig.sol
-index 0000000..ab9e806
---- /dev/null
-+++ b/src/EulerSwapProtocolFeeConfig.sol
-@@ -0,0 +1,118 @@
-+// SPDX-License-Identifier: BUSL-1.1
-+pragma solidity ^0.8.27;
-+
-+import {IEulerSwapProtocolFeeConfig} from "./interfaces/IEulerSwapProtocolFeeConfig.sol";
-+import {EVCUtil} from "evc/utils/EVCUtil.sol";
-+
-+/// @title EulerSwapProtocolFeeConfig contract
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+contract EulerSwapProtocolFeeConfig is IEulerSwapProtocolFeeConfig, EVCUtil {
-+    /// @dev Protocol fee admin
-+    address public admin;
-+
-+    /// @dev Admin is not allowed to set a protocol fee larger than this
-+    uint64 public constant MAX_PROTOCOL_FEE = 0.15e18;
-+
-+    /// @dev Destination of collected protocol fees, unless overridden
-+    address public defaultRecipient;
-+    /// @dev Default protocol fee, 1e18-scale
-+    uint64 public defaultFee;
-+
-+    struct Override {
-+        bool exists;
-+        address recipient;
-+        uint64 fee;
-+    }
-+
-+    /// @dev EulerSwap-instance specific fee override
-+    mapping(address pool => Override) public overrides;
-+
-+    error Unauthorized();
-+    error InvalidAdminAddress();
-+    error InvalidProtocolFee();
-+    error InvalidProtocolFeeRecipient();
-+
-+    /// @notice Emitted when admin is set/changed
-+    event AdminUpdated(address indexed oldAdmin, address indexed newAdmin);
-+    /// @notice Emitted when the default configuration is changed
-+    event DefaultUpdated(address indexed oldRecipient, address indexed newRecipient, uint64 oldFee, uint64 newFee);
-+    /// @notice Emitted when a per-pool override is created or changed
-+    event OverrideSet(address indexed pool, address indexed recipient, uint64 fee);
-+    /// @notice Emitted when a per-pool override is removed (and thus falls back to the default)
-+    event OverrideRemoved(address indexed pool);
-+
-+    constructor(address evc, address admin_) EVCUtil(evc) {
-+        _validateAdminAddress(admin_);
-+
-+        emit AdminUpdated(address(0), admin_);
-+
-+        admin = admin_;
-+    }
-+
-+    modifier onlyAdmin() {
-+        // Ensures that the caller is not an operator, controller, etc
-+        _authenticateCallerWithStandardContextState(true);
-+
-+        require(_msgSender() == admin, Unauthorized());
-+
-+        _;
-+    }
-+
-+    /// @inheritdoc IEulerSwapProtocolFeeConfig
-+    function setAdmin(address newAdmin) external onlyAdmin {
-+        _validateAdminAddress(newAdmin);
-+
-+        emit AdminUpdated(admin, newAdmin);
-+
-+        admin = newAdmin;
-+    }
-+
-+    /// @inheritdoc IEulerSwapProtocolFeeConfig
-+    function setDefault(address recipient, uint64 fee) external onlyAdmin {
-+        require(fee <= MAX_PROTOCOL_FEE, InvalidProtocolFee());
-+        require(fee == 0 || recipient != address(0), InvalidProtocolFeeRecipient());
-+
-+        emit DefaultUpdated(defaultRecipient, recipient, defaultFee, fee);
-+
-+        defaultRecipient = recipient;
-+        defaultFee = fee;
-+    }
-+
-+    /// @inheritdoc IEulerSwapProtocolFeeConfig
-+    function setOverride(address pool, address recipient, uint64 fee) external onlyAdmin {
-+        require(fee <= MAX_PROTOCOL_FEE, InvalidProtocolFee());
-+
-+        emit OverrideSet(pool, recipient, fee);
-+
-+        overrides[pool] = Override({exists: true, recipient: recipient, fee: fee});
-+    }
-+
-+    /// @inheritdoc IEulerSwapProtocolFeeConfig
-+    function removeOverride(address pool) external onlyAdmin {
-+        emit OverrideRemoved(pool);
-+
-+        delete overrides[pool];
-```
-
-_Showing first 100 of 158 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-swap/compare/b948f405...master)_
+_No diff available - see GitHub compare link above._
 
 #### eulerSwapV2Registry
 
-- **Deployed from:** [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f405)
-- **Compare to master:** [`b948f405...master`](https://github.com/euler-xyz/euler-swap/compare/b948f405...master)
-- **evk-periphery:** [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e)
+- **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
+- **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
 
-```diff
-diff --git a/src/EulerSwapProtocolFeeConfig.sol b/src/EulerSwapProtocolFeeConfig.sol
-index 0000000..ab9e806
---- /dev/null
-+++ b/src/EulerSwapProtocolFeeConfig.sol
-@@ -0,0 +1,118 @@
-+// SPDX-License-Identifier: BUSL-1.1
-+pragma solidity ^0.8.27;
-+
-+import {IEulerSwapProtocolFeeConfig} from "./interfaces/IEulerSwapProtocolFeeConfig.sol";
-+import {EVCUtil} from "evc/utils/EVCUtil.sol";
-+
-+/// @title EulerSwapProtocolFeeConfig contract
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+contract EulerSwapProtocolFeeConfig is IEulerSwapProtocolFeeConfig, EVCUtil {
-+    /// @dev Protocol fee admin
-+    address public admin;
-+
-+    /// @dev Admin is not allowed to set a protocol fee larger than this
-+    uint64 public constant MAX_PROTOCOL_FEE = 0.15e18;
-+
-+    /// @dev Destination of collected protocol fees, unless overridden
-+    address public defaultRecipient;
-+    /// @dev Default protocol fee, 1e18-scale
-+    uint64 public defaultFee;
-+
-+    struct Override {
-+        bool exists;
-+        address recipient;
-+        uint64 fee;
-+    }
-+
-+    /// @dev EulerSwap-instance specific fee override
-+    mapping(address pool => Override) public overrides;
-+
-+    error Unauthorized();
-+    error InvalidAdminAddress();
-+    error InvalidProtocolFee();
-+    error InvalidProtocolFeeRecipient();
-+
-+    /// @notice Emitted when admin is set/changed
-+    event AdminUpdated(address indexed oldAdmin, address indexed newAdmin);
-+    /// @notice Emitted when the default configuration is changed
-+    event DefaultUpdated(address indexed oldRecipient, address indexed newRecipient, uint64 oldFee, uint64 newFee);
-+    /// @notice Emitted when a per-pool override is created or changed
-+    event OverrideSet(address indexed pool, address indexed recipient, uint64 fee);
-+    /// @notice Emitted when a per-pool override is removed (and thus falls back to the default)
-+    event OverrideRemoved(address indexed pool);
-+
-+    constructor(address evc, address admin_) EVCUtil(evc) {
-+        _validateAdminAddress(admin_);
-+
-+        emit AdminUpdated(address(0), admin_);
-+
-+        admin = admin_;
-+    }
-+
-+    modifier onlyAdmin() {
-+        // Ensures that the caller is not an operator, controller, etc
-+        _authenticateCallerWithStandardContextState(true);
-+
-+        require(_msgSender() == admin, Unauthorized());
-+
-+        _;
-+    }
-+
-+    /// @inheritdoc IEulerSwapProtocolFeeConfig
-+    function setAdmin(address newAdmin) external onlyAdmin {
-+        _validateAdminAddress(newAdmin);
-+
-+        emit AdminUpdated(admin, newAdmin);
-+
-+        admin = newAdmin;
-+    }
-+
-+    /// @inheritdoc IEulerSwapProtocolFeeConfig
-+    function setDefault(address recipient, uint64 fee) external onlyAdmin {
-+        require(fee <= MAX_PROTOCOL_FEE, InvalidProtocolFee());
-+        require(fee == 0 || recipient != address(0), InvalidProtocolFeeRecipient());
-+
-+        emit DefaultUpdated(defaultRecipient, recipient, defaultFee, fee);
-+
-+        defaultRecipient = recipient;
-+        defaultFee = fee;
-+    }
-+
-+    /// @inheritdoc IEulerSwapProtocolFeeConfig
-+    function setOverride(address pool, address recipient, uint64 fee) external onlyAdmin {
-+        require(fee <= MAX_PROTOCOL_FEE, InvalidProtocolFee());
-+
-+        emit OverrideSet(pool, recipient, fee);
-+
-+        overrides[pool] = Override({exists: true, recipient: recipient, fee: fee});
-+    }
-+
-+    /// @inheritdoc IEulerSwapProtocolFeeConfig
-+    function removeOverride(address pool) external onlyAdmin {
-+        emit OverrideRemoved(pool);
-+
-+        delete overrides[pool];
-```
-
-_Showing first 100 of 2481 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-swap/compare/b948f405...master)_
+_No diff available - see GitHub compare link above._
 
