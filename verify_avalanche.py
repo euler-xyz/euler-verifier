@@ -30,10 +30,10 @@ COMMIT_CACHE_FILE = ROOT_DIR / "cache" / "deployment_commits.json"
 # Chain Configuration
 CHAIN_ID = 43114
 CHAIN_NAME = "avalanche"
-EXPLORER_URL = "https://snowscan.xyz"
+EXPLORER_URL = "https://snowtrace.io"
 
-# Etherscan V2 API
-ETHERSCAN_V2_API = "https://api.etherscan.io/v2/api"
+# Snowtrace API (direct, not via Etherscan V2)
+SNOWTRACE_API = "https://api.snowtrace.io/api"
 
 # GitHub URLs
 EVK_PERIPHERY_URL = "https://github.com/euler-xyz/evk-periphery"
@@ -585,7 +585,7 @@ class EtherscanFetcher:
                 return json.load(f)
         
         print(f"    Fetching from Etherscan...", flush=True)
-        url = f"{ETHERSCAN_V2_API}?chainid={CHAIN_ID}&module=contract&action=getsourcecode&address={address}&apikey={self.api_key}"
+        url = f"{SNOWTRACE_API}?module=contract&action=getsourcecode&address={address}&apikey={self.api_key}"
         
         try:
             response = requests.get(url, timeout=30)
