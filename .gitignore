@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Environment
+.env
+
+# Cache
+cache/
+
+# Repos (cloned for verification)
+repos/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
