@@ -8,11 +8,11 @@
 | [Arbitrum](arbitrum.md) | 42161 | ✅ | 26/26 |
 | [Base](base.md) | 8453 | ✅ | 24/26 |
 | [BSC](bsc.md) | 56 | ✅ | 26/26 |
+| [Avalanche](avalanche.md) | 43114 | ✅ | 26/26 |
 | [Linea](linea.md) | 59144 | ✅ | 22/26 |
 | [Gnosis](gnosis.md) | 100 | ✅ | 14/14 |
 | [Optimism](optimism.md) | 10 | ✅ | 15/17 |
 | [Polygon](polygon.md) | 137 | ✅ | 12/14 |
-| [Avalanche](avalanche.md) | 43114 | ⚠️ | 4/26 (not verified on Snowscan) |
 
 ## Pending Networks (Blockscout API)
 
