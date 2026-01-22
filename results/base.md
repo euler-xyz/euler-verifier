@@ -4,9 +4,9 @@
 
 | Status | Count |
 |--------|-------|
-| ✓ Verified (exact match) | 25 |
-| ✗ No exact commit found | 1 |
-| ~ Standalone with diff | 0 |
+| ✓ Verified (exact match) | 24 |
+| ✗ No exact commit found | 0 |
+| ~ Standalone with diff | 2 |
 | - Error | 0 |
 | **Total** | **26** |
 
@@ -15,11 +15,10 @@
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
 | ✓ adaptiveCurveIRMFactory | [`0xae752d78...`](https://basescan.org/address/0xae752d786ecAf6683f61b7D910F221edD003895b) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
+| ✓ balanceTracker | [`0x029fDEe8...`](https://basescan.org/address/0x029fDEe85BEdB0553D6fdc538546586641DD7438) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7) | [`deploy-swell`](https://github.com/euler-xyz/evk-periphery/tree/deploy-swell) | 17/17 |
 | ✓ eVaultFactory | [`0x7F321498...`](https://basescan.org/address/0x7F321498A801A191a93C840750ed637149dDf8D0) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
 | ✓ eVaultImplementation | [`0x30a9A965...`](https://basescan.org/address/0x30a9A9654804F1e5b3291a86E83EdeD7cF281618) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 52/52 |
 | ✓ eulOFTAdapter | [`0x9ff7ea0C...`](https://basescan.org/address/0x9ff7ea0Cf94b8665c2F5d17560Bd34Ab9BbAcd21) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e) | [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e) | 63/63 |
-| ✓ eulerEarnFactory | [`0x75F49a26...`](https://basescan.org/address/0x75F49a2621b6DeC6a5baB22ce961bF3e676EFAE6) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 35/35 |
-| ✓ eulerEarnPublicAllocator | [`0x0dFFc3A5...`](https://basescan.org/address/0x0dFFc3A53693bCd8e42FAd9be94fB8f1Fb64A8EE) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 14/14 |
 | ✓ eulerSwapV1Factory | [`0xf0CFe22d...`](https://basescan.org/address/0xf0CFe22d23699ff1B2CFe6B8f706A6DB63911262) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 55/55 |
 | ✓ eulerSwapV1Implementation | [`0x3Ce63C16...`](https://basescan.org/address/0x3Ce63C16CB719a0c755DA25cd5dD35170A00424f) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 46/46 |
 | ✓ eulerSwapV1Periphery | [`0x18e5F5C1...`](https://basescan.org/address/0x18e5F5C1ff5e905b32CE860576031AE90E1d1336) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 9/9 |
@@ -39,7 +38,8 @@
 | ✓ rEUL | [`0xE08e1f00...`](https://basescan.org/address/0xE08e1f00D388E201e48842E53fA96195568e6813) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 21/21 |
 | ✓ sequenceRegistry | [`0xfE9011FD...`](https://basescan.org/address/0xfE9011FD097cd35866b9e4740BBC88B4ef26E3ba) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
 | ✓ swapVerifier | [`0x30660764...`](https://basescan.org/address/0x30660764A7a05B84608812C8AFC0Cb4845439EEe) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
-| ✗ balanceTracker | [`0x029fDEe8...`](https://basescan.org/address/0x029fDEe85BEdB0553D6fdc538546586641DD7438) | [reward-streams](https://github.com/euler-xyz/reward-streams) | not found | - | 15/17 |
+| ~ eulerEarnFactory | [`0x75F49a26...`](https://basescan.org/address/0x75F49a2621b6DeC6a5baB22ce961bF3e676EFAE6) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 30/35 |
+| ~ eulerEarnPublicAllocator | [`0x0dFFc3A5...`](https://basescan.org/address/0x0dFFc3A53693bCd8e42FAd9be94fB8f1Fb64A8EE) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 10/14 |
 
 
 ## Changes Since Deployment
@@ -574,21 +574,13 @@ index 82413624..19bb8e81 100644
 
 _No diff available - see GitHub compare link above._
 
+### reward-streams
 
+#### balanceTracker
 
-## Contracts Without Exact Match
+- **Deployed from:** [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7)
+- **Compare to master:** [`9eb7b8a7...master`](https://github.com/euler-xyz/reward-streams/compare/9eb7b8a7...master)
+- **evk-periphery:** [`deploy-swell`](https://github.com/euler-xyz/evk-periphery/tree/deploy-swell)
 
-These contracts could not be matched to any commit in the repository.
-Showing diff between Etherscan source and current `master`:
-
-### balanceTracker
-
-- **Address:** [`0x029fDEe85BEdB0553D6fdc538546586641DD7438`](https://basescan.org/address/0x029fDEe85BEdB0553D6fdc538546586641DD7438)
-- **Etherscan Name:** TrackingRewardStreams
-- **Source Repo:** [reward-streams](https://github.com/euler-xyz/reward-streams)
-- **Files:** 15/17 matched against master
-- **Compared against:** [`reward-streams @ master`](https://github.com/euler-xyz/reward-streams)
-
-**External Dependencies (lib/):**
-- `lib/openzeppelin-contracts` - version differences
+_No diff available - see GitHub compare link above._
 

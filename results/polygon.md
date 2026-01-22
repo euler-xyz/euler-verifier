@@ -4,8 +4,8 @@
 
 | Status | Count |
 |--------|-------|
-| ✓ Verified (exact match) | 13 |
-| ✗ No exact commit found | 1 |
+| ✓ Verified (exact match) | 14 |
+| ✗ No exact commit found | 0 |
 | ~ Standalone with diff | 0 |
 | - Error | 0 |
 | **Total** | **14** |
@@ -15,6 +15,7 @@
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
 | ✓ adaptiveCurveIRMFactory | [`0x3617a713...`](https://polygonscan.com/address/0x3617a7139dEd8F243B6CD24Da7a28c3D333a44Ce) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
+| ✓ balanceTracker | [`0x751Ab2C2...`](https://polygonscan.com/address/0x751Ab2C287159fa2fA1a1A5A0f209c3F6e83A282) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7) | [`deploy-swell`](https://github.com/euler-xyz/evk-periphery/tree/deploy-swell) | 17/17 |
 | ✓ eVaultFactory | [`0x3f23552A...`](https://polygonscan.com/address/0x3f23552A0ABd8E01AFf5E8704E8A5671A80432B5) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
 | ✓ eVaultImplementation | [`0x5Ed27EFc...`](https://polygonscan.com/address/0x5Ed27EFcb2E58b0B9cD163f9ef78bA87F167b8d2) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244) | [`master`](https://github.com/euler-xyz/evk-periphery) | 52/52 |
 | ✓ eulOFTAdapter | [`0x35772771...`](https://polygonscan.com/address/0x357727718d2A9ce83B877f503f56dED39719dCb9) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e) | [`6fee729e`](https://github.com/euler-xyz/evk-periphery/tree/6fee729e) | 63/63 |
@@ -27,7 +28,6 @@
 | ✓ rEUL | [`0xbfB63181...`](https://polygonscan.com/address/0xbfB6318123dA1682B8bD963846C1e9608F5F3Cda) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 21/21 |
 | ✓ sequenceRegistry | [`0xA9B3Fe66...`](https://polygonscan.com/address/0xA9B3Fe66d8FdBa841a4918D32e12894E5D36BC94) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
 | ✓ swapVerifier | [`0xD2c4D683...`](https://polygonscan.com/address/0xD2c4D6831C6F7c2162015523b8105b972a3D2958) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
-| ✗ balanceTracker | [`0x751Ab2C2...`](https://polygonscan.com/address/0x751Ab2C287159fa2fA1a1A5A0f209c3F6e83A282) | [reward-streams](https://github.com/euler-xyz/reward-streams) | not found | - | 15/17 |
 
 
 ## Changes Since Deployment
@@ -171,21 +171,13 @@ index 82413624..19bb8e81 100644
 
 _No diff available - see GitHub compare link above._
 
+### reward-streams
 
+#### balanceTracker
 
-## Contracts Without Exact Match
+- **Deployed from:** [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7)
+- **Compare to master:** [`9eb7b8a7...master`](https://github.com/euler-xyz/reward-streams/compare/9eb7b8a7...master)
+- **evk-periphery:** [`deploy-swell`](https://github.com/euler-xyz/evk-periphery/tree/deploy-swell)
 
-These contracts could not be matched to any commit in the repository.
-Showing diff between Etherscan source and current `master`:
-
-### balanceTracker
-
-- **Address:** [`0x751Ab2C287159fa2fA1a1A5A0f209c3F6e83A282`](https://polygonscan.com/address/0x751Ab2C287159fa2fA1a1A5A0f209c3F6e83A282)
-- **Etherscan Name:** TrackingRewardStreams
-- **Source Repo:** [reward-streams](https://github.com/euler-xyz/reward-streams)
-- **Files:** 15/17 matched against master
-- **Compared against:** [`reward-streams @ master`](https://github.com/euler-xyz/reward-streams)
-
-**External Dependencies (lib/):**
-- `lib/openzeppelin-contracts` - version differences
+_No diff available - see GitHub compare link above._
 

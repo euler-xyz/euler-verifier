@@ -10,14 +10,13 @@
 | [Avalanche](avalanche.md) | 43114 | ✅ 100% | 26/26 | |
 | [Gnosis](gnosis.md) | 100 | ✅ 100% | 14/14 | |
 | [Optimism](optimism.md) | 10 | ✅ 100% | 17/17 | |
-| [Base](base.md) | 8453 | ⚠️ 96% | 25/26 | balanceTracker: OZ v5.0→v5.1 diff |
-| [Polygon](polygon.md) | 137 | ⚠️ 93% | 13/14 | balanceTracker: OZ v5.0→v5.1 diff |
+| [Polygon](polygon.md) | 137 | ✅ 100% | 14/14 | |
+| [Base](base.md) | 8453 | ⚠️ 92% | 24/26 | eulerEarn: 24KB deployment mods |
 | [Linea](linea.md) | 59144 | ⚠️ 92% | 24/26 | eulerEarn: 24KB deployment mods |
 
 ### Notes on Partial Matches
 
-- **balanceTracker**: The contract code matches but OpenZeppelin dependencies use v5.0.0 vs v5.1.0
-- **eulerEarn**: Deployed with some functions commented out to fit 24KB contract size limit
+- **eulerEarn contracts (Base, Linea)**: Deployed with functions commented out to fit 24KB contract size limit. This is a deployment-specific modification that doesn't exist in any repository commit.
 
 ## Pending Networks (Blockscout API)
 
