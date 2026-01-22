@@ -244,7 +244,8 @@ def checkout_repo(repo_dir: Path, commit: str, quiet: bool = True) -> bool:
         # If it failed, try to manually checkout key submodules
         if result.returncode != 0:
             # Get the pinned submodule commits for this commit
-            for submod in ["lib/openzeppelin-contracts", "lib/ethereum-vault-connector"]:
+            for submod in ["lib/openzeppelin-contracts", "lib/ethereum-vault-connector", 
+                          "lib/reward-streams", "lib/euler-vault-kit", "lib/euler-price-oracle"]:
                 submod_path = repo_dir / submod
                 if submod_path.exists():
                     try:
@@ -733,7 +734,7 @@ def exhaustive_commit_search(address: str, contract_key: str, fetcher: Etherscan
         commits_to_try.append("master")
     
     # Add known deployment commits
-    known_commits = ["2b087370", "5e066711", "a11037fa", "6fee729e", "392c7bd0", "4cc0478d",
+    known_commits = ["2b087370", "dec63c2a", "4edac34f", "5e066711", "a11037fa", "6fee729e", "392c7bd0", "4cc0478d",
                      "f61809fd",  # rEUL deployment commit
                      "a6a8024b90b334806c0d99b7bab3b10b45a74bc5", "2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb"]
     for c in known_commits:
