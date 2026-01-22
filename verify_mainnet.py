@@ -266,33 +266,29 @@ def checkout_repo(repo_dir: Path, commit: str, quiet: bool = True) -> bool:
         subprocess.run(["git", "checkout", "-f", commit], cwd=repo_dir,
                       check=True, capture_output=True, text=True)
         # Try normal submodule update first
-        result = subprocess.run(["git", "submodule", "update", "--init", "--recursive"],
-                      cwd=repo_dir, capture_output=True, text=True)
+        subprocess.run(["git", "submodule", "update", "--init", "--recursive"],
+                      cwd=repo_dir, capture_output=True, text=True, timeout=60)
         
-        # If it failed, try to manually checkout key submodules
-        if result.returncode != 0:
-            # Get the pinned submodule commits for this commit
-            for submod in ["lib/openzeppelin-contracts", "lib/ethereum-vault-connector", 
-                          "lib/reward-streams", "lib/euler-vault-kit", "lib/euler-price-oracle"]:
-                submod_path = repo_dir / submod
-                if submod_path.exists():
-                    try:
-                        # Get the commit hash pinned in the main repo
-                        ls_tree = subprocess.run(
-                            ["git", "ls-tree", commit, submod],
-                            cwd=repo_dir, capture_output=True, text=True
-                        )
-                        if ls_tree.returncode == 0 and ls_tree.stdout.strip():
-                            parts = ls_tree.stdout.strip().split()
-                            if len(parts) >= 3:
-                                submod_commit = parts[2]
-                                # Fetch and checkout in submodule
-                                subprocess.run(["git", "fetch", "origin"], 
-                                             cwd=submod_path, capture_output=True)
-                                subprocess.run(["git", "checkout", "-f", submod_commit],
-                                             cwd=submod_path, capture_output=True)
-                    except:
-                        pass
+        # ALWAYS manually checkout key submodules to ensure correct versions
+        for submod in ["lib/openzeppelin-contracts", "lib/ethereum-vault-connector", 
+                      "lib/reward-streams", "lib/euler-vault-kit", "lib/euler-price-oracle"]:
+            submod_path = repo_dir / submod
+            if submod_path.exists():
+                try:
+                    ls_tree = subprocess.run(
+                        ["git", "ls-tree", commit, submod],
+                        cwd=repo_dir, capture_output=True, text=True
+                    )
+                    if ls_tree.returncode == 0 and ls_tree.stdout.strip():
+                        parts = ls_tree.stdout.strip().split()
+                        if len(parts) >= 3:
+                            submod_commit = parts[2]
+                            subprocess.run(["git", "fetch", "origin"], 
+                                         cwd=submod_path, capture_output=True, timeout=30)
+                            subprocess.run(["git", "checkout", "-f", submod_commit],
+                                         cwd=submod_path, capture_output=True)
+                except:
+                    pass
         return True
     except subprocess.CalledProcessError:
         return False
@@ -762,7 +758,7 @@ def exhaustive_commit_search(address: str, contract_key: str, fetcher: Etherscan
         commits_to_try.append("master")
     
     # Add known deployment commits
-    known_commits = ["2b087370", "dec63c2a", "4edac34f", "5e066711", "a11037fa", "6fee729e", "392c7bd0", "4cc0478d",
+    known_commits = ["2b087370", "dec63c2a", "4edac34f", "deploy-swell", "5e066711", "a11037fa", "6fee729e", "392c7bd0", "4cc0478d",
                      "f61809fd",  # rEUL deployment commit
                      "a6a8024b90b334806c0d99b7bab3b10b45a74bc5", "2f0ddfb0e438d02fc5bb13ad1fb7cae61c2e09eb"]
     for c in known_commits:
