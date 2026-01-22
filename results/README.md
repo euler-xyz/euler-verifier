@@ -11,12 +11,12 @@
 | [Gnosis](gnosis.md) | 100 | ✅ 100% | 14/14 | |
 | [Optimism](optimism.md) | 10 | ✅ 100% | 17/17 | |
 | [Polygon](polygon.md) | 137 | ✅ 100% | 14/14 | |
-| [Base](base.md) | 8453 | ⚠️ 92% | 24/26 | eulerEarn: 24KB deployment mods |
-| [Linea](linea.md) | 59144 | ⚠️ 92% | 24/26 | eulerEarn: 24KB deployment mods |
+| [Base](base.md) | 8453 | ✅ 100% | 26/26 | |
+| [Linea](linea.md) | 59144 | ⚠️ 96% | 25/26 | eulerEarnFactory: Linea-specific 24KB mods |
 
 ### Notes on Partial Matches
 
-- **eulerEarn contracts (Base, Linea)**: Deployed with functions commented out to fit 24KB contract size limit. This is a deployment-specific modification that doesn't exist in any repository commit.
+- **eulerEarnFactory (Linea)**: Deployed with additional functions commented out (`setName`, `setSymbol`) beyond the standard `deployment-script` branch modifications. This is a Linea-specific deployment optimization to fit 24KB contract size limit.
 
 ## Pending Networks (Blockscout API)
 

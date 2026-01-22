@@ -822,11 +822,13 @@ def verify_standalone_contract(contract_key: str, address: str, fetcher: Ethersc
             error_message=f"Repo not found: {repo_dir}"
         )
     
-    # Handle euler-swap versions
+    # Handle specific deployment versions
     target_commit = source_commit or "master"
     if repo_name == "euler-swap-v1":
         target_commit = "eulerswap-1.0"
-        checkout_repo(repo_dir, target_commit)
+    elif repo_name == "euler-earn":
+        target_commit = "origin/deployment-script"  # Has 24KB size limit modifications
+    checkout_repo(repo_dir, target_commit)
     
     comparator = SourceComparator(repo_dir, [])
     etherscan_data = fetcher.get_verified_source(address)
