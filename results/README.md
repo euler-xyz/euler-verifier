@@ -1,35 +1,49 @@
 # Euler Contract Verification Reports
 
-## Etherscan Networks
+## Summary
 
-| Network | Chain ID | Status | Contracts | Notes |
-|---------|----------|--------|-----------|-------|
-| [Mainnet](mainnet.md) | 1 | ✅ 100% | 26/26 | |
-| [Arbitrum](arbitrum.md) | 42161 | ✅ 100% | 26/26 | |
-| [BSC](bsc.md) | 56 | ✅ 100% | 26/26 | |
-| [Avalanche](avalanche.md) | 43114 | ✅ 100% | 26/26 | |
-| [Gnosis](gnosis.md) | 100 | ✅ 100% | 14/14 | |
-| [Optimism](optimism.md) | 10 | ✅ 100% | 17/17 | |
-| [Polygon](polygon.md) | 137 | ✅ 100% | 14/14 | |
-| [Base](base.md) | 8453 | ✅ 100% | 26/26 | |
-| [Linea](linea.md) | 59144 | ⚠️ 96% | 25/26 | eulerEarnFactory: Linea-specific 24KB mods |
+| Network | Chain ID | Status | Contracts |
+|---------|----------|--------|-----------|
+| [Mainnet](mainnet.md) | 1 | ✅ 100% | 26/26 |
+| [Arbitrum](arbitrum.md) | 42161 | ✅ 100% | 26/26 |
+| [BSC](bsc.md) | 56 | ✅ 100% | 26/26 |
+| [Avalanche](avalanche.md) | 43114 | ✅ 100% | 26/26 |
+| [Gnosis](gnosis.md) | 100 | ✅ 100% | 14/14 |
+| [Optimism](optimism.md) | 10 | ✅ 100% | 17/17 |
+| [Polygon](polygon.md) | 137 | ✅ 100% | 14/14 |
+| [Base](base.md) | 8453 | ✅ 100% | 26/26 |
+| [Linea](linea.md) | 59144 | ⚠️ 96% | 25/26 |
+| [Swell](swell.md) | 1923 | ✅ 100% | 25/25 |
+| [Sonic](sonic.md) | 146 | ✅ 100% | 25/25 |
+| [Bob](bob.md) | 60808 | ✅ 100% | 25/25 |
+| [Berachain](berachain.md) | 80094 | ✅ 100% | 25/25 |
+| [Unichain](unichain.md) | 130 | ⚠️ 88% | 22/25 |
 
-### Notes on Partial Matches
+## Notes on Partial Matches
 
-- **eulerEarnFactory (Linea)**: Deployed with additional functions commented out (`setName`, `setSymbol`) beyond the standard `deployment-script` branch modifications. This is a Linea-specific deployment optimization to fit 24KB contract size limit.
+### Linea (96%)
+- **eulerEarnFactory**: Deployed with 24KB size optimizations (commented out `setName`/`setSymbol`)
 
-## Pending Networks (Blockscout API)
+### Unichain (88%)
+- **eulerEarnFactory**: Deployment-specific modifications
+- **fixedCyclicalBinaryIRMFactory, kinkyIRMFactory**: Non-standard import paths (`evk/` vs `lib/euler-vault-kit/`)
 
-These networks use Blockscout instead of Etherscan:
-- Swell (1923)
-- Sonic (146)
-- Bob (60808)
-- Berachain (80094)
-- Unichain (130)
+## Key Commits
 
-## Report Contents
+| Commit | Description |
+|--------|-------------|
+| `master` | Current mainline |
+| `773453b` | euler-earn deployment commit |
+| `deploy-swell` | Swell-specific balanceTracker |
+| `eulerswap-1.0` | EulerSwap V1 release tag |
+| `2b087370` | Core contracts deployment |
 
-Each report includes:
-1. **Summary** - Verification statistics
-2. **Verified Contracts** - Table with source repos, deployment commits, file counts
-3. **Changes Since Deployment** - Git diffs showing code changes from deployment commit to `master`
+## Running Verification
+
+```bash
+# Quick verification (known commits only)
+uv run python3 verify_mainnet.py
+
+# Exhaustive search (all commits, slower but more thorough)
+uv run python3 verify_mainnet.py --exhaustive
+```

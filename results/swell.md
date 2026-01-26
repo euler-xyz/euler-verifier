@@ -1,0 +1,35 @@
+# Swell Contract Verification Report
+
+**Chain ID:** 1923
+**Explorer:** [https://explorer.swellnetwork.io](https://explorer.swellnetwork.io)
+**Status:** ✅ 25/25 contracts verified
+
+## Summary
+
+| Contract | Address | Status | Source Repo | Commit |
+|----------|---------|--------|-------------|--------|
+| evc | [0x08739CBe...](https://explorer.swellnetwork.io/address/0x08739CBede6E28E387685ba20e6409bD16969Cde) | ✅ | [ethereum-vault-connector](https://github.com/euler-xyz/ethereum-vault-connector) | [a7d3c29e](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e) |
+| eVaultFactory | [0x238bF86b...](https://explorer.swellnetwork.io/address/0x238bF86bb451ec3CA69BB855f91BDA001aB118b9) | ✅ | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [422bf244](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244) |
+| eVaultImplementation | [0x70f12862...](https://explorer.swellnetwork.io/address/0x70f1286239228B28A047c727C2df390045299486) | ✅ | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [422bf244](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244) |
+| protocolConfig | [0x6682Af28...](https://explorer.swellnetwork.io/address/0x6682Af2820633067A1de5bE99b2DCb2d38F1e241) | ✅ | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [422bf244](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244) |
+| sequenceRegistry | [0xC4589C61...](https://explorer.swellnetwork.io/address/0xC4589C6199516F96B422D91020563Fe65b28918e) | ✅ | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [422bf244](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244) |
+| balanceTracker | [0x9fb7215e...](https://explorer.swellnetwork.io/address/0x9fb7215ef6297498D6807caf9f3aC8BA3154db29) | ✅ | [reward-streams](https://github.com/euler-xyz/reward-streams) | [9eb7b8a7](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7) |
+| eulerEarnFactory | [0x3073e1B4...](https://explorer.swellnetwork.io/address/0x3073e1B42f8Cc933f2d678DdA10acDE51F4E49a3) | ✅ | [euler-earn](https://github.com/euler-xyz/euler-earn) | [773453b](https://github.com/euler-xyz/euler-earn/tree/773453b) |
+| eulerSwapV1Factory | [0x976dd856...](https://explorer.swellnetwork.io/address/0x976dd85654B3b2f9fb66280ACE30Cab7C81a2130) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [eulerswa](https://github.com/euler-xyz/euler-swap/tree/eulerswa) |
+| eulerSwapV1Implementation | [0x3620dAb0...](https://explorer.swellnetwork.io/address/0x3620dAb0DB5595479a4D5408595D48FbE48CeA2A) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [eulerswa](https://github.com/euler-xyz/euler-swap/tree/eulerswa) |
+| eulerSwapV1Periphery | [0x34932C04...](https://explorer.swellnetwork.io/address/0x34932C04c3d27c2BD7aCd0B5d203bfd65a17f481) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [eulerswa](https://github.com/euler-xyz/euler-swap/tree/eulerswa) |
+| eulerSwapV2Factory | [0x980cd01d...](https://explorer.swellnetwork.io/address/0x980cd01dB708C2B008cF8076aa856fcAeF60698c) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [81cf6dc9](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) |
+| eulerSwapV2Implementation | [0xCB728171...](https://explorer.swellnetwork.io/address/0xCB72817170a9d0f136fcB764f55BEEC638C25acb) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [81cf6dc9](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) |
+| eulerSwapV2Periphery | [0x74F7726e...](https://explorer.swellnetwork.io/address/0x74F7726eF6D8107403a6c581B985D27ED0561f9D) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [81cf6dc9](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) |
+| eulerSwapV2ProtocolFeeConfig | [0x6FB6C91e...](https://explorer.swellnetwork.io/address/0x6FB6C91e369fD151eB343de3BE76F3617FbFfDf2) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [81cf6dc9](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) |
+| eulerSwapV2Registry | [0x33274281...](https://explorer.swellnetwork.io/address/0x3327428147E0cE4Cb185A82F756CaE0D429dbd2c) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [81cf6dc9](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9) |
+| adaptiveCurveIRMFactory | [0x73ab4387...](https://explorer.swellnetwork.io/address/0x73ab43878997BcDc5d726b7aE76F149ebe9d3AA9) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
+| fixedCyclicalBinaryIRMFactory | [0xb30F5540...](https://explorer.swellnetwork.io/address/0xb30F5540dd93Fd5569c9638B7bF11A4a926E8D17) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
+| kinkIRMFactory | [0xBECb652F...](https://explorer.swellnetwork.io/address/0xBECb652Fded7024765575165A98Bfe30b7374058) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [2b087370](https://github.com/euler-xyz/evk-periphery/tree/2b087370) |
+| kinkyIRMFactory | [0xb6d62828...](https://explorer.swellnetwork.io/address/0xb6d62828ba6063B9d4fD504A70d6a9B2f24b1918) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
+| eulerEarnPublicAllocator | [0x0a13C9fc...](https://explorer.swellnetwork.io/address/0x0a13C9fc4613Cae202138F4E1C2b9125A20562E8) | ✅ | [euler-earn](https://github.com/euler-xyz/euler-earn) | [773453b](https://github.com/euler-xyz/euler-earn/tree/773453b) |
+| feeFlowController | [0xA93Ff8C4...](https://explorer.swellnetwork.io/address/0xA93Ff8C4CC2Ba56Ee182B70bb07F2C75DA249879) | ✅ | [fee-flow](https://github.com/euler-xyz/fee-flow) | [4a419c94](https://github.com/euler-xyz/fee-flow/tree/4a419c94) |
+| governorAccessControlEmergencyFactory | [0x88B049E6...](https://explorer.swellnetwork.io/address/0x88B049E6e1A3e11306aC437bbedD0077a2859A36) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
+| oracleRouterFactory | [0x0135fC26...](https://explorer.swellnetwork.io/address/0x0135fC2605ff2C89E550C2d4C7d75068A4782B43) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
+| swapVerifier | [0x392C1570...](https://explorer.swellnetwork.io/address/0x392C1570b3Bf29B113944b759cAa9a9282DA12Fe) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
+| termsOfUseSigner | [0xAD8E191a...](https://explorer.swellnetwork.io/address/0xAD8E191ae4D4F6266BbD1bb248Fa2379c98b5b44) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
