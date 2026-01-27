@@ -14,7 +14,7 @@
 | [Sonic](sonic.md) | 146 | ✅ 100% | 25/25 | |
 | [Bob](bob.md) | 60808 | ✅ 100% | 25/25 | |
 | [Berachain](berachain.md) | 80094 | ✅ 100% | 25/25 | |
-| [Unichain](unichain.md) | 130 | ⚠️ 88% | 22/25 | euler-earn mods; IRM import paths |
+| [Unichain](unichain.md) | 130 | ⚠️ 96% | 24/25 | eulerEarnFactory: custom deploy structure |
 
 ## Testing Networks
 
@@ -29,9 +29,8 @@
 ### Linea (96%)
 - **eulerEarnFactory**: Deployed with 24KB size optimizations (commented out `setName`/`setSymbol`)
 
-### Unichain (88%)
-- **eulerEarnFactory**: Deployment-specific modifications
-- **fixedCyclicalBinaryIRMFactory, kinkyIRMFactory**: Non-standard import paths (`evk/` vs `lib/euler-vault-kit/`)
+### Unichain (96%)
+- **eulerEarnFactory**: Custom deployment structure with non-standard relative import paths (`../interfaces/`, `../utils/`) that don't exist in any branch of euler-earn
 
 ## Key Commits
 

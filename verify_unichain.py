@@ -100,6 +100,7 @@ DEPLOYMENT_HINTS = {
     "feeFlowController": "2b087370",
     "kinkIRMFactory": "2b087370",
     "swapVerifier": "2b087370",
+    "eulerEarnFactory": "8aa230b",
 }
 
 # Contracts from standalone repos (not evk-periphery)
@@ -299,14 +300,23 @@ class SourceComparator:
         self.submodule_paths = submodule_paths or []
     
     def find_local_file(self, explorer_path: str) -> Optional[Path]:
-        local_path = self.repo_path / explorer_path
-        if local_path.exists():
-            return local_path
+        # Apply Foundry remappings
+        remapped_path = explorer_path
+        if explorer_path.startswith("evk/"):
+            remapped_path = "lib/euler-vault-kit/src/" + explorer_path[4:]
+        elif explorer_path.startswith("@openzeppelin/contracts/"):
+            remapped_path = "lib/openzeppelin-contracts/contracts/" + explorer_path[24:]
         
-        for submod_path in self.submodule_paths:
-            local_path = self.repo_path / submod_path / explorer_path
+        # Try direct path first (with remapping applied)
+        for path_to_try in [remapped_path, explorer_path]:
+            local_path = self.repo_path / path_to_try
             if local_path.exists():
                 return local_path
+            
+            for submod_path in self.submodule_paths:
+                local_path = self.repo_path / submod_path / path_to_try
+                if local_path.exists():
+                    return local_path
         
         parts = explorer_path.split("/")
         for i in range(len(parts)):
@@ -326,13 +336,22 @@ class SourceComparator:
         normalized = re.sub(r'\b[\w\.-]+@[\w\.-]+\.\w+\b', 'EMAIL', content)
         normalized = normalized.replace('\r\n', '\n')
         
-        # Normalize import paths
+        # Normalize import paths (Foundry remappings)
+        # Standard lib paths
         normalized = re.sub(r'lib/ethereum-vault-connector/src/', '', normalized)
         normalized = re.sub(r'lib/euler-vault-kit/src/', '', normalized)
         normalized = re.sub(r'lib/reward-streams/src/', '', normalized)
         normalized = re.sub(r'lib/fee-flow/src/', '', normalized)
         normalized = re.sub(r'lib/euler-earn/src/', '', normalized)
         normalized = re.sub(r'lib/euler-swap/src/', '', normalized)
+        # evk/ is a common remapping to lib/euler-vault-kit/src/
+        normalized = re.sub(r'evk/', '', normalized)
+        # Relative lib paths (from src/ directory): ../lib/...
+        normalized = re.sub(r'\.\./lib/openzeppelin-contracts/contracts/', '', normalized)
+        normalized = re.sub(r'\.\./lib/ethereum-vault-connector/src/', '', normalized)
+        # @openzeppelin/contracts/ -> lib/openzeppelin-contracts/contracts/
+        normalized = re.sub(r'@openzeppelin/contracts/', '', normalized)
+        normalized = re.sub(r'lib/openzeppelin-contracts/contracts/', '', normalized)
         
         lines = normalized.split('\n')
         lines = [line.rstrip() for line in lines]
@@ -410,7 +429,7 @@ def hunt_for_commit(contract_name: str, address: str, fetcher: BlockscoutFetcher
         known_commits = [
             "master", "main",
             "2b087370", "5e066711", "392c7bd0", "6fee729e", "a11037fa", "f61809fd",
-            "dec63c2a", "4edac34f", "deploy-swell", "773453b",
+            "dec63c2a", "4edac34f", "deploy-swell", "773453b", "8aa230b",
         ]
     
     # Try hint first
