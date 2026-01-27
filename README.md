@@ -25,19 +25,31 @@ uv run python verify_arbitrum.py
 
 ## Reports
 
-Reports are in `results/`:
+Reports are in `results/`. See [results/README.md](results/README.md) for the full summary.
 
-| Network | Status | Report |
-|---------|--------|--------|
-| Mainnet | ✅ 26/26 | [mainnet.md](results/mainnet.md) |
-| Arbitrum | ✅ 26/26 | [arbitrum.md](results/arbitrum.md) |
-| Base | ✅ 24/26 | [base.md](results/base.md) |
-| Optimism | 🔄 | [optimism.md](results/optimism.md) |
-| Polygon | 🔄 | [polygon.md](results/polygon.md) |
-| BSC | 🔄 | [bsc.md](results/bsc.md) |
-| Avalanche | 🔄 | [avalanche.md](results/avalanche.md) |
-| Linea | 🔄 | [linea.md](results/linea.md) |
-| Gnosis | 🔄 | [gnosis.md](results/gnosis.md) |
+### Production Networks
+
+| Network | Chain ID | Status | Report |
+|---------|----------|--------|--------|
+| Mainnet | 1 | ✅ 26/26 | [mainnet.md](results/mainnet.md) |
+| Arbitrum | 42161 | ✅ 26/26 | [arbitrum.md](results/arbitrum.md) |
+| Base | 8453 | ✅ 26/26 | [base.md](results/base.md) |
+| BSC | 56 | ✅ 26/26 | [bsc.md](results/bsc.md) |
+| Avalanche | 43114 | ✅ 26/26 | [avalanche.md](results/avalanche.md) |
+| Linea | 59144 | ⚠️ 25/26 | [linea.md](results/linea.md) |
+| Swell | 1923 | ✅ 25/25 | [swell.md](results/swell.md) |
+| Sonic | 146 | ✅ 25/25 | [sonic.md](results/sonic.md) |
+| Bob | 60808 | ✅ 25/25 | [bob.md](results/bob.md) |
+| Berachain | 80094 | ✅ 25/25 | [berachain.md](results/berachain.md) |
+| Unichain | 130 | ⚠️ 22/25 | [unichain.md](results/unichain.md) |
+
+### Testing Networks
+
+| Network | Chain ID | Status | Report |
+|---------|----------|--------|--------|
+| Optimism | 10 | ✅ 17/17 | [optimism.md](results/optimism.md) |
+| Gnosis | 100 | ✅ 14/14 | [gnosis.md](results/gnosis.md) |
+| Polygon | 137 | ✅ 14/14 | [polygon.md](results/polygon.md) |
 
 ## How It Works
 
