@@ -41,7 +41,7 @@ Reports are in `results/`. See [results/README.md](results/README.md) for the fu
 | Sonic | 146 | ✅ 25/25 | [sonic.md](results/sonic.md) |
 | Bob | 60808 | ✅ 25/25 | [bob.md](results/bob.md) |
 | Berachain | 80094 | ✅ 25/25 | [berachain.md](results/berachain.md) |
-| Unichain | 130 | ⚠️ 24/25 | [unichain.md](results/unichain.md) |
+| Unichain | 130 | ✅ 25/25 | [unichain.md](results/unichain.md) |
 
 ### Testing Networks
 

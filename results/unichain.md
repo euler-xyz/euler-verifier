@@ -2,7 +2,7 @@
 
 **Chain ID:** 130
 **Explorer:** [https://unichain.blockscout.com](https://unichain.blockscout.com)
-**Status:** ⚠️ 24/25 contracts verified
+**Status:** ✅ 25/25 contracts verified
 
 ## Summary
 
@@ -14,7 +14,7 @@
 | protocolConfig | [0xdCD02E4e...](https://unichain.blockscout.com/address/0xdCD02E4eA8cd273498D315AD8c047305f8480656) | ✅ | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [422bf244](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244) |
 | sequenceRegistry | [0x08799a00...](https://unichain.blockscout.com/address/0x08799a00BC4a74890d65f77828cd2BFbBFcD96dB) | ✅ | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [422bf244](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244) |
 | balanceTracker | [0xFbD12fbC...](https://unichain.blockscout.com/address/0xFbD12fbC91311A8f17598b935e35205EAF16Aa75) | ✅ | [reward-streams](https://github.com/euler-xyz/reward-streams) | [9eb7b8a7](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7) |
-| eulerEarnFactory | [0xD785adD5...](https://unichain.blockscout.com/address/0xD785adD5F081F56616898E45b90dE307e3DC7d3E) | ❌ | euler-earn | - |
+| eulerEarnFactory | [0xD785adD5...](https://unichain.blockscout.com/address/0xD785adD5F081F56616898E45b90dE307e3DC7d3E) | ✅ | [euler-earn](https://github.com/euler-xyz/euler-earn) | [773453b](https://github.com/euler-xyz/euler-earn/tree/773453b) |
 | eulerSwapV1Factory | [0x45b146BC...](https://unichain.blockscout.com/address/0x45b146BC07c9985589B52df651310e75C6BE066A) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [eulerswa](https://github.com/euler-xyz/euler-swap/tree/eulerswa) |
 | eulerSwapV1Implementation | [0xd91B0bfA...](https://unichain.blockscout.com/address/0xd91B0bfACA4691E6Aca7E0E83D9B7F8917989a03) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [eulerswa](https://github.com/euler-xyz/euler-swap/tree/eulerswa) |
 | eulerSwapV1Periphery | [0xdAAF468d...](https://unichain.blockscout.com/address/0xdAAF468d84DD8945521Ea40297ce6c5EEfc7003a) | ✅ | [euler-swap](https://github.com/euler-xyz/euler-swap) | [eulerswa](https://github.com/euler-xyz/euler-swap/tree/eulerswa) |
@@ -33,111 +33,3 @@
 | oracleRouterFactory | [0xE551288F...](https://unichain.blockscout.com/address/0xE551288F0D82C10bBF517DBA66E15C60BF87FE8f) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
 | swapVerifier | [0x7eaf8C22...](https://unichain.blockscout.com/address/0x7eaf8C22480129E5D7426e3A33880D7bE19B50a7) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
 | termsOfUseSigner | [0xEfd9F447...](https://unichain.blockscout.com/address/0xEfd9F447b35aF280110975BCFA442050EF283D86) | ✅ | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [master](https://github.com/euler-xyz/evk-periphery/tree/master) |
-
-## Contracts With Differences
-
-### eulerEarnFactory
-
-```diff
---- local/src/EulerEarnFactory.sol
-+++ explorer/src/EulerEarnFactory.sol
-@@ -10,8 +10,8 @@
- 
- import {EulerEarn} from "./EulerEarn.sol";
- 
--import {Ownable, Context} from "openzeppelin-contracts/access/Ownable.sol";
--import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
-+import {Ownable, Context} from "access/Ownable.sol";
-+import {EVCUtil} from "../utils/EVCUtil.sol";
- 
- /// @title EulerEarnFactory
- /// @author Forked with gratitude from Morpho Labs. Inspired by Silo Labs.
---- local/@openzeppelin/contracts/interfaces/IERC20.sol
-+++ explorer/@openzeppelin/contracts/interfaces/IERC20.sol
-@@ -1,6 +1,79 @@
- // SPDX-License-Identifier: MIT
--// OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC20.sol)
-+// OpenZeppelin Contracts (last updated v5.1.0) (token/ERC20/IERC20.sol)
- 
- pragma solidity ^0.8.20;
- 
--import {IERC20} from "../token/ERC20/IERC20.sol";
-+/**
-+ * @dev Interface of the ERC-20 standard as defined in the ERC.
-+ */
-+interface IERC20 {
-+    /**
-+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-+     * another (`to`).
-+     *
-+     * Note that `value` may be zero.
-+     */
-+    event Transfer(address indexed from, address indexed to, uint256 value);
-+
-+    /**
-+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-+     * a call to {approve}. `value` is the new allowance.
-+     */
-+    event Approval(address indexed owner, address indexed spender, uint256 value);
-+
-+    /**
-+     * @dev Returns the value of tokens in existence.
-+     */
-+    function totalSupply() external view returns (uint256);
-+
-+    /**
-+     * @dev Returns the value of tokens owned by `account`.
-+     */
-+    function balanceOf(address account) external view returns (uint256);
-+
-+    /**
-+     * @dev Moves a `value` amount of tokens from the caller's account to `to`.
-+     *
-+     * Returns a boolean value indicating whether the operation succeeded.
-+     *
-+     * Emits a {Transfer} event.
-+     */
-+    function transfer(address to, uint256 value) external returns (bool);
-+
-+    /**
-+     * @dev Returns the remaining number of tokens that `spender` will be
-+     * allowed to spend on behalf of `owner` through {transferFrom}. This is
---- local/src/interfaces/IPublicAllocator.sol
-+++ explorer/src/interfaces/IPublicAllocator.sol
-@@ -3,7 +3,7 @@
- 
- import {MarketAllocation} from "./IEulerEarn.sol";
- 
--import {IERC4626} from "openzeppelin-contracts/interfaces/IERC4626.sol";
-+import {IERC4626} from "../interfaces/IERC4626.sol";
- 
- /// @dev Max settable flow cap, such that caps can always be stored on 128 bits.
- /// @dev The actual max possible flow cap is type(uint128).max-1.
---- local/src/libraries/EventsLib.sol
-+++ explorer/src/libraries/EventsLib.sol
-@@ -3,7 +3,7 @@
- 
- import {FlowCapsConfig} from "../interfaces/IPublicAllocator.sol";
- 
--import {IERC4626} from "openzeppelin-contracts/interfaces/IERC4626.sol";
-+import {IERC4626} from "../interfaces/IERC4626.sol";
- 
- import {PendingAddress} from "./PendingLib.sol";
- 
---- local/src/libraries/SafeERC20Permit2Lib.sol
-+++ explorer/src/libraries/SafeERC20Permit2Lib.sol
-@@ -3,8 +3,8 @@
- pragma solidity ^0.8.0;
- 
- import {IAllowanceTransfer} from "../interfaces/IAllowanceTransfer.sol";
--import {IERC20} from "openzeppelin-contracts/token/ERC20/ERC20.sol";
--import {SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
-+import {IERC20} from "../token/ERC20/ERC20.sol";
-+import {SafeERC20} from "../token/ERC20/utils/SafeERC20.sol";
- 
- /// @title SafeERC20Permit2Lib Library
- /// @custom:security-contact EMAIL
---- local/src/libraries/ErrorsLib.sol
-+++ explorer/src/libraries/ErrorsLib.sol
-... (84 more lines)
-```

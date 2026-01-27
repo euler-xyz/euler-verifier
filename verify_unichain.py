@@ -365,9 +365,18 @@ class SourceComparator:
         total = 0
         diff_lines = []
         
+        # Check for duplicate @openzeppelin paths (skip if lib/ version exists)
+        lib_paths = {fp for fp in explorer_sources.keys() if fp.startswith('lib/openzeppelin-contracts/contracts/')}
+        
         for filepath, source_info in explorer_sources.items():
             if not filepath.endswith('.sol'):
                 continue
+            
+            # Skip @openzeppelin/ duplicates if lib/ version exists
+            if filepath.startswith('@openzeppelin/contracts/'):
+                lib_equiv = 'lib/openzeppelin-contracts/contracts/' + filepath[24:]
+                if lib_equiv in lib_paths:
+                    continue  # Skip duplicate, lib/ version will be checked
             
             total += 1
             explorer_content = source_info.get("content", "")
