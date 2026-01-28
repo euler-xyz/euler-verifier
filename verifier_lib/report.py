@@ -56,13 +56,14 @@ class VerificationResult:
         return None
 
 
-def generate_report(config: NetworkConfig, results: List[VerificationResult]) -> Path:
+def generate_report(config: NetworkConfig, results: List[VerificationResult], suffix: str = "") -> Path:
     """
     Generate markdown verification report.
     
     Args:
         config: Network configuration
         results: List of verification results
+        suffix: Optional suffix for filename (e.g., "_test" for comparison)
     
     Returns:
         Path to generated report file
@@ -79,7 +80,7 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult]) ->
             network_name = key_name
             break
     
-    report_path = results_dir / f"{network_name}.md"
+    report_path = results_dir / f"{network_name}{suffix}.md"
     
     # Count stats
     verified_count = sum(1 for r in results if r.verified)

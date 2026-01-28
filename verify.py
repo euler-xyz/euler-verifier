@@ -342,6 +342,11 @@ Examples:
         action="store_true",
         help="List available networks",
     )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Output to *_test.md files for comparison",
+    )
     
     args = parser.parse_args()
     
@@ -377,7 +382,8 @@ Examples:
         
         if results:
             # Generate report
-            report_path = generate_report(config, results)
+            suffix = "_test" if args.test else ""
+            report_path = generate_report(config, results, suffix=suffix)
             print(f"\nReport: {report_path}", flush=True)
             
             # Print summary
