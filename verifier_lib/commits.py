@@ -123,7 +123,7 @@ CONTRACT_REPOS: Dict[str, Tuple[str, str, Optional[str]]] = {
     "kinkIRMFactory": ("evk-periphery", "euler-xyz/evk-periphery", None),
     "kinkyIRMFactory": ("evk-periphery", "euler-xyz/evk-periphery", None),
     "governorAccessControlEmergencyFactory": ("evk-periphery", "euler-xyz/evk-periphery", None),
-    "oracleRouterFactory": ("evk-periphery", "euler-xyz/evk-periphery", None),
+    "oracleRouterFactory": ("euler-price-oracle", "euler-xyz/euler-price-oracle", "lib/euler-price-oracle"),
     "swapVerifier": ("evk-periphery", "euler-xyz/evk-periphery", None),
     
     # Token contracts (evk-periphery)
@@ -215,3 +215,72 @@ def get_github_url(contract_name: str, commit: str) -> str:
     """Get GitHub URL for a contract at a specific commit."""
     repo_name, github_path, _ = get_repo_for_contract(contract_name)
     return f"https://github.com/{github_path}/tree/{commit}"
+
+
+def get_submodule_commit(evk_commit: str, submodule_path: str) -> Optional[str]:
+    """
+    Get the commit hash of a submodule at a specific evk-periphery commit.
+    Uses git ls-tree to find what commit the submodule was pinned to.
+    
+    Args:
+        evk_commit: The evk-periphery commit to check
+        submodule_path: Path to the submodule (e.g., "lib/ethereum-vault-connector")
+    
+    Returns:
+        The submodule commit hash, or None if not found
+    """
+    import subprocess
+    
+    try:
+        result = subprocess.run(
+            ["git", "ls-tree", evk_commit, submodule_path],
+            cwd=EVK_PERIPHERY_DIR,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        # Output format: "160000 commit <hash>\t<path>"
+        parts = result.stdout.strip().split()
+        if len(parts) >= 3:
+            return parts[2]  # The commit hash
+        return None
+    except subprocess.CalledProcessError:
+        return None
+
+
+def get_source_commit(contract_name: str, evk_commit: Optional[str]) -> Tuple[str, str, Optional[str]]:
+    """
+    Get source repository info and actual source commit for a contract.
+    
+    For contracts from submodules, resolves the actual submodule commit.
+    For native evk-periphery contracts, returns the evk_commit.
+    
+    Args:
+        contract_name: Name of the contract
+        evk_commit: The evk-periphery commit where match was found
+    
+    Returns:
+        Tuple of (repo_name, github_url, source_commit)
+    """
+    repo_name, github_path, submodule_path = get_repo_for_contract(contract_name)
+    repo_url = f"https://github.com/{github_path}"
+    
+    # Standalone contracts (euler-earn, euler-swap v1)
+    if contract_name in EULERSWAP_V1_CONTRACTS:
+        return (repo_name, repo_url, EULERSWAP_V1_TAG)
+    
+    if contract_name in {"eulerEarnFactory", "eulerEarnPublicAllocator"}:
+        # Euler-earn standalone - evk_commit IS the source commit
+        return (repo_name, repo_url, evk_commit)
+    
+    # Native evk-periphery contracts (no submodule)
+    if repo_name == "evk-periphery" or not submodule_path:
+        return (repo_name, repo_url, evk_commit)
+    
+    # For submodule-based contracts, resolve the actual submodule commit
+    if submodule_path and evk_commit:
+        submod_commit = get_submodule_commit(evk_commit, submodule_path)
+        if submod_commit:
+            return (repo_name, repo_url, submod_commit)
+    
+    return (repo_name, repo_url, None)

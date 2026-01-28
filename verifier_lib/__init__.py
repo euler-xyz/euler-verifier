@@ -17,6 +17,8 @@ from .commits import (
     get_commits_to_try,
     get_repo_path,
     get_submodule_paths,
+    get_source_commit,
+    get_repo_for_contract,
 )
 from .fetchers import create_fetcher, BaseFetcher
 from .report import generate_report, VerificationResult
@@ -41,6 +43,8 @@ __all__ = [
     "get_commits_to_try",
     "get_repo_path",
     "get_submodule_paths",
+    "get_source_commit",
+    "get_repo_for_contract",
     # Fetchers
     "create_fetcher",
     "BaseFetcher",
