@@ -14,12 +14,32 @@ from .base import BaseFetcher
 from ..config import NetworkConfig, ROOT_DIR
 
 
+def _load_api_key() -> str:
+    """Load API key from environment or .env file."""
+    # Check environment first
+    api_key = os.getenv("ETHERSCAN_API_KEY", "")
+    if api_key:
+        return api_key
+    
+    # Try loading from .env file
+    env_file = ROOT_DIR / ".env"
+    if env_file.exists():
+        try:
+            for line in env_file.read_text().splitlines():
+                if line.startswith("ETHERSCAN_API_KEY="):
+                    return line.split("=", 1)[1].strip().strip('"\'')
+        except Exception:
+            pass
+    
+    return ""
+
+
 class EtherscanV2Fetcher(BaseFetcher):
     """Fetcher for Etherscan V2 unified API."""
     
     def __init__(self, config: NetworkConfig, api_key: Optional[str] = None):
         self.config = config
-        self.api_key = api_key or os.getenv("ETHERSCAN_API_KEY", "")
+        self.api_key = api_key or _load_api_key()
         self.cache_dir = ROOT_DIR / "cache" / "etherscan" / str(config.chain_id)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
     
