@@ -81,6 +81,11 @@ def get_diff_vs_master(repo_dir: Path, commit: str, contract_name: str) -> Optio
     if commit in ("master", "main"):
         return None
     
+    # EulerSwap V1 uses eulerswap-1.0 tag - don't compare to master (V2 is different)
+    # The eulerswap-1.0 tag IS their "production" version
+    if commit == "eulerswap-1.0" or contract_name in EULERSWAP_V1_CONTRACTS:
+        return None
+    
     try:
         # Get diff for src/ directory
         result = subprocess.run(
