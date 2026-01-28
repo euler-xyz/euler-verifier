@@ -2,6 +2,7 @@
 Report generation for verification results.
 """
 
+from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
@@ -20,6 +21,7 @@ class VerificationResult:
     matching_files: int = 0
     total_files: int = 0
     diff_lines: List[str] = field(default_factory=list)
+    diff_vs_master: Optional[str] = None  # Diff between deployment commit and master
     error: Optional[str] = None
     
     @property
@@ -36,9 +38,21 @@ class VerificationResult:
         return name
     
     @property
+    def github_path(self) -> str:
+        _, path, _ = get_repo_for_contract(self.contract_name)
+        return path
+    
+    @property
     def github_url(self) -> Optional[str]:
         if self.commit:
             return get_github_url(self.contract_name, self.commit)
+        return None
+    
+    @property
+    def compare_url(self) -> Optional[str]:
+        """URL to compare deployment commit to master."""
+        if self.commit and self.commit != "master":
+            return f"https://github.com/{self.github_path}/compare/{self.commit}...master"
         return None
 
 
@@ -117,9 +131,10 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult]) ->
         lines.extend([
             "",
             "",
-            "## Contracts With Differences",
+            "## Contracts Without Exact Match",
             "",
-            "This section shows contracts that couldn't be matched to any known commit.",
+            "These contracts could not be matched to any commit in the repository.",
+            "Showing diff between explorer source and current `master`:",
         ])
         
         for r in contracts_with_diff:
@@ -138,6 +153,68 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult]) ->
             if len(r.diff_lines) > 100:
                 lines.append(f"... ({len(r.diff_lines) - 100} more lines)")
             lines.append("```")
+    
+    # Add "Changes Since Deployment" section
+    # Include contracts not deployed from master (where commit != "master")
+    contracts_with_changes = [
+        r for r in results 
+        if r.verified 
+        and r.commit 
+        and r.commit != "master"
+        and r.commit != "main"
+    ]
+    
+    if contracts_with_changes:
+        lines.extend([
+            "",
+            "",
+            "## Changes Since Deployment",
+            "",
+            "This section shows what has changed in the source code between the deployment commit and current `master`.",
+            "These diffs help identify any changes made to the codebase after deployment.",
+            "",
+        ])
+        
+        # Group by source repo for better organization
+        by_repo = defaultdict(list)
+        for r in contracts_with_changes:
+            by_repo[r.repo_name].append(r)
+        
+        for repo_name, repo_results in sorted(by_repo.items()):
+            lines.append(f"### {repo_name}")
+            lines.append("")
+            
+            for r in repo_results:
+                _, github_path, _ = get_repo_for_contract(r.contract_name)
+                commit_url = f"https://github.com/{github_path}/tree/{r.commit}"
+                compare_url = f"https://github.com/{github_path}/compare/{r.commit}...master"
+                
+                lines.extend([
+                    f"#### {r.contract_name}",
+                    "",
+                    f"- **Deployed from:** [`{r.commit}`]({commit_url})",
+                    f"- **Compare to master:** [`{r.commit}...master`]({compare_url})",
+                    "",
+                ])
+                
+                if r.diff_vs_master:
+                    diff_lines_list = r.diff_vs_master.split('\n')
+                    if len(diff_lines_list) > 100:
+                        lines.append("```diff")
+                        lines.extend(diff_lines_list[:100])
+                        lines.append("```")
+                        lines.append("")
+                        lines.append(f"_Showing first 100 of {len(diff_lines_list)} lines. [View full diff on GitHub]({compare_url})_")
+                    elif diff_lines_list and any(line.strip() for line in diff_lines_list):
+                        lines.append("```diff")
+                        lines.extend(diff_lines_list)
+                        lines.append("```")
+                    else:
+                        lines.append("_No diff available - see GitHub compare link above._")
+                else:
+                    lines.append("_No diff available - see GitHub compare link above._")
+                
+                lines.append("")
     
     # Write report
     content = "\n".join(lines) + "\n"
