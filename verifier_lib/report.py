@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from .config import NetworkConfig, ROOT_DIR
-from .commits import get_repo_for_contract, get_github_url
+from .commits import get_repo_for_contract, get_github_url, EULERSWAP_V1_CONTRACTS, EULERSWAP_V1_TAG
 
 
 @dataclass
@@ -156,12 +156,15 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult]) ->
     
     # Add "Changes Since Deployment" section
     # Include contracts not deployed from master (where commit != "master")
+    # Exclude EulerSwap V1 - eulerswap-1.0 tag IS their production version (V2 is different)
     contracts_with_changes = [
         r for r in results 
         if r.verified 
         and r.commit 
         and r.commit != "master"
         and r.commit != "main"
+        and r.commit != EULERSWAP_V1_TAG
+        and r.contract_name not in EULERSWAP_V1_CONTRACTS
     ]
     
     if contracts_with_changes:
