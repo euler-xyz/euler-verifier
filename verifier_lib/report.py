@@ -69,52 +69,66 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult]) ->
     
     # Count stats
     verified_count = sum(1 for r in results if r.verified)
+    error_count = sum(1 for r in results if r.error)
+    partial_count = sum(1 for r in results if not r.verified and not r.error)
     total_count = len(results)
-    percentage = (verified_count / total_count * 100) if total_count > 0 else 0
-    
-    status_emoji = "✅" if verified_count == total_count else "⚠️"
     
     lines = [
         f"# {config.name} Contract Verification Report",
         "",
-        f"**Chain ID:** {config.chain_id}",
-        f"**Explorer:** [{config.explorer_url}]({config.explorer_url})",
-        f"**Status:** {status_emoji} {verified_count}/{total_count} contracts verified",
-        "",
         "## Summary",
         "",
-        "| Contract | Address | Status | Source Repo | Commit |",
-        "|----------|---------|--------|-------------|--------|",
+        "| Status | Count |",
+        "|--------|-------|",
+        f"| ✓ Verified (exact match) | {verified_count} |",
+        f"| ✗ No exact commit found | {partial_count} |",
+        f"| - Error | {error_count} |",
+        f"| **Total** | **{total_count}** |",
+        "",
+        "## Verified Contracts",
+        "",
+        "| Contract | Address | Source Repo | Source Commit | Files |",
+        "|----------|---------|-------------|---------------|-------|",
     ]
     
     # Add result rows
     for r in results:
-        addr_short = f"{r.address[:10]}..."
+        addr_short = f"`{r.address[:10]}...`"
         addr_link = f"[{addr_short}]({config.explorer_url}/address/{r.address})"
         
         if r.verified and r.commit:
             repo_name, github_path, _ = get_repo_for_contract(r.contract_name)
             repo_link = f"[{repo_name}](https://github.com/{github_path})"
             commit_short = r.commit[:8] if len(r.commit) > 8 else r.commit
-            commit_link = f"[{commit_short}]({r.github_url})"
-            lines.append(f"| {r.contract_name} | {addr_link} | {r.status_emoji} | {repo_link} | {commit_link} |")
+            commit_link = f"[`{commit_short}`]({r.github_url})"
+            files_str = f"{r.matching_files}/{r.total_files}" if r.total_files > 0 else "-"
+            lines.append(f"| ✓ {r.contract_name} | {addr_link} | {repo_link} | {commit_link} | {files_str} |")
         elif r.error:
-            lines.append(f"| {r.contract_name} | {addr_link} | {r.status_emoji} | - | Error: {r.error} |")
+            lines.append(f"| ✗ {r.contract_name} | {addr_link} | - | Error: {r.error} | - |")
         else:
-            lines.append(f"| {r.contract_name} | {addr_link} | {r.status_emoji} | {r.repo_name} | - |")
+            repo_name, github_path, _ = get_repo_for_contract(r.contract_name)
+            repo_link = f"[{repo_name}](https://github.com/{github_path})"
+            files_str = f"{r.matching_files}/{r.total_files}" if r.total_files > 0 else "-"
+            lines.append(f"| ✗ {r.contract_name} | {addr_link} | {repo_link} | No exact match | {files_str} |")
     
     # Add diff section for non-verified contracts
     contracts_with_diff = [r for r in results if not r.verified and r.diff_lines]
     if contracts_with_diff:
         lines.extend([
             "",
+            "",
             "## Contracts With Differences",
+            "",
+            "This section shows contracts that couldn't be matched to any known commit.",
         ])
         
         for r in contracts_with_diff:
             lines.extend([
                 "",
                 f"### {r.contract_name}",
+                "",
+                f"- **Address:** [`{r.address}`]({config.explorer_url}/address/{r.address})",
+                f"- **Files matching:** {r.matching_files}/{r.total_files}",
                 "",
                 "```diff",
             ])
