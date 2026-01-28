@@ -76,6 +76,27 @@ def get_recent_commits(repo_dir: Path, max_commits: int = 100) -> List[str]:
         return []
 
 
+def get_diff_vs_master(repo_dir: Path, commit: str, contract_name: str) -> Optional[str]:
+    """Get diff between a commit and master for relevant source files."""
+    if commit in ("master", "main"):
+        return None
+    
+    try:
+        # Get diff for src/ directory
+        result = subprocess.run(
+            ["git", "diff", f"{commit}...master", "--", "src/"],
+            cwd=repo_dir,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+        return None
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return None
+
+
 def verify_contract(
     contract_name: str,
     address: str,
@@ -124,6 +145,12 @@ def verify_contract(
         
         if matching == total and total > 0:
             print(f"    ✓ Verified at {commit} ({matching}/{total} files)", flush=True)
+            
+            # Get diff vs master for "Changes Since Deployment" section
+            diff_vs_master = get_diff_vs_master(repo_path, commit, contract_name)
+            if diff_vs_master:
+                print(f"    → Changes since deployment detected", flush=True)
+            
             return VerificationResult(
                 contract_name=contract_name,
                 address=address,
@@ -131,6 +158,7 @@ def verify_contract(
                 commit=commit,
                 matching_files=matching,
                 total_files=total,
+                diff_vs_master=diff_vs_master,
             )
     
     # Exhaustive search if enabled
@@ -150,6 +178,12 @@ def verify_contract(
             
             if matching == total and total > 0:
                 print(f"    ✓ Found at {commit} ({matching}/{total} files)", flush=True)
+                
+                # Get diff vs master
+                diff_vs_master = get_diff_vs_master(repo_path, commit, contract_name)
+                if diff_vs_master:
+                    print(f"    → Changes since deployment detected", flush=True)
+                
                 return VerificationResult(
                     contract_name=contract_name,
                     address=address,
@@ -157,6 +191,7 @@ def verify_contract(
                     commit=commit,
                     matching_files=matching,
                     total_files=total,
+                    diff_vs_master=diff_vs_master,
                 )
     
     # No exact match - return best effort at master
