@@ -29,7 +29,6 @@ VERIFIABLE_PERIPHERY: Set[str] = {
     "governorAccessControlEmergencyFactory",
     "oracleRouterFactory",
     "swapVerifier",
-    "termsOfUseSigner",
     "eulerEarnPublicAllocator",
 }
 
@@ -45,8 +44,18 @@ VERIFIABLE_SWAP: Set[str] = {
     "eulerSwapV2Registry",
 }
 
+# Contracts we can verify from TokenAddresses.json
+VERIFIABLE_TOKEN: Set[str] = {
+    "rEUL",
+}
+
+# Contracts we can verify from BridgeAddresses.json
+VERIFIABLE_BRIDGE: Set[str] = {
+    "eulOFTAdapter",
+}
+
 # All verifiable contracts
-VERIFIABLE_CONTRACTS: Set[str] = VERIFIABLE_CORE | VERIFIABLE_PERIPHERY | VERIFIABLE_SWAP
+VERIFIABLE_CONTRACTS: Set[str] = VERIFIABLE_CORE | VERIFIABLE_PERIPHERY | VERIFIABLE_SWAP | VERIFIABLE_TOKEN | VERIFIABLE_BRIDGE
 
 # Gold standard order (Ethereum mainnet has all contracts)
 GOLD_STANDARD_ORDER = [
@@ -80,7 +89,10 @@ GOLD_STANDARD_ORDER = [
     "governorAccessControlEmergencyFactory",
     "oracleRouterFactory",
     "swapVerifier",
-    "termsOfUseSigner",
+    # Tokens
+    "rEUL",
+    # Bridge
+    "eulOFTAdapter",
 ]
 
 
@@ -123,6 +135,28 @@ def load_contracts(chain_id: int) -> Dict[str, str]:
             swap = json.loads(swap_file.read_text())
             for name, address in swap.items():
                 if name in VERIFIABLE_SWAP and address and address != "0x0000000000000000000000000000000000000000":
+                    contracts[name] = address
+        except (json.JSONDecodeError, IOError):
+            pass
+    
+    # Load Token addresses (rEUL)
+    token_file = base / "TokenAddresses.json"
+    if token_file.exists():
+        try:
+            tokens = json.loads(token_file.read_text())
+            for name, address in tokens.items():
+                if name in VERIFIABLE_TOKEN and address and address != "0x0000000000000000000000000000000000000000":
+                    contracts[name] = address
+        except (json.JSONDecodeError, IOError):
+            pass
+    
+    # Load Bridge addresses (eulOFTAdapter)
+    bridge_file = base / "BridgeAddresses.json"
+    if bridge_file.exists():
+        try:
+            bridge = json.loads(bridge_file.read_text())
+            for name, address in bridge.items():
+                if name in VERIFIABLE_BRIDGE and address and address != "0x0000000000000000000000000000000000000000":
                     contracts[name] = address
         except (json.JSONDecodeError, IOError):
             pass

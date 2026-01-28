@@ -125,7 +125,12 @@ CONTRACT_REPOS: Dict[str, Tuple[str, str, Optional[str]]] = {
     "governorAccessControlEmergencyFactory": ("evk-periphery", "euler-xyz/evk-periphery", None),
     "oracleRouterFactory": ("evk-periphery", "euler-xyz/evk-periphery", None),
     "swapVerifier": ("evk-periphery", "euler-xyz/evk-periphery", None),
-    "termsOfUseSigner": ("evk-periphery", "euler-xyz/evk-periphery", None),
+    
+    # Token contracts (evk-periphery)
+    "rEUL": ("evk-periphery", "euler-xyz/evk-periphery", None),
+    
+    # Bridge contracts (evk-periphery)
+    "eulOFTAdapter": ("evk-periphery", "euler-xyz/evk-periphery", None),
 }
 
 # =============================================================================
