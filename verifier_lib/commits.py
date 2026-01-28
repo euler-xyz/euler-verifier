@@ -30,10 +30,11 @@ GLOBAL_COMMITS: List[str] = [
     "a11037fa",
     "f61809fd",      # rEUL deployment
     "dec63c2a",
-    "4edac34f",
+    "4edac34f",      # Linea deployment
     "773453b",       # euler-earn deployment (Blockscout networks)
     "8aa230b",       # euler-earn certora branch
-    "deploy-swell",  # Swell-specific balanceTracker
+    "deploy-swell",  # Swell-specific balanceTracker (tag)
+    "origin/deployment-script",  # euler-earn special deployment branch
 ]
 
 # EulerSwap V1 always uses this tag
@@ -63,6 +64,12 @@ NETWORK_HINTS: Dict[str, Dict[str, str]] = {
         "kinkIRMFactory": "2b087370",
         "swapVerifier": "2b087370",
         "oracleRouterFactory": "5e066711",
+    },
+    "base": {
+        "balanceTracker": "deploy-swell",
+    },
+    "linea": {
+        "eulerEarnFactory": "origin/deployment-script",
     },
     "swell": {
         "balanceTracker": "deploy-swell",

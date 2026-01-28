@@ -41,8 +41,9 @@ from verifier_lib.report import generate_report, print_summary
 
 
 def checkout_repo(repo_dir: Path, commit: str) -> bool:
-    """Checkout a repo to a specific commit."""
+    """Checkout a repo to a specific commit with proper submodule handling."""
     try:
+        # Checkout the commit
         subprocess.run(
             ["git", "checkout", "-f", commit],
             cwd=repo_dir,
@@ -50,9 +51,10 @@ def checkout_repo(repo_dir: Path, commit: str) -> bool:
             capture_output=True,
             text=True,
         )
-        # Update submodules
+        
+        # Update direct submodules only (not recursive - too slow)
         subprocess.run(
-            ["git", "submodule", "update", "--init", "--recursive"],
+            ["git", "submodule", "update", "--init", "--force"],
             cwd=repo_dir,
             capture_output=True,
             text=True,
