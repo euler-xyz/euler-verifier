@@ -29,6 +29,8 @@ from verifier_lib import (
     get_commits_to_try,
     get_repo_path,
     get_submodule_paths,
+    get_source_commit,
+    get_repo_for_contract,
     EULERSWAP_V1_CONTRACTS,
     EULERSWAP_V1_TAG,
     GLOBAL_COMMITS,
@@ -76,21 +78,60 @@ def get_recent_commits(repo_dir: Path, max_commits: int = 100) -> List[str]:
         return []
 
 
-def get_diff_vs_master(repo_dir: Path, commit: str, contract_name: str) -> Optional[str]:
-    """Get diff between a commit and master for relevant source files."""
-    if commit in ("master", "main"):
+def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str) -> Optional[str]:
+    """
+    Get diff between source commit and master for relevant source files.
+    
+    For submodule contracts, generates diff in the submodule directory within evk-periphery.
+    For native evk-periphery contracts, generates diff directly.
+    """
+    if source_commit in ("master", "main"):
         return None
     
     # EulerSwap V1 uses eulerswap-1.0 tag - don't compare to master (V2 is different)
-    # The eulerswap-1.0 tag IS their "production" version
-    if commit == "eulerswap-1.0" or contract_name in EULERSWAP_V1_CONTRACTS:
+    if source_commit == EULERSWAP_V1_TAG or contract_name in EULERSWAP_V1_CONTRACTS:
         return None
     
+    repo_name, _, submodule_path = get_repo_for_contract(contract_name)
+    
+    # For standalone repos (euler-earn), diff in that repo
+    if contract_name in {"eulerEarnFactory", "eulerEarnPublicAllocator"}:
+        try:
+            result = subprocess.run(
+                ["git", "diff", f"{source_commit}...master", "--", "src/"],
+                cwd=EULER_EARN_DIR,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip()
+            return None
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            return None
+    
+    # For evk-periphery submodule contracts, diff within the submodule
+    if submodule_path:
+        try:
+            # Diff within the submodule directory at evk-periphery level
+            result = subprocess.run(
+                ["git", "diff", f"{evk_commit}...master", "--", f"{submodule_path}/src/"],
+                cwd=EVK_PERIPHERY_DIR,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip()
+            return None
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            return None
+    
+    # For native evk-periphery contracts
     try:
-        # Get diff for src/ directory
         result = subprocess.run(
-            ["git", "diff", f"{commit}...master", "--", "src/"],
-            cwd=repo_dir,
+            ["git", "diff", f"{source_commit}...master", "--", "src/"],
+            cwd=EVK_PERIPHERY_DIR,
             capture_output=True,
             text=True,
             timeout=30,
@@ -139,20 +180,23 @@ def verify_contract(
     commits_to_try = get_commits_to_try(contract_name, network_name)
     
     # Try each commit
-    for commit in commits_to_try:
-        print(f"    Trying {commit}...", flush=True)
+    for evk_commit in commits_to_try:
+        print(f"    Trying {evk_commit}...", flush=True)
         
-        if not checkout_repo(repo_path, commit):
+        if not checkout_repo(repo_path, evk_commit):
             continue
         
         comparator = SourceComparator(repo_path, submodules)
         matching, total, diff_lines = comparator.compare_sources(sources)
         
         if matching == total and total > 0:
-            print(f"    ✓ Verified at {commit} ({matching}/{total} files)", flush=True)
+            # Resolve actual source commit (submodule commit if applicable)
+            repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit)
+            
+            print(f"    ✓ Verified at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
             
             # Get diff vs master for "Changes Since Deployment" section
-            diff_vs_master = get_diff_vs_master(repo_path, commit, contract_name)
+            diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit)
             if diff_vs_master:
                 print(f"    → Changes since deployment detected", flush=True)
             
@@ -160,7 +204,8 @@ def verify_contract(
                 contract_name=contract_name,
                 address=address,
                 verified=True,
-                commit=commit,
+                source_commit=source_commit,
+                evk_periphery_commit=evk_commit if repo_name != "evk-periphery" else None,
                 matching_files=matching,
                 total_files=total,
                 diff_vs_master=diff_vs_master,
@@ -171,21 +216,24 @@ def verify_contract(
         print(f"    Searching through recent commits...", flush=True)
         recent = get_recent_commits(repo_path, 200)
         
-        for commit in recent:
-            if commit in commits_to_try:
+        for evk_commit in recent:
+            if evk_commit in commits_to_try:
                 continue
             
-            if not checkout_repo(repo_path, commit):
+            if not checkout_repo(repo_path, evk_commit):
                 continue
             
             comparator = SourceComparator(repo_path, submodules)
             matching, total, diff_lines = comparator.compare_sources(sources)
             
             if matching == total and total > 0:
-                print(f"    ✓ Found at {commit} ({matching}/{total} files)", flush=True)
+                # Resolve actual source commit
+                repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit)
+                
+                print(f"    ✓ Found at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
                 
                 # Get diff vs master
-                diff_vs_master = get_diff_vs_master(repo_path, commit, contract_name)
+                diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit)
                 if diff_vs_master:
                     print(f"    → Changes since deployment detected", flush=True)
                 
@@ -193,7 +241,8 @@ def verify_contract(
                     contract_name=contract_name,
                     address=address,
                     verified=True,
-                    commit=commit,
+                    source_commit=source_commit,
+                    evk_periphery_commit=evk_commit if repo_name != "evk-periphery" else None,
                     matching_files=matching,
                     total_files=total,
                     diff_vs_master=diff_vs_master,
@@ -209,7 +258,8 @@ def verify_contract(
         contract_name=contract_name,
         address=address,
         verified=False,
-        commit=None,
+        source_commit=None,
+        evk_periphery_commit=None,
         matching_files=matching,
         total_files=total,
         diff_lines=diff_lines,
@@ -254,21 +304,9 @@ def verify_network(
     
     results = []
     for contract_name, address in contracts.items():
-        # Check cache
-        if use_cache:
-            source_hash = fetcher.get_source_hash(address)
-            if source_hash and cache.is_source_unchanged(config.chain_id, address, source_hash):
-                cached_commit = cache.get(config.chain_id, address)
-                if cached_commit:
-                    print(f"\n  {contract_name} @ {address}", flush=True)
-                    print(f"    ✓ Cached: {cached_commit}", flush=True)
-                    results.append(VerificationResult(
-                        contract_name=contract_name,
-                        address=address,
-                        verified=True,
-                        commit=cached_commit,
-                    ))
-                    continue
+        # NOTE: Cache disabled for now - it doesn't preserve all required data
+        # (source_commit, evk_periphery_commit, file counts, diffs)
+        # TODO: Enhance cache to store full VerificationResult data
         
         # Verify contract
         result = verify_contract(
@@ -279,11 +317,6 @@ def verify_network(
             exhaustive,
         )
         results.append(result)
-        
-        # Update cache on success
-        if result.verified and result.commit:
-            source_hash = fetcher.get_source_hash(address)
-            cache.set(config.chain_id, address, result.commit, source_hash)
     
     return results
 
