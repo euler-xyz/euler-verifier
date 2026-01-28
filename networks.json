@@ -1,0 +1,114 @@
+{
+  "mainnet": {
+    "chain_id": 1,
+    "name": "Ethereum Mainnet",
+    "status": "production",
+    "explorer_url": "https://etherscan.io",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  },
+  "arbitrum": {
+    "chain_id": 42161,
+    "name": "Arbitrum",
+    "status": "production",
+    "explorer_url": "https://arbiscan.io",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  },
+  "base": {
+    "chain_id": 8453,
+    "name": "Base",
+    "status": "production",
+    "explorer_url": "https://basescan.org",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  },
+  "bsc": {
+    "chain_id": 56,
+    "name": "BSC",
+    "status": "production",
+    "explorer_url": "https://bscscan.com",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  },
+  "avalanche": {
+    "chain_id": 43114,
+    "name": "Avalanche",
+    "status": "production",
+    "explorer_url": "https://snowtrace.io",
+    "explorer_api": "https://api.snowtrace.io/api",
+    "api_type": "etherscan_v2"
+  },
+  "linea": {
+    "chain_id": 59144,
+    "name": "Linea",
+    "status": "production",
+    "explorer_url": "https://lineascan.build",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  },
+  "gnosis": {
+    "chain_id": 100,
+    "name": "Gnosis",
+    "status": "testing",
+    "explorer_url": "https://gnosisscan.io",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  },
+  "optimism": {
+    "chain_id": 10,
+    "name": "Optimism",
+    "status": "testing",
+    "explorer_url": "https://optimistic.etherscan.io",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  },
+  "polygon": {
+    "chain_id": 137,
+    "name": "Polygon",
+    "status": "testing",
+    "explorer_url": "https://polygonscan.com",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  },
+  "swell": {
+    "chain_id": 1923,
+    "name": "Swell",
+    "status": "production",
+    "explorer_url": "https://explorer.swellnetwork.io",
+    "explorer_api": "https://explorer.swellnetwork.io/api",
+    "api_type": "blockscout_v2"
+  },
+  "bob": {
+    "chain_id": 60808,
+    "name": "BOB",
+    "status": "production",
+    "explorer_url": "https://explorer.gobob.xyz",
+    "explorer_api": "https://explorer.gobob.xyz/api",
+    "api_type": "blockscout_v2"
+  },
+  "unichain": {
+    "chain_id": 130,
+    "name": "Unichain",
+    "status": "production",
+    "explorer_url": "https://unichain.blockscout.com",
+    "explorer_api": "https://unichain.blockscout.com/api",
+    "api_type": "blockscout_v2"
+  },
+  "berachain": {
+    "chain_id": 80094,
+    "name": "Berachain",
+    "status": "production",
+    "explorer_url": "https://berascan.com",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  },
+  "sonic": {
+    "chain_id": 146,
+    "name": "Sonic",
+    "status": "production",
+    "explorer_url": "https://sonicscan.org",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
+  }
+}
