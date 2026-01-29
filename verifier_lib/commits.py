@@ -70,6 +70,11 @@ NETWORK_HINTS: Dict[str, Dict[str, str]] = {
     },
     "linea": {
         "eulerEarnFactory": "origin/deployment-script",
+        "eulerEarnPublicAllocator": "origin/deployment-script",
+        # On Linea, eulerSwapV1 was deployed from evk-periphery at 4edac34f
+        "eulerSwapV1Factory": "4edac34f",
+        "eulerSwapV1Implementation": "4edac34f",
+        "eulerSwapV1Periphery": "4edac34f",
     },
     "swell": {
         "balanceTracker": "deploy-swell",
@@ -93,6 +98,16 @@ NETWORK_HINTS: Dict[str, Dict[str, str]] = {
 # =============================================================================
 # CONTRACT TO REPO MAPPING
 # =============================================================================
+
+# Network-specific repo overrides for contracts deployed differently on certain networks
+# On Linea, eulerSwapV1 was deployed from evk-periphery's lib/euler-swap submodule
+NETWORK_REPO_OVERRIDES: Dict[str, Dict[str, Tuple[str, str, Optional[str]]]] = {
+    "linea": {
+        "eulerSwapV1Factory": ("euler-swap", "euler-xyz/euler-swap", "lib/euler-swap"),
+        "eulerSwapV1Implementation": ("euler-swap", "euler-xyz/euler-swap", "lib/euler-swap"),
+        "eulerSwapV1Periphery": ("euler-swap", "euler-xyz/euler-swap", "lib/euler-swap"),
+    },
+}
 
 # Contract name -> (repo_name, github_url, submodule_path_in_evk_periphery)
 # submodule_path is None for standalone repos
@@ -144,37 +159,56 @@ CONTRACT_REPOS: Dict[str, Tuple[str, str, Optional[str]]] = {
 # HELPER FUNCTIONS
 # =============================================================================
 
-def get_repo_for_contract(contract_name: str) -> Tuple[str, str, Optional[str]]:
+def get_repo_for_contract(contract_name: str, network: Optional[str] = None) -> Tuple[str, str, Optional[str]]:
     """
     Get repository info for a contract.
+    
+    Args:
+        contract_name: Name of the contract
+        network: Optional network name for network-specific overrides
     
     Returns:
         Tuple of (repo_name, github_path, submodule_path)
         submodule_path is None for standalone repos
     """
+    # Check network-specific overrides first
+    if network and network in NETWORK_REPO_OVERRIDES:
+        if contract_name in NETWORK_REPO_OVERRIDES[network]:
+            return NETWORK_REPO_OVERRIDES[network][contract_name]
+    
     return CONTRACT_REPOS.get(contract_name, ("evk-periphery", "euler-xyz/evk-periphery", None))
 
 
-def get_repo_path(contract_name: str) -> Path:
+def get_repo_path(contract_name: str, network: Optional[str] = None) -> Path:
     """Get the local repository path for a contract."""
-    repo_name, _, submodule = get_repo_for_contract(contract_name)
+    repo_name, _, submodule = get_repo_for_contract(contract_name, network)
     
-    # Standalone repos
-    if contract_name in EULERSWAP_V1_CONTRACTS:
-        return EULER_SWAP_DIR
-    if contract_name in {"eulerEarnFactory", "eulerEarnPublicAllocator"}:
-        return EULER_EARN_DIR
+    # Standalone repos (only if no network override)
+    if network not in NETWORK_REPO_OVERRIDES or contract_name not in NETWORK_REPO_OVERRIDES.get(network, {}):
+        if contract_name in EULERSWAP_V1_CONTRACTS:
+            return EULER_SWAP_DIR
+        if contract_name in {"eulerEarnFactory", "eulerEarnPublicAllocator"}:
+            return EULER_EARN_DIR
     
-    # evk-periphery or its submodules
+    # evk-periphery or its submodules (including network-overridden contracts)
     return EVK_PERIPHERY_DIR
 
 
-def get_submodule_paths(contract_name: str) -> List[str]:
+def get_submodule_paths(contract_name: str, network: Optional[str] = None) -> List[str]:
     """Get submodule paths to search for a contract's source files."""
-    _, _, submodule = get_repo_for_contract(contract_name)
+    repo_name, _, submodule = get_repo_for_contract(contract_name, network)
     
     if submodule:
         return [submodule]
+    
+    # Standalone repos (euler-earn, euler-swap standalone) use no submodule paths
+    if repo_name in ("euler-earn", "euler-swap") and submodule is None:
+        # Check if network override makes it a submodule
+        if network and network in NETWORK_REPO_OVERRIDES:
+            override = NETWORK_REPO_OVERRIDES[network].get(contract_name)
+            if override and override[2]:  # Has submodule path in override
+                return [override[2]]
+        return []
     
     # Default submodules for evk-periphery contracts
     return [
@@ -194,7 +228,7 @@ def get_commits_to_try(contract_name: str, network_name: str) -> List[str]:
     
     Prioritizes:
     1. Network-specific hint for this contract
-    2. EulerSwap V1 tag for V1 contracts
+    2. EulerSwap V1 tag for V1 contracts (unless network override exists)
     3. Global known commits
     """
     commits = []
@@ -204,9 +238,16 @@ def get_commits_to_try(contract_name: str, network_name: str) -> List[str]:
     if hint:
         commits.append(hint)
     
-    # EulerSwap V1 uses specific tag
-    if contract_name in EULERSWAP_V1_CONTRACTS:
-        commits.append(EULERSWAP_V1_TAG)
+    # Check if this contract has a network-specific repo override
+    has_network_override = (
+        network_name in NETWORK_REPO_OVERRIDES and 
+        contract_name in NETWORK_REPO_OVERRIDES[network_name]
+    )
+    
+    # EulerSwap V1 uses specific tag - but only if no network override
+    if contract_name in EULERSWAP_V1_CONTRACTS and not has_network_override:
+        if EULERSWAP_V1_TAG not in commits:
+            commits.append(EULERSWAP_V1_TAG)
         commits.extend(["master", "main"])
         return commits
     
@@ -255,7 +296,7 @@ def get_submodule_commit(evk_commit: str, submodule_path: str) -> Optional[str]:
         return None
 
 
-def get_source_commit(contract_name: str, evk_commit: Optional[str]) -> Tuple[str, str, Optional[str]]:
+def get_source_commit(contract_name: str, evk_commit: Optional[str], network: Optional[str] = None) -> Tuple[str, str, Optional[str]]:
     """
     Get source repository info and actual source commit for a contract.
     
@@ -265,15 +306,23 @@ def get_source_commit(contract_name: str, evk_commit: Optional[str]) -> Tuple[st
     Args:
         contract_name: Name of the contract
         evk_commit: The evk-periphery commit where match was found
+        network: Optional network name for network-specific handling
     
     Returns:
         Tuple of (repo_name, github_url, source_commit)
     """
-    repo_name, github_path, submodule_path = get_repo_for_contract(contract_name)
+    repo_name, github_path, submodule_path = get_repo_for_contract(contract_name, network)
     repo_url = f"https://github.com/{github_path}"
     
-    # Standalone contracts (euler-earn, euler-swap v1)
-    if contract_name in EULERSWAP_V1_CONTRACTS:
+    # Check if this contract has a network-specific repo override
+    has_network_override = (
+        network and 
+        network in NETWORK_REPO_OVERRIDES and 
+        contract_name in NETWORK_REPO_OVERRIDES[network]
+    )
+    
+    # Standalone contracts (euler-earn, euler-swap v1) - but not if network override
+    if contract_name in EULERSWAP_V1_CONTRACTS and not has_network_override:
         return (repo_name, repo_url, EULERSWAP_V1_TAG)
     
     if contract_name in {"eulerEarnFactory", "eulerEarnPublicAllocator"}:
