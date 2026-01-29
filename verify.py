@@ -65,6 +65,29 @@ def checkout_repo(repo_dir: Path, commit: str) -> bool:
         return False
 
 
+def init_nested_submodules(repo_dir: Path, submodule_paths: List[str]) -> None:
+    """
+    Initialize nested submodules for specific paths.
+    
+    This is needed for contracts like balanceTracker which use reward-streams,
+    and reward-streams has its own openzeppelin-contracts submodule that must
+    be initialized to get the correct OZ version (v5.0.0 vs v5.1.0).
+    """
+    for submod in submodule_paths:
+        submod_dir = repo_dir / submod
+        if submod_dir.exists() and (submod_dir / ".gitmodules").exists():
+            try:
+                subprocess.run(
+                    ["git", "submodule", "update", "--init", "--force"],
+                    cwd=submod_dir,
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                )
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                pass  # Best effort
+
+
 def get_recent_commits(repo_dir: Path, max_commits: int = 100) -> List[str]:
     """Get recent commits from a repository."""
     try:
@@ -189,6 +212,9 @@ def verify_contract(
         if not checkout_repo(repo_path, evk_commit):
             continue
         
+        # Initialize nested submodules if needed (e.g., reward-streams has its own OZ)
+        init_nested_submodules(repo_path, submodules)
+        
         comparator = SourceComparator(repo_path, submodules)
         matching, total, diff_lines = comparator.compare_sources(sources)
         
@@ -225,6 +251,9 @@ def verify_contract(
             
             if not checkout_repo(repo_path, evk_commit):
                 continue
+            
+            # Initialize nested submodules if needed
+            init_nested_submodules(repo_path, submodules)
             
             comparator = SourceComparator(repo_path, submodules)
             matching, total, diff_lines = comparator.compare_sources(sources)
