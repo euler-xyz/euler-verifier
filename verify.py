@@ -80,7 +80,7 @@ def get_recent_commits(repo_dir: Path, max_commits: int = 100) -> List[str]:
         return []
 
 
-def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str) -> Optional[str]:
+def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, network_name: str = None) -> Optional[str]:
     """
     Get diff between source commit and master for relevant source files.
     
@@ -91,10 +91,11 @@ def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str) 
         return None
     
     # EulerSwap V1 uses eulerswap-1.0 tag - don't compare to master (V2 is different)
-    if source_commit == EULERSWAP_V1_TAG or contract_name in EULERSWAP_V1_CONTRACTS:
+    # But on networks where V1 is deployed from evk-periphery (like Linea), we can diff
+    if source_commit == EULERSWAP_V1_TAG or (contract_name in EULERSWAP_V1_CONTRACTS and not network_name):
         return None
     
-    repo_name, _, submodule_path = get_repo_for_contract(contract_name)
+    repo_name, _, submodule_path = get_repo_for_contract(contract_name, network_name)
     
     # For standalone repos (euler-earn), diff in that repo
     if contract_name in {"eulerEarnFactory", "eulerEarnPublicAllocator"}:
@@ -174,9 +175,9 @@ def verify_contract(
             error="No source files",
         )
     
-    # Determine repo and submodules
-    repo_path = get_repo_path(contract_name)
-    submodules = get_submodule_paths(contract_name)
+    # Determine repo and submodules (network-aware for special cases like Linea)
+    repo_path = get_repo_path(contract_name, network_name)
+    submodules = get_submodule_paths(contract_name, network_name)
     
     # Get commits to try
     commits_to_try = get_commits_to_try(contract_name, network_name)
@@ -193,12 +194,12 @@ def verify_contract(
         
         if matching == total and total > 0:
             # Resolve actual source commit (submodule commit if applicable)
-            repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit)
+            repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit, network_name)
             
             print(f"    ✓ Verified at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
             
             # Get diff vs master for "Changes Since Deployment" section
-            diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit)
+            diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name)
             if diff_vs_master:
                 print(f"    → Changes since deployment detected", flush=True)
             
@@ -230,12 +231,12 @@ def verify_contract(
             
             if matching == total and total > 0:
                 # Resolve actual source commit
-                repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit)
+                repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit, network_name)
                 
                 print(f"    ✓ Found at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
                 
                 # Get diff vs master
-                diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit)
+                diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name)
                 if diff_vs_master:
                     print(f"    → Changes since deployment detected", flush=True)
                 
