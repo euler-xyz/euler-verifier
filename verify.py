@@ -34,6 +34,7 @@ from verifier_lib import (
     EULERSWAP_V1_CONTRACTS,
     EULERSWAP_V1_TAG,
     GLOBAL_COMMITS,
+    STANDALONE_FALLBACKS,
 )
 from verifier_lib.config import get_network, list_networks, ROOT_DIR
 from verifier_lib.commits import EVK_PERIPHERY_DIR, EULER_EARN_DIR, EULER_SWAP_DIR
@@ -169,6 +170,101 @@ def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, 
         return None
 
 
+def try_standalone_fallback(
+    contract_name: str,
+    sources: dict,
+    network_name: str = None,
+) -> Optional[VerificationResult]:
+    """
+    Try verifying a contract against a repo with nested submodule overrides.
+    This handles cases where the main repo pins older nested dependencies (EVC, OZ, etc.)
+    but the contract was deployed with newer versions.
+    """
+    if contract_name not in STANDALONE_FALLBACKS:
+        return None
+
+    repo_dir_name, commits, nested_overrides = STANDALONE_FALLBACKS[contract_name]
+    repo_path = ROOT_DIR / "repos" / repo_dir_name
+
+    if not repo_path.exists():
+        return None
+
+    # For evk-periphery fallbacks, use the contract's submodule paths
+    if repo_dir_name == "evk-periphery":
+        submodule_paths = get_submodule_paths(contract_name, network_name)
+    else:
+        submodule_paths = []
+
+    print(f"    Trying fallback {repo_dir_name}...", flush=True)
+
+    for commit in commits:
+        if not checkout_repo(repo_path, commit):
+            continue
+
+        if not nested_overrides:
+            comparator = SourceComparator(repo_path, submodule_paths)
+            matching, total, _ = comparator.compare_sources(sources)
+            if matching == total and total > 0:
+                print(f"    ✓ Verified at {commit} in {repo_dir_name} ({matching}/{total} files)", flush=True)
+                return VerificationResult(
+                    contract_name=contract_name,
+                    address="",
+                    verified=True,
+                    source_commit=commit,
+                    matching_files=matching,
+                    total_files=total,
+                )
+        else:
+            # Generate all combinations of nested overrides
+            from itertools import product
+            override_options = []
+            for submod_path, versions in nested_overrides:
+                submod_dir = repo_path / submod_path
+                if not submod_dir.exists():
+                    override_options.append([(submod_path, None)])
+                else:
+                    override_options.append([(submod_path, v) for v in versions])
+
+            for combo in product(*override_options):
+                desc_parts = []
+                ok = True
+                for submod_path, version in combo:
+                    if version is None:
+                        ok = False
+                        break
+                    submod_dir = repo_path / submod_path
+                    try:
+                        subprocess.run(
+                            ["git", "checkout", "-f", version],
+                            cwd=submod_dir,
+                            check=True,
+                            capture_output=True,
+                            text=True,
+                        )
+                        desc_parts.append(f"{submod_path}@{version}")
+                    except subprocess.CalledProcessError:
+                        ok = False
+                        break
+                if not ok:
+                    continue
+
+                comparator = SourceComparator(repo_path, submodule_paths)
+                matching, total, _ = comparator.compare_sources(sources)
+                if matching == total and total > 0:
+                    desc = " + ".join(desc_parts)
+                    print(f"    ✓ Verified at {commit} in {repo_dir_name} + {desc} ({matching}/{total} files)", flush=True)
+                    return VerificationResult(
+                        contract_name=contract_name,
+                        address="",
+                        verified=True,
+                        source_commit=commit,
+                        matching_files=matching,
+                        total_files=total,
+                    )
+
+    return None
+
+
 def verify_contract(
     contract_name: str,
     address: str,
@@ -280,6 +376,12 @@ def verify_contract(
                     diff_vs_master=diff_vs_master,
                 )
     
+    # Try fallback with nested submodule overrides
+    fallback = try_standalone_fallback(contract_name, sources, network_name)
+    if fallback:
+        fallback.address = address
+        return fallback
+
     # No exact match - return best effort at master
     print(f"    No exact match, showing diff vs master", flush=True)
     checkout_repo(repo_path, "master")
@@ -329,7 +431,7 @@ def verify_network(
     network_name = config.name.lower()
     for key in ["mainnet", "arbitrum", "base", "bsc", "avalanche", "linea",
                 "gnosis", "optimism", "polygon", "swell", "bob", "unichain",
-                "berachain", "sonic"]:
+                "berachain", "sonic", "monad", "tac", "plasma"]:
         if key in network_name:
             network_name = key
             break

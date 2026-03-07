@@ -9,11 +9,12 @@ from .addresses import load_contracts, VERIFIABLE_CONTRACTS
 from .cache import CommitMatchCache
 from .comparator import SourceComparator
 from .commits import (
-    GLOBAL_COMMITS, 
-    EULERSWAP_V1_TAG, 
+    GLOBAL_COMMITS,
+    EULERSWAP_V1_TAG,
     EULERSWAP_V1_CONTRACTS,
     CONTRACT_REPOS,
     NETWORK_HINTS,
+    STANDALONE_FALLBACKS,
     get_commits_to_try,
     get_repo_path,
     get_submodule_paths,

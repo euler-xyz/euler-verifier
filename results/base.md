@@ -4,8 +4,8 @@
 
 | Status | Count |
 |--------|-------|
-| ✓ Verified (exact match) | 25 |
-| ✗ No exact commit found | 1 |
+| ✓ Verified (exact match) | 26 |
+| ✗ No exact commit found | 0 |
 | ~ Standalone with diff | 0 |
 | - Error | 0 |
 | **Total** | **26** |
@@ -15,7 +15,7 @@
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
 | ✓ adaptiveCurveIRMFactory | [`0xae752d78...`](https://basescan.org/address/0xae752d786ecAf6683f61b7D910F221edD003895b) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
-| ✗ balanceTracker | [`0x029fDEe8...`](https://basescan.org/address/0x029fDEe85BEdB0553D6fdc538546586641DD7438) | [reward-streams](https://github.com/euler-xyz/reward-streams) | not found | - | 10/17 |
+| ✓ balanceTracker | [`0x029fDEe8...`](https://basescan.org/address/0x029fDEe85BEdB0553D6fdc538546586641DD7438) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`8695c72c`](https://github.com/euler-xyz/evk-periphery/tree/8695c72c) | 17/17 |
 | ✓ eulerEarnFactory | [`0x75F49a26...`](https://basescan.org/address/0x75F49a2621b6DeC6a5baB22ce961bF3e676EFAE6) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`773453b`](https://github.com/euler-xyz/euler-earn/tree/773453b) | - | 35/35 |
 | ✓ eulerEarnPublicAllocator | [`0x0dFFc3A5...`](https://basescan.org/address/0x0dFFc3A53693bCd8e42FAd9be94fB8f1Fb64A8EE) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`773453b`](https://github.com/euler-xyz/euler-earn/tree/773453b) | - | 14/14 |
 | ✓ eulerSwapV1Factory | [`0xf0CFe22d...`](https://basescan.org/address/0xf0CFe22d23699ff1B2CFe6B8f706A6DB63911262) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 55/55 |
@@ -35,126 +35,11 @@
 | ✓ governorAccessControlEmergencyFactory | [`0x424d5C3e...`](https://basescan.org/address/0x424d5C3e0046168C2F193Aa939c7a9aaB01eeB9A) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 48/48 |
 | ✓ kinkIRMFactory | [`0x2d94C898...`](https://basescan.org/address/0x2d94C898a17f9D8c0bA75010A51cd61BF55b402E) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 5/5 |
 | ✓ kinkyIRMFactory | [`0x9907E7F6...`](https://basescan.org/address/0x9907E7F6637B161c19c08cc716C23f53b49C9Ec2) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
-| ✓ oracleRouterFactory | [`0xA9287853...`](https://basescan.org/address/0xA9287853987B107969f181Cce5e25e0D09c1c116) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | [`ffc3cb82`](https://github.com/euler-xyz/euler-price-oracle/tree/ffc3cb82615fc7d003a7f431175bd1eaf0bf41c5) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 13/13 |
+| ✓ oracleRouterFactory | [`0xA9287853...`](https://basescan.org/address/0xA9287853987B107969f181Cce5e25e0D09c1c116) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | [`f52cb43b`](https://github.com/euler-xyz/euler-price-oracle/tree/f52cb43b587c7fa90a7e722d52698003451feb62) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 13/13 |
 | ✓ protocolConfig | [`0x1D4b9e6A...`](https://basescan.org/address/0x1D4b9e6ACACdc82Dd9E903C3F4431558Af32C4A9) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
 | ✓ rEUL | [`0xE08e1f00...`](https://basescan.org/address/0xE08e1f00D388E201e48842E53fA96195568e6813) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 21/21 |
 | ✓ sequenceRegistry | [`0xfE9011FD...`](https://basescan.org/address/0xfE9011FD097cd35866b9e4740BBC88B4ef26E3ba) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
-| ✓ swapVerifier | [`0x30660764...`](https://basescan.org/address/0x30660764A7a05B84608812C8AFC0Cb4845439EEe) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 3/3 |
-
-
-## Contracts Without Exact Match
-
-These contracts could not be matched to any commit in the repository.
-Showing diff between explorer source and current `master`:
-
-### balanceTracker
-
-- **Address:** [`0x029fDEe85BEdB0553D6fdc538546586641DD7438`](https://basescan.org/address/0x029fDEe85BEdB0553D6fdc538546586641DD7438)
-- **Files matching:** 10/17
-
-```diff
---- local/lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol
-+++ explorer/lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: MIT
--// OpenZeppelin Contracts (last updated v5.1.0) (utils/ReentrancyGuard.sol)
-+// OpenZeppelin Contracts (last updated v5.0.0) (utils/ReentrancyGuard.sol)
- 
- pragma solidity ^0.8.20;
- 
---- local/lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-+++ explorer/lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: MIT
--// OpenZeppelin Contracts (last updated v5.1.0) (token/ERC20/utils/SafeERC20.sol)
-+// OpenZeppelin Contracts (last updated v5.0.0) (token/ERC20/utils/SafeERC20.sol)
- 
- pragma solidity ^0.8.20;
- 
-@@ -17,6 +17,8 @@
-  * which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
-  */
- library SafeERC20 {
-+    using Address for address;
-+
-     /**
-      * @dev An operation with an ERC-20 token failed.
-      */
-@@ -46,11 +48,6 @@
-     /**
-      * @dev Increase the calling contract's allowance toward `spender` by `value`. If `token` returns no value,
-      * non-reverting calls are assumed to be successful.
--     *
--     * IMPORTANT: If the token implements ERC-7674 (ERC-20 with temporary allowance), and if the "client"
--     * smart contract uses ERC-7674 to set temporary allowances, then the "client" smart contract should avoid using
--     * this function. Performing a {safeIncreaseAllowance} or {safeDecreaseAllowance} operation on a token contract
--     * that has a non-zero temporary allowance (for that particular owner-spender) will result in unexpected behavior.
-      */
-     function safeIncreaseAllowance(IERC20 token, address spender, uint256 value) internal {
-         uint256 oldAllowance = token.allowance(address(this), spender);
-@@ -60,11 +57,6 @@
-     /**
-      * @dev Decrease the calling contract's allowance toward `spender` by `requestedDecrease`. If `token` returns no
-      * value, non-reverting calls are assumed to be successful.
--     *
--     * IMPORTANT: If the token implements ERC-7674 (ERC-20 with temporary allowance), and if the "client"
--     * smart contract uses ERC-7674 to set temporary allowances, then the "client" smart contract should avoid using
--     * this function. Performing a {safeIncreaseAllowance} or {safeDecreaseAllowance} operation on a token contract
--     * that has a non-zero temporary allowance (for that particular owner-spender) will result in unexpected behavior.
-      */
-     function safeDecreaseAllowance(IERC20 token, address spender, uint256 requestedDecrease) internal {
-         unchecked {
-@@ -80,10 +72,6 @@
-      * @dev Set the calling contract's allowance toward `spender` to `value`. If `token` returns no value,
-      * non-reverting calls are assumed to be successful. Meant to be used with tokens that require the approval
-      * to be set to zero before setting it to a non-zero value, such as USDT.
--     *
--     * NOTE: If the token implements ERC-7674, this function will not modify any temporary allowance. This function
--     * only sets the "standard" allowance. Any temporary allowance will remain active, in addition to the value being
--     * set here.
---- local/lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol
-+++ explorer/lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: MIT
--// OpenZeppelin Contracts (last updated v5.1.0) (token/ERC20/IERC20.sol)
-+// OpenZeppelin Contracts (last updated v5.0.0) (token/ERC20/IERC20.sol)
- 
- pragma solidity ^0.8.20;
- 
---- local/lib/openzeppelin-contracts/contracts/interfaces/IERC1363.sol
-+++ explorer/lib/openzeppelin-contracts/contracts/interfaces/IERC1363.sol
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: MIT
--// OpenZeppelin Contracts (last updated v5.1.0) (interfaces/IERC1363.sol)
-+// OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC1363.sol)
- 
- pragma solidity ^0.8.20;
- 
---- local/lib/openzeppelin-contracts/contracts/utils/Address.sol
-+++ explorer/lib/openzeppelin-contracts/contracts/utils/Address.sol
-@@ -1,5 +1,5 @@
- // SPDX-License-Identifier: MIT
--// OpenZeppelin Contracts (last updated v5.1.0) (utils/Address.sol)
-+// OpenZeppelin Contracts (last updated v5.0.0) (utils/Address.sol)
- 
- pragma solidity ^0.8.20;
- 
-@@ -139,7 +139,8 @@
-         // Look for revert reason and bubble it up if present
-         if (returndata.length > 0) {
-             // The easiest way to bubble the revert reason is using memory via assembly
--            assembly ("memory-safe") {
-+            /// @solidity memory-safe-assembly
-+            assembly {
-                 let returndata_size := mload(returndata)
-                 revert(add(32, returndata), returndata_size)
-             }
---- local/lib/openzeppelin-contracts/contracts/utils/Errors.sol
-+++ explorer/lib/openzeppelin-contracts/contracts/utils/Errors.sol
-@@ -1,5 +1,4 @@
- // SPDX-License-Identifier: MIT
-... (32 more lines)
-```
+| ✓ swapVerifier | [`0x30660764...`](https://basescan.org/address/0x30660764A7a05B84608812C8AFC0Cb4845439EEe) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
 
 
 ## Changes Since Deployment
@@ -400,8 +285,8 @@ _Showing first 100 of 132 lines. [View full diff on GitHub](https://github.com/e
 
 #### oracleRouterFactory
 
-- **Deployed from:** [`ffc3cb82`](https://github.com/euler-xyz/euler-price-oracle/tree/ffc3cb82)
-- **Compare to master:** [`ffc3cb82...master`](https://github.com/euler-xyz/euler-price-oracle/compare/ffc3cb82...master)
+- **Deployed from:** [`f52cb43b`](https://github.com/euler-xyz/euler-price-oracle/tree/f52cb43b)
+- **Compare to master:** [`f52cb43b...master`](https://github.com/euler-xyz/euler-price-oracle/compare/f52cb43b...master)
 - **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
 
 _No diff available - see GitHub compare link above._
@@ -592,7 +477,7 @@ index 00000000..f8ff9775
 +    constructor(address evc_, address admin_, string memory name_, string memory symbol_, uint8 decimals_)
 ```
 
-_Showing first 100 of 1792 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)_
+_Showing first 100 of 3316 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)_
 
 #### kinkIRMFactory
 
@@ -702,7 +587,117 @@ index 00000000..2ca592c0
 +import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
 ```
 
-_Showing first 100 of 8517 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
+_Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
+
+#### swapVerifier
+
+- **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
+- **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
+
+```diff
+diff --git a/src/AccessControl/SelectorAccessControl.sol b/src/AccessControl/SelectorAccessControl.sol
+new file mode 100644
+index 00000000..6510aad6
+--- /dev/null
++++ b/src/AccessControl/SelectorAccessControl.sol
+@@ -0,0 +1,83 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++
++pragma solidity ^0.8.0;
++
++import {ContextUpgradeable} from "openzeppelin-contracts-upgradeable/utils/ContextUpgradeable.sol";
++import {AccessControlEnumerableUpgradeable} from
++    "openzeppelin-contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
++import {
++    AccessControlUpgradeable,
++    IAccessControl
++} from "openzeppelin-contracts-upgradeable/access/AccessControlUpgradeable.sol";
++import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
++
++/// @title SelectorAccessControl
++/// @custom:security-contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/)
++/// @notice A utility contract with the EVC support that allows for access control based on specific selectors.
++abstract contract SelectorAccessControl is EVCUtil, AccessControlEnumerableUpgradeable {
++    /// @notice The wildcard for all selectors. A caller with this role can call any function selector.
++    bytes32 public constant WILD_CARD = bytes32(type(uint256).max);
++
++    /// @notice Constructor for SelectorAccessControl
++    /// @param evc The address of the Ethereum Vault Connector (EVC)
++    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
++    constructor(address evc, address admin) EVCUtil(evc) {
++        _grantRole(DEFAULT_ADMIN_ROLE, admin);
++        _disableInitializers();
++    }
++
++    /// @notice Initializes the contract, setting up the admin role
++    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
++    function initialize(address admin) public initializer {
++        _grantRole(DEFAULT_ADMIN_ROLE, admin);
++    }
++
++    /// @dev Grants `role` to `account`.
++    function grantRole(bytes32 role, address account)
++        public
++        virtual
++        override (AccessControlUpgradeable, IAccessControl)
++        onlyEVCAccountOwner
++    {
++        super.grantRole(role, account);
++    }
++
++    /// @dev Revokes `role` from `account`.
++    function revokeRole(bytes32 role, address account)
++        public
++        virtual
++        override (AccessControlUpgradeable, IAccessControl)
++        onlyEVCAccountOwner
++    {
++        super.revokeRole(role, account);
++    }
++
++    /// @dev Revokes `role` from the calling account.
++    function renounceRole(bytes32 role, address callerConfirmation)
++        public
++        virtual
++        override (AccessControlUpgradeable, IAccessControl)
++        onlyEVCAccountOwner
++    {
++        super.renounceRole(role, callerConfirmation);
++    }
++
++    /// @notice Authenticates the caller based on their role and the function selector called
++    /// @dev Checks if the caller has either the wildcard role or the specific role for the current function selector
++    /// @dev If the caller doesn't have the required role, it reverts with a NotAuthorized error
++    function _authenticateCaller() internal view virtual {
++        address msgSender = _msgSender();
++
++        // Don't revert if whitelisted for wildcard or specific selector
++        if (!hasRole(WILD_CARD, msgSender) && !hasRole(msg.sig, msgSender)) revert NotAuthorized();
++    }
++
++    /// @notice Retrieves the message sender in the context of the EVC.
++    /// @dev This function returns the account on behalf of which the current operation is being performed, which is
++    /// either msg.sender or the account authenticated by the EVC.
++    /// @return The address of the message sender.
++    function _msgSender() internal view virtual override (EVCUtil, ContextUpgradeable) returns (address) {
++        return EVCUtil._msgSender();
++    }
++}
+diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
+new file mode 100644
+index 00000000..2ca592c0
+--- /dev/null
++++ b/src/Chainlink/DataStreamsVerifier.sol
+@@ -0,0 +1,109 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++
++pragma solidity ^0.8.0;
++
++import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
+```
+
+_Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
 
 ### fee-flow
 
@@ -711,6 +706,16 @@ _Showing first 100 of 8517 lines. [View full diff on GitHub](https://github.com/
 - **Deployed from:** [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94)
 - **Compare to master:** [`4a419c94...master`](https://github.com/euler-xyz/fee-flow/compare/4a419c94...master)
 - **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+
+_No diff available - see GitHub compare link above._
+
+### reward-streams
+
+#### balanceTracker
+
+- **Deployed from:** [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7)
+- **Compare to master:** [`9eb7b8a7...master`](https://github.com/euler-xyz/reward-streams/compare/9eb7b8a7...master)
+- **evk-periphery:** [`8695c72c`](https://github.com/euler-xyz/evk-periphery/tree/8695c72c)
 
 _No diff available - see GitHub compare link above._
 
