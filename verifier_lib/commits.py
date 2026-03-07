@@ -35,6 +35,17 @@ GLOBAL_COMMITS: List[str] = [
     "8aa230b",       # euler-earn certora branch
     "deploy-swell",  # Swell-specific balanceTracker (tag)
     "origin/deployment-script",  # euler-earn special deployment branch
+    "origin/development",        # Development branch (newer deployments)
+    "origin/fix-new-deployments",  # Fix branch for newer networks
+    "origin/custom-scripts-tac",   # TAC deployment scripts
+    "origin/swell",                # Swell deployment branch
+    "9f541916",                    # Updated EVC with virtual change
+    "06d1708e",                    # euler-earn lens update
+    "46e486d9",                    # Dependency update
+    "334e93ed",                    # Latest master branches
+    "d3b0d7fd",                    # Latest master branches (alt)
+    "8695c72c",                    # Refactored deployment scripts
+    "08a3fee3",                    # Pre-ERC20Synth (eulOFTAdapter without virtual mint)
 ]
 
 # EulerSwap V1 always uses this tag
@@ -93,6 +104,81 @@ NETWORK_HINTS: Dict[str, Dict[str, str]] = {
         "eulerEarnFactory": "773453b",
         "balanceTracker": "deploy-swell",
     },
+    "monad": {},
+}
+
+# =============================================================================
+# STANDALONE REPO FALLBACK
+# =============================================================================
+
+# Contracts that can be verified via standalone repo or with nested submodule overrides
+# when the normal evk-periphery commit search fails.
+# Maps contract_name -> (repo_dir_name, commits_to_try, nested_submodule_overrides)
+# nested_submodule_overrides: list of (submodule_path, versions_to_try)
+# When multiple overrides are specified, all combinations are tried.
+STANDALONE_FALLBACKS: Dict[str, Tuple[str, List[str], List[Tuple[str, List[str]]]]] = {
+    "feeFlowController": (
+        "fee-flow-standalone",
+        ["5e5f6bd", "9cfbd05", "3bee858", "master", "4a419c9"],
+        [],
+    ),
+    "balanceTracker": (
+        "reward-streams-standalone",
+        ["master", "9eb7b8a"],
+        [
+            ("lib/ethereum-vault-connector", ["dc3be15", "e6550e6", "e64ca4a"]),
+            ("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"]),
+        ],
+    ),
+    "eulerSwapV2Factory": (
+        "euler-swap-standalone",
+        ["master", "81cf6dc", "b948f40"],
+        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"])],
+    ),
+    "eulerSwapV2Implementation": (
+        "euler-swap-standalone",
+        ["master", "81cf6dc", "b948f40"],
+        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"])],
+    ),
+    "eulerSwapV2Periphery": (
+        "euler-swap-standalone",
+        ["master", "81cf6dc", "b948f40"],
+        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"])],
+    ),
+    "eulerSwapV2Registry": (
+        "euler-swap-standalone",
+        ["master", "81cf6dc", "b948f40"],
+        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"])],
+    ),
+    "eulerEarnFactory": (
+        "euler-earn-standalone",
+        ["master"],
+        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1"])],
+    ),
+    "oracleRouterFactory": (
+        "evk-periphery",
+        ["master"],
+        [
+            ("lib/euler-price-oracle/lib/ethereum-vault-connector", ["dc3be15", "e6550e6", "e64ca4a"]),
+            ("lib/euler-price-oracle/lib/forge-std", ["v1.9.4", "v1.9.3", "v1.9.2"]),
+        ],
+    ),
+    # EulerSwap V1 on newer networks uses euler-swap standalone (not eulerswap-1.0 tag)
+    "eulerSwapV1Factory": (
+        "euler-swap-standalone",
+        ["5d270c7", "b948f40", "master", "81cf6dc"],
+        [("lib/openzeppelin-contracts", ["v5.2.0", "v5.1.0"])],
+    ),
+    "eulerSwapV1Implementation": (
+        "euler-swap-standalone",
+        ["5d270c7", "b948f40", "master", "81cf6dc"],
+        [("lib/openzeppelin-contracts", ["v5.2.0", "v5.1.0"])],
+    ),
+    "eulerSwapV1Periphery": (
+        "euler-swap-standalone",
+        ["98c05c5", "5d270c7", "b948f40", "master", "81cf6dc"],
+        [("lib/openzeppelin-contracts", ["v5.2.0", "v5.1.0"])],
+    ),
 }
 
 # =============================================================================
@@ -100,12 +186,15 @@ NETWORK_HINTS: Dict[str, Dict[str, str]] = {
 # =============================================================================
 
 # Network-specific repo overrides for contracts deployed differently on certain networks
-# On Linea, eulerSwapV1 was deployed from evk-periphery's lib/euler-swap submodule
 NETWORK_REPO_OVERRIDES: Dict[str, Dict[str, Tuple[str, str, Optional[str]]]] = {
     "linea": {
         "eulerSwapV1Factory": ("euler-swap", "euler-xyz/euler-swap", "lib/euler-swap"),
         "eulerSwapV1Implementation": ("euler-swap", "euler-xyz/euler-swap", "lib/euler-swap"),
         "eulerSwapV1Periphery": ("euler-swap", "euler-xyz/euler-swap", "lib/euler-swap"),
+    },
+    # On monad, euler-earn contracts are deployed from evk-periphery (files prefixed with lib/euler-earn/)
+    "monad": {
+        "eulerEarnPublicAllocator": ("euler-earn", "euler-xyz/euler-earn", "lib/euler-earn"),
     },
 }
 

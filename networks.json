@@ -110,5 +110,29 @@
     "explorer_url": "https://sonicscan.org",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2"
+  },
+  "monad": {
+    "chain_id": 143,
+    "name": "Monad",
+    "status": "production",
+    "explorer_url": "https://monadvision.com",
+    "explorer_api": "https://sourcify-api-monad.blockvision.org",
+    "api_type": "sourcify"
+  },
+  "tac": {
+    "chain_id": 239,
+    "name": "TAC",
+    "status": "production",
+    "explorer_url": "https://explorer.tac.build",
+    "explorer_api": "https://explorer.tac.build/api",
+    "api_type": "blockscout_v2"
+  },
+  "plasma": {
+    "chain_id": 9745,
+    "name": "Plasma",
+    "status": "production",
+    "explorer_url": "https://plasmascan.to",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
   }
 }
