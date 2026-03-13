@@ -427,14 +427,8 @@ def verify_network(
     # Create cache
     cache = CommitMatchCache()
     
-    # Get network name for hints
-    network_name = config.name.lower()
-    for key in ["mainnet", "arbitrum", "base", "bsc", "avalanche", "linea",
-                "gnosis", "optimism", "polygon", "swell", "bob", "unichain",
-                "berachain", "sonic", "monad", "tac", "plasma"]:
-        if key in network_name:
-            network_name = key
-            break
+    # Get network name for hints (uses key from networks.json)
+    network_name = config.key
     
     results = []
     for contract_name, address in contracts.items():

@@ -19,6 +19,7 @@ class NetworkConfig:
     explorer_url: str
     explorer_api: str
     api_type: str  # "etherscan_v2" | "blockscout_v2"
+    key: str = ""  # Dictionary key from networks.json (e.g., "mainnet", "arbitrum")
     
     @property
     def is_production(self) -> bool:
@@ -44,6 +45,7 @@ def load_networks() -> Dict[str, NetworkConfig]:
             explorer_url=config["explorer_url"],
             explorer_api=config["explorer_api"],
             api_type=config["api_type"],
+            key=name,
         )
         for name, config in data.items()
     }

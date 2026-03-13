@@ -76,14 +76,8 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
     results_dir = ROOT_DIR / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
     
-    # Determine network name for filename
-    network_name = config.name.lower().replace(" ", "_")
-    for key_name in ["mainnet", "arbitrum", "base", "bsc", "avalanche", "linea", 
-                      "gnosis", "optimism", "polygon", "swell", "bob", "unichain",
-                      "berachain", "sonic"]:
-        if key_name in network_name or network_name in key_name:
-            network_name = key_name
-            break
+    # Determine network name for filename (uses key from networks.json)
+    network_name = config.key
     
     report_path = results_dir / f"{network_name}{suffix}.md"
     
