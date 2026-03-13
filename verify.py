@@ -37,6 +37,7 @@ from verifier_lib import (
     STANDALONE_FALLBACKS,
 )
 from verifier_lib.config import get_network, list_networks, ROOT_DIR
+from verifier_lib.discovery import discover_network, discover_unknown_chains
 from verifier_lib.commits import EVK_PERIPHERY_DIR, EULER_EARN_DIR, EULER_SWAP_DIR
 from verifier_lib.report import generate_report, print_summary
 
@@ -508,6 +509,11 @@ Examples:
         action="store_true",
         help="Output to *_test.md files for comparison",
     )
+    parser.add_argument(
+        "--discover",
+        action="store_true",
+        help="Auto-detect and verify chains found in euler-interfaces but not in networks.json",
+    )
     
     args = parser.parse_args()
     
@@ -517,17 +523,46 @@ Examples:
         return 0
     
     # Determine networks to verify
-    if args.all:
+    if args.discover:
+        unknown_chains = discover_unknown_chains()
+        if not unknown_chains:
+            print("No unknown chains found in euler-interfaces/addresses/")
+            return 0
+        configs = []
+        for chain_id in unknown_chains:
+            print(f"Discovering explorer for chain {chain_id}...", flush=True)
+            config = discover_network(chain_id)
+            if config:
+                print(f"  Detected: {config.api_type} for chain {chain_id}", flush=True)
+                configs.append(config)
+            else:
+                print(f"  No explorer found for chain {chain_id}", flush=True)
+        if not configs:
+            print("No explorable chains discovered")
+            return 1
+    elif args.all:
         networks = list_networks(production_only=True)
         configs = list(networks.values())
     elif args.network:
         try:
             config = get_network(args.network)
             configs = [config]
-        except ValueError as e:
-            print(f"Error: {e}", file=sys.stderr)
-            print("Use --list to see available networks", file=sys.stderr)
-            return 1
+        except ValueError:
+            # If it looks like a chain ID, try auto-detection
+            try:
+                chain_id = int(args.network)
+                print(f"Unknown network, attempting auto-detection for chain {chain_id}...", flush=True)
+                config = discover_network(chain_id)
+                if config:
+                    print(f"  Detected: {config.api_type}", flush=True)
+                    configs = [config]
+                else:
+                    print(f"Error: No explorer found for chain {chain_id}", file=sys.stderr)
+                    return 1
+            except ValueError:
+                print(f"Error: Unknown network: {args.network}", file=sys.stderr)
+                print("Use --list to see available networks", file=sys.stderr)
+                return 1
     else:
         parser.print_help()
         return 1

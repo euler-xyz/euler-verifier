@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       network:
-        description: 'Network to verify (or "all" for all production networks)'
+        description: 'Network to verify (or "all" for all production networks, or "discover" for auto-detection)'
         required: true
         default: 'all'
         type: string
@@ -69,8 +69,10 @@ jobs:
         run: |
           NETWORK="${{ inputs.network || 'all' }}"
           EXHAUSTIVE="${{ inputs.exhaustive }}"
-          
-          if [ "$NETWORK" = "all" ]; then
+
+          if [ "$NETWORK" = "discover" ]; then
+            uv run python verify.py --discover
+          elif [ "$NETWORK" = "all" ]; then
             if [ "$EXHAUSTIVE" = "true" ]; then
               uv run python verify.py --all --exhaustive
             else
