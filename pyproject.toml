@@ -27,15 +27,12 @@ dev = [
     "ruff>=0.1.9",
 ]
 
-[project.scripts]
-euler-verify-evc = "euler_verifier.verify_evc:main"
-euler-verify-one = "euler_verifier.verify_one:main"
-euler-verify-all = "euler_verifier.verify_all:main"
-euler-setup = "euler_verifier.setup:main"
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["verifier_lib"]
 
 [dependency-groups]
 dev = [
