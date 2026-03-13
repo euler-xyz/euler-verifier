@@ -156,6 +156,11 @@ STANDALONE_FALLBACKS: Dict[str, Tuple[str, List[str], List[Tuple[str, List[str]]
         ["master"],
         [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1"])],
     ),
+    "eulerEarnPublicAllocator": (
+        "euler-earn-standalone",
+        ["master"],
+        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1"])],
+    ),
     "oracleRouterFactory": (
         "evk-periphery",
         ["master"],
