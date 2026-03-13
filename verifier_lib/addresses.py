@@ -107,7 +107,7 @@ def load_contracts(chain_id: int) -> Dict[str, str]:
     contracts: Dict[str, str] = {}
     
     # Load core addresses
-    core_file = base / "coreAddresses.json"
+    core_file = base / "CoreAddresses.json"
     if core_file.exists():
         try:
             core = json.loads(core_file.read_text())
@@ -118,7 +118,7 @@ def load_contracts(chain_id: int) -> Dict[str, str]:
             pass
     
     # Load periphery addresses
-    periphery_file = base / "peripheryAddresses.json"
+    periphery_file = base / "PeripheryAddresses.json"
     if periphery_file.exists():
         try:
             periphery = json.loads(periphery_file.read_text())
