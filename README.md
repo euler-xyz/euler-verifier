@@ -1,12 +1,6 @@
 # Euler Contract Verifier
 
-Verifies that deployed Euler protocol contracts match their source code. Finds exact deployment commits and shows what has changed since deployment.
-
-## What It Does
-
-1. **Finds the exact commit** - Searches through git history to find exactly which commit was used to deploy each contract
-2. **Verifies source code** - Compares Etherscan-verified source against the repository
-3. **Shows changes since deployment** - Generates diffs between deployment commit and current `master`
+Verifies that deployed Euler protocol contracts match their source code by finding exact deployment commits.
 
 ## Quick Start
 
@@ -17,15 +11,19 @@ uv sync
 # Set your Etherscan API key
 export ETHERSCAN_API_KEY=your_key_here
 
-# Run verification for a network
-uv run python verify_mainnet.py
-uv run python verify_arbitrum.py
-# etc.
+# Verify a single network
+uv run python verify.py mainnet
+
+# Verify all production networks
+uv run python verify.py --all
+
+# List available networks
+uv run python verify.py --list
 ```
 
-## Reports
+## Verification Reports
 
-Reports are in `results/`. See [results/README.md](results/README.md) for the full summary.
+Reports are generated in `results/`. Each report shows which commit was used to deploy each contract.
 
 ### Production Networks
 
@@ -51,41 +49,56 @@ Reports are in `results/`. See [results/README.md](results/README.md) for the fu
 | Gnosis | 100 | ✅ 14/14 | [gnosis.md](results/gnosis.md) |
 | Polygon | 137 | ✅ 14/14 | [polygon.md](results/polygon.md) |
 
+## CLI Options
+
+```bash
+uv run python verify.py <network>     # Verify single network
+uv run python verify.py --all         # Verify all production networks
+uv run python verify.py --exhaustive  # Deep search through git history
+uv run python verify.py --skip-cache  # Force re-verification
+uv run python verify.py --list        # List available networks
+```
+
 ## How It Works
 
-Each verification script:
-1. Reads contract addresses from `euler-interfaces/addresses/{chainId}/`
-2. Fetches verified source code from Etherscan
-3. Checks out commits in `repos/evk-periphery` (and submodules)
-4. Compares source files until finding an exact match
-5. Generates diff to current `master`
+1. **Loads contract addresses** from `euler-interfaces/addresses/{chainId}/`
+2. **Fetches verified source** from block explorer (Etherscan or Blockscout)
+3. **Searches git history** in source repositories to find exact deployment commit
+4. **Generates report** showing which commit matches each contract
 
 ## Project Structure
 
 ```
 euler-verifier/
-├── verify_mainnet.py      # Mainnet verification script
-├── verify_arbitrum.py     # Arbitrum verification script
-├── verify_*.py            # Other network scripts
-├── results/               # Verification reports (markdown)
+├── verify.py              # Unified verification script
+├── networks.json          # Network and explorer configuration
+├── verifier_lib/          # Core library
+│   ├── config.py          # Network config loading
+│   ├── addresses.py       # Contract address loading
+│   ├── fetchers/          # Etherscan/Blockscout API
+│   ├── comparator.py      # Source code comparison
+│   ├── cache.py           # Verification caching
+│   ├── commits.py         # Known deployment commits
+│   └── report.py          # Markdown report generation
+├── results/               # Verification reports
 ├── repos/                 # Cloned source repositories
-│   └── evk-periphery/     # Main deployment repo with submodules
 ├── euler-interfaces/      # Contract addresses (submodule)
-└── cache/                 # Cached Etherscan responses
+├── cache/                 # API response cache
+└── .github/workflows/     # CI automation
 ```
 
 ## Source Repositories
 
-Contracts are deployed from [evk-periphery](https://github.com/euler-xyz/evk-periphery) which includes these as submodules:
+Contracts are deployed from these repositories:
 
+- [evk-periphery](https://github.com/euler-xyz/evk-periphery) - Main deployment repo
 - [ethereum-vault-connector](https://github.com/euler-xyz/ethereum-vault-connector) - EVC
 - [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) - EVault
-- [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) - Oracles
-- [euler-swap](https://github.com/euler-xyz/euler-swap) - EulerSwap
-- [euler-earn](https://github.com/euler-xyz/euler-earn) - Euler Earn
+- [euler-earn](https://github.com/euler-xyz/euler-earn) - Euler Earn vaults
+- [euler-swap](https://github.com/euler-xyz/euler-swap) - EulerSwap AMM
 
 ## Requirements
 
 - Python 3.10+
 - [uv](https://github.com/astral-sh/uv) package manager
-- Etherscan API key (free at https://etherscan.io/apis)
+- Etherscan API key (set `ETHERSCAN_API_KEY` env var)

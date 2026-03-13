@@ -1,0 +1,142 @@
+name: Contract Verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: 'Network to verify (or "all" for all production networks, or "discover" for auto-detection)'
+        required: true
+        default: 'all'
+        type: string
+      exhaustive:
+        description: 'Enable exhaustive commit search'
+        type: boolean
+        default: false
+  schedule:
+    # Run weekly on Monday at 6am UTC
+    - cron: '0 6 * * 1'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install uv
+        run: pip install uv
+      
+      - name: Install dependencies
+        run: uv sync
+      
+      - name: Setup source repositories
+        run: |
+          mkdir -p repos
+          
+          echo "Cloning evk-periphery..."
+          git clone --depth 50 https://github.com/euler-xyz/evk-periphery repos/evk-periphery
+          cd repos/evk-periphery
+          git fetch --tags
+          git submodule update --init --recursive
+          cd ../..
+          
+          echo "Cloning euler-earn..."
+          git clone --depth 50 https://github.com/euler-xyz/euler-earn repos/euler-earn-standalone
+          cd repos/euler-earn-standalone
+          git fetch --tags --all
+          cd ../..
+          
+          echo "Cloning euler-swap..."
+          git clone --depth 50 https://github.com/euler-xyz/euler-swap repos/euler-swap-standalone
+          cd repos/euler-swap-standalone
+          git fetch --tags --all
+          cd ../..
+          
+          echo "Done setting up repositories"
+      
+      - name: Run verification
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+        run: |
+          NETWORK="${{ inputs.network || 'all' }}"
+          EXHAUSTIVE="${{ inputs.exhaustive }}"
+
+          if [ "$NETWORK" = "discover" ]; then
+            uv run python verify.py --discover
+          elif [ "$NETWORK" = "all" ]; then
+            if [ "$EXHAUSTIVE" = "true" ]; then
+              uv run python verify.py --all --exhaustive
+            else
+              uv run python verify.py --all
+            fi
+          else
+            if [ "$EXHAUSTIVE" = "true" ]; then
+              uv run python verify.py "$NETWORK" --exhaustive
+            else
+              uv run python verify.py "$NETWORK"
+            fi
+          fi
+      
+      - name: Upload verification reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-reports
+          path: results/
+          retention-days: 30
+      
+      - name: Commit and push results (scheduled runs only)
+        if: github.event_name == 'schedule'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add results/
+          git add cache/verified_commits.json || true
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update verification reports [skip ci]"
+            git push
+          fi
+
+  notify-on-failure:
+    runs-on: ubuntu-latest
+    needs: verify
+    if: failure() && github.event_name == 'schedule'
+    steps:
+      - name: Create issue on failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Scheduled verification failed';
+            const body = `The scheduled contract verification workflow failed.
+            
+            Please check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.`;
+            
+            // Check if issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'verification-failure'
+            });
+            
+            if (issues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['verification-failure', 'automated']
+              });
+            }

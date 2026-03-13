@@ -1,33 +1,40 @@
-# Polygon Contract Verification Report
+# Monad Contract Verification Report
 
 ## Summary
 
 | Status | Count |
 |--------|-------|
-| ✓ Verified (exact match) | 14 |
+| ✓ Verified (exact match) | 21 |
 | ✗ No exact commit found | 0 |
 | ~ Standalone with diff | 0 |
 | - Error | 0 |
-| **Total** | **14** |
+| **Total** | **21** |
 
 ## Verified Contracts
 
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
-| ✓ adaptiveCurveIRMFactory | [`0x3617a713...`](https://polygonscan.com/address/0x3617a7139dEd8F243B6CD24Da7a28c3D333a44Ce) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
-| ✓ balanceTracker | [`0x751Ab2C2...`](https://polygonscan.com/address/0x751Ab2C287159fa2fA1a1A5A0f209c3F6e83A282) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`8695c72c`](https://github.com/euler-xyz/evk-periphery/tree/8695c72c) | 17/17 |
-| ✓ eulOFTAdapter | [`0x35772771...`](https://polygonscan.com/address/0x357727718d2A9ce83B877f503f56dED39719dCb9) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 63/63 |
-| ✓ eVaultFactory | [`0x3f23552A...`](https://polygonscan.com/address/0x3f23552A0ABd8E01AFf5E8704E8A5671A80432B5) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 3/3 |
-| ✓ eVaultImplementation | [`0x5Ed27EFc...`](https://polygonscan.com/address/0x5Ed27EFcb2E58b0B9cD163f9ef78bA87F167b8d2) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 52/52 |
-| ✓ evc | [`0xa1C13F5c...`](https://polygonscan.com/address/0xa1C13F5c4929521F0bf31cBE03025cb75C214DCB) | [ethereum-vault-connector](https://github.com/euler-xyz/ethereum-vault-connector) | [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29ef7e4964736e47675e0588630d6afbfd7) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 9/9 |
-| ✓ feeFlowController | [`0x116e4de5...`](https://polygonscan.com/address/0x116e4de5E628E6beaCc6ba94Faf8Cc50ACe6225a) | [fee-flow](https://github.com/euler-xyz/fee-flow) | [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94e9cd68f65e11f07da9a69f726177cb9c) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 6/6 |
-| ✓ governorAccessControlEmergencyFactory | [`0xD93452A6...`](https://polygonscan.com/address/0xD93452A6456783b0d17F9cd7Dc6c67BEf433f08f) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 48/48 |
-| ✓ kinkIRMFactory | [`0x52A52289...`](https://polygonscan.com/address/0x52A5228987bE510c7D89aD928b47C51975f99Df6) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 5/5 |
-| ✓ oracleRouterFactory | [`0x9FCc467b...`](https://polygonscan.com/address/0x9FCc467b739871f97485570d754d6786752Db553) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | [`f52cb43b`](https://github.com/euler-xyz/euler-price-oracle/tree/f52cb43b587c7fa90a7e722d52698003451feb62) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 13/13 |
-| ✓ protocolConfig | [`0x5aE64b59...`](https://polygonscan.com/address/0x5aE64b596224cdE56C852269E9b35aD25e22Af90) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
-| ✓ rEUL | [`0xbfB63181...`](https://polygonscan.com/address/0xbfB6318123dA1682B8bD963846C1e9608F5F3Cda) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 21/21 |
-| ✓ sequenceRegistry | [`0xA9B3Fe66...`](https://polygonscan.com/address/0xA9B3Fe66d8FdBa841a4918D32e12894E5D36BC94) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
-| ✓ swapVerifier | [`0xD2c4D683...`](https://polygonscan.com/address/0xD2c4D6831C6F7c2162015523b8105b972a3D2958) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
+| ✓ adaptiveCurveIRMFactory | [`0x967803d8...`](https://monadvision.com/address/0x967803d884DF006A7150Bc3fCD416b813fbCbF4A) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
+| ✓ balanceTracker | [`0xa231DccE...`](https://monadvision.com/address/0xa231DccE58EA5A43E69EF351D89ea4212Ec0f30b) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 17/17 |
+| ✓ eulerEarnFactory | [`0xF463d4Ac...`](https://monadvision.com/address/0xF463d4Acb650cc6C4E1D6cD4D0d1b0cb224094cF) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 37/37 |
+| ✓ eulerEarnPublicAllocator | [`0x65A66F24...`](https://monadvision.com/address/0x65A66F24a25E8CF651C9e31D296623298C80F742) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 14/14 |
+| ✓ eulerSwapV1Factory | [`0x34f8f028...`](https://monadvision.com/address/0x34f8f028c6a446a464c10a135f44fc6fb2cee1a9) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`5d270c7`](https://github.com/euler-xyz/euler-swap/tree/5d270c7) | - | 55/55 |
+| ✓ eulerSwapV1Implementation | [`0xbfd5c7bb...`](https://monadvision.com/address/0xbfd5c7bb1c208fec761284af7db6ff1f4314372c) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`5d270c7`](https://github.com/euler-xyz/euler-swap/tree/5d270c7) | - | 46/46 |
+| ✓ eulerSwapV1Periphery | [`0xd1f69cf9...`](https://monadvision.com/address/0xd1f69cf959c1a3aae7bee5ec677222d259585b27) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`98c05c5`](https://github.com/euler-xyz/euler-swap/tree/98c05c5) | - | 9/9 |
+| ✓ eulOFTAdapter | [`0x831257BF...`](https://monadvision.com/address/0x831257BFa5478111d2327e08c4068ec37Ac14B81) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 63/63 |
+| ✓ eVaultFactory | [`0xba4Dd672...`](https://monadvision.com/address/0xba4Dd672062dE8FeeDb665DD4410658864483f1E) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 3/3 |
+| ✓ eVaultImplementation | [`0xef17750D...`](https://monadvision.com/address/0xef17750D3a162E28a302E266c474ff8989d60ECD) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 52/52 |
+| ✓ evc | [`0x7a9324E8...`](https://monadvision.com/address/0x7a9324E8f270413fa2E458f5831226d99C7477CD) | [ethereum-vault-connector](https://github.com/euler-xyz/ethereum-vault-connector) | [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29ef7e4964736e47675e0588630d6afbfd7) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 9/9 |
+| ✓ feeFlowController | [`0x9527062A...`](https://monadvision.com/address/0x9527062A472666410DC7193A966709105dF2f147) | [fee-flow](https://github.com/euler-xyz/fee-flow) | [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94e9cd68f65e11f07da9a69f726177cb9c) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 6/6 |
+| ✓ fixedCyclicalBinaryIRMFactory | [`0x6F1228b0...`](https://monadvision.com/address/0x6F1228b0A111173Dd3A295D32b5157fA3410de96) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
+| ✓ governorAccessControlEmergencyFactory | [`0x21BFce0c...`](https://monadvision.com/address/0x21BFce0c4E9411cd6c7F6D28edC9244f89bFEe63) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 48/48 |
+| ✓ kinkIRMFactory | [`0x05Cccb5d...`](https://monadvision.com/address/0x05Cccb5d0f1e1D568804453B82453a719Dc53758) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
+| ✓ kinkyIRMFactory | [`0x3512f50B...`](https://monadvision.com/address/0x3512f50B3f0cA8725CcCBb6DDcc7307Ed2c17feb) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
+| ✓ oracleRouterFactory | [`0xdDA3cBC1...`](https://monadvision.com/address/0xdDA3cBC18e90606A83FBae6F798991af06dFA902) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | [`f52cb43b`](https://github.com/euler-xyz/euler-price-oracle/tree/f52cb43b587c7fa90a7e722d52698003451feb62) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 13/13 |
+| ✓ protocolConfig | [`0x94A2d1d1...`](https://monadvision.com/address/0x94A2d1d175F1d828935a374091e2009CF1cED858) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
+| ✓ rEUL | [`0xff074349...`](https://monadvision.com/address/0xff074349C8b89bB7362bD25c58742896D817A862) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 21/21 |
+| ✓ sequenceRegistry | [`0x39F81037...`](https://monadvision.com/address/0x39F81037f20AC6068CbCd30f748094c58bfE7d7b) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
+| ✓ swapVerifier | [`0x65bF068c...`](https://monadvision.com/address/0x65bF068c88e0f006f76b871396B4DB1150dd9EAD) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
 
 
 ## Changes Since Deployment
@@ -201,116 +208,6 @@ index 00000000..f8ff9775
 
 _Showing first 100 of 3316 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)_
 
-#### kinkIRMFactory
-
-- **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
-- **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
-
-```diff
-diff --git a/src/AccessControl/SelectorAccessControl.sol b/src/AccessControl/SelectorAccessControl.sol
-new file mode 100644
-index 00000000..6510aad6
---- /dev/null
-+++ b/src/AccessControl/SelectorAccessControl.sol
-@@ -0,0 +1,83 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {ContextUpgradeable} from "openzeppelin-contracts-upgradeable/utils/ContextUpgradeable.sol";
-+import {AccessControlEnumerableUpgradeable} from
-+    "openzeppelin-contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
-+import {
-+    AccessControlUpgradeable,
-+    IAccessControl
-+} from "openzeppelin-contracts-upgradeable/access/AccessControlUpgradeable.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
-+
-+/// @title SelectorAccessControl
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice A utility contract with the EVC support that allows for access control based on specific selectors.
-+abstract contract SelectorAccessControl is EVCUtil, AccessControlEnumerableUpgradeable {
-+    /// @notice The wildcard for all selectors. A caller with this role can call any function selector.
-+    bytes32 public constant WILD_CARD = bytes32(type(uint256).max);
-+
-+    /// @notice Constructor for SelectorAccessControl
-+    /// @param evc The address of the Ethereum Vault Connector (EVC)
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    constructor(address evc, address admin) EVCUtil(evc) {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+        _disableInitializers();
-+    }
-+
-+    /// @notice Initializes the contract, setting up the admin role
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    function initialize(address admin) public initializer {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+    }
-+
-+    /// @dev Grants `role` to `account`.
-+    function grantRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.grantRole(role, account);
-+    }
-+
-+    /// @dev Revokes `role` from `account`.
-+    function revokeRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.revokeRole(role, account);
-+    }
-+
-+    /// @dev Revokes `role` from the calling account.
-+    function renounceRole(bytes32 role, address callerConfirmation)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.renounceRole(role, callerConfirmation);
-+    }
-+
-+    /// @notice Authenticates the caller based on their role and the function selector called
-+    /// @dev Checks if the caller has either the wildcard role or the specific role for the current function selector
-+    /// @dev If the caller doesn't have the required role, it reverts with a NotAuthorized error
-+    function _authenticateCaller() internal view virtual {
-+        address msgSender = _msgSender();
-+
-+        // Don't revert if whitelisted for wildcard or specific selector
-+        if (!hasRole(WILD_CARD, msgSender) && !hasRole(msg.sig, msgSender)) revert NotAuthorized();
-+    }
-+
-+    /// @notice Retrieves the message sender in the context of the EVC.
-+    /// @dev This function returns the account on behalf of which the current operation is being performed, which is
-+    /// either msg.sender or the account authenticated by the EVC.
-+    /// @return The address of the message sender.
-+    function _msgSender() internal view virtual override (EVCUtil, ContextUpgradeable) returns (address) {
-+        return EVCUtil._msgSender();
-+    }
-+}
-diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
-new file mode 100644
-index 00000000..2ca592c0
---- /dev/null
-+++ b/src/Chainlink/DataStreamsVerifier.sol
-@@ -0,0 +1,109 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
-```
-
-_Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
-
 #### swapVerifier
 
 - **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
@@ -437,7 +334,7 @@ _No diff available - see GitHub compare link above._
 
 - **Deployed from:** [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7)
 - **Compare to master:** [`9eb7b8a7...master`](https://github.com/euler-xyz/reward-streams/compare/9eb7b8a7...master)
-- **evk-periphery:** [`8695c72c`](https://github.com/euler-xyz/evk-periphery/tree/8695c72c)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
 
 _No diff available - see GitHub compare link above._
 
