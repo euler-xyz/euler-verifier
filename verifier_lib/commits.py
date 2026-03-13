@@ -105,6 +105,7 @@ NETWORK_HINTS: Dict[str, Dict[str, str]] = {
         "balanceTracker": "deploy-swell",
     },
     "monad": {},
+    "katana": {},
 }
 
 # =============================================================================

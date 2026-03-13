@@ -134,5 +134,13 @@
     "explorer_url": "https://plasmascan.to",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2"
+  },
+  "katana": {
+    "chain_id": 747474,
+    "name": "Katana",
+    "status": "testing",
+    "explorer_url": "https://katanascan.com",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2"
   }
 }
