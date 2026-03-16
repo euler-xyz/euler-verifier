@@ -4,8 +4,8 @@
 
 | Status | Count |
 |--------|-------|
-| ✓ Verified (exact match) | 26 |
-| ✗ No exact commit found | 0 |
+| ✓ Verified (exact match) | 24 |
+| ✗ No exact commit found | 2 |
 | ~ Standalone with diff | 0 |
 | - Error | 0 |
 | **Total** | **26** |
@@ -14,32 +14,256 @@
 
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
-| ✓ adaptiveCurveIRMFactory | [`0x73ab4387...`](https://explorer.swellnetwork.io/address/0x73ab43878997BcDc5d726b7aE76F149ebe9d3AA9) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
-| ✓ balanceTracker | [`0x9fb7215e...`](https://explorer.swellnetwork.io/address/0x9fb7215ef6297498D6807caf9f3aC8BA3154db29) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`8695c72c`](https://github.com/euler-xyz/evk-periphery/tree/8695c72c) | 17/17 |
+| ✓ adaptiveCurveIRMFactory | [`0x73ab4387...`](https://explorer.swellnetwork.io/address/0x73ab43878997BcDc5d726b7aE76F149ebe9d3AA9) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
+| ✓ balanceTracker | [`0x9fb7215e...`](https://explorer.swellnetwork.io/address/0x9fb7215ef6297498D6807caf9f3aC8BA3154db29) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`deploy-s`](https://github.com/euler-xyz/evk-periphery/tree/deploy-swell) | 17/17 |
 | ✓ eulerEarnFactory | [`0x3073e1B4...`](https://explorer.swellnetwork.io/address/0x3073e1B42f8Cc933f2d678DdA10acDE51F4E49a3) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`773453b`](https://github.com/euler-xyz/euler-earn/tree/773453b) | - | 35/35 |
 | ✓ eulerEarnPublicAllocator | [`0x0a13C9fc...`](https://explorer.swellnetwork.io/address/0x0a13C9fc4613Cae202138F4E1C2b9125A20562E8) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`773453b`](https://github.com/euler-xyz/euler-earn/tree/773453b) | - | 14/14 |
-| ✓ eulerSwapV1Factory | [`0x976dd856...`](https://explorer.swellnetwork.io/address/0x976dd85654B3b2f9fb66280ACE30Cab7C81a2130) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 55/55 |
-| ✓ eulerSwapV1Implementation | [`0x3620dAb0...`](https://explorer.swellnetwork.io/address/0x3620dAb0DB5595479a4D5408595D48FbE48CeA2A) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 46/46 |
+| ✗ eulerSwapV1Factory | [`0x976dd856...`](https://explorer.swellnetwork.io/address/0x976dd85654B3b2f9fb66280ACE30Cab7C81a2130) | [euler-swap](https://github.com/euler-xyz/euler-swap) | not found | - | 22/55 |
+| ✗ eulerSwapV1Implementation | [`0x3620dAb0...`](https://explorer.swellnetwork.io/address/0x3620dAb0DB5595479a4D5408595D48FbE48CeA2A) | [euler-swap](https://github.com/euler-xyz/euler-swap) | not found | - | 18/46 |
 | ✓ eulerSwapV1Periphery | [`0x34932C04...`](https://explorer.swellnetwork.io/address/0x34932C04c3d27c2BD7aCd0B5d203bfd65a17f481) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 9/9 |
-| ✓ eulerSwapV2Factory | [`0x980cd01d...`](https://explorer.swellnetwork.io/address/0x980cd01dB708C2B008cF8076aa856fcAeF60698c) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 57/57 |
-| ✓ eulerSwapV2Implementation | [`0xCB728171...`](https://explorer.swellnetwork.io/address/0xCB72817170a9d0f136fcB764f55BEEC638C25acb) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 54/54 |
-| ✓ eulerSwapV2Periphery | [`0x74F7726e...`](https://explorer.swellnetwork.io/address/0x74F7726eF6D8107403a6c581B985D27ED0561f9D) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 11/11 |
-| ✓ eulerSwapV2ProtocolFeeConfig | [`0x6FB6C91e...`](https://explorer.swellnetwork.io/address/0x6FB6C91e369fD151eB343de3BE76F3617FbFfDf2) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 5/5 |
-| ✓ eulerSwapV2Registry | [`0x33274281...`](https://explorer.swellnetwork.io/address/0x3327428147E0cE4Cb185A82F756CaE0D429dbd2c) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 35/35 |
+| ✓ eulerSwapV2Factory | [`0x980cd01d...`](https://explorer.swellnetwork.io/address/0x980cd01dB708C2B008cF8076aa856fcAeF60698c) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a) | 57/57 |
+| ✓ eulerSwapV2Implementation | [`0xCB728171...`](https://explorer.swellnetwork.io/address/0xCB72817170a9d0f136fcB764f55BEEC638C25acb) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a) | 54/54 |
+| ✓ eulerSwapV2Periphery | [`0x74F7726e...`](https://explorer.swellnetwork.io/address/0x74F7726eF6D8107403a6c581B985D27ED0561f9D) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a) | 11/11 |
+| ✓ eulerSwapV2ProtocolFeeConfig | [`0x6FB6C91e...`](https://explorer.swellnetwork.io/address/0x6FB6C91e369fD151eB343de3BE76F3617FbFfDf2) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a) | 5/5 |
+| ✓ eulerSwapV2Registry | [`0x33274281...`](https://explorer.swellnetwork.io/address/0x3327428147E0cE4Cb185A82F756CaE0D429dbd2c) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a) | 35/35 |
 | ✓ eulOFTAdapter | [`0xD0148dDB...`](https://explorer.swellnetwork.io/address/0xD0148dDB69f4d8182Ef863d6f81ED6519D8c83a2) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 63/63 |
-| ✓ eVaultFactory | [`0x238bF86b...`](https://explorer.swellnetwork.io/address/0x238bF86bb451ec3CA69BB855f91BDA001aB118b9) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 3/3 |
-| ✓ eVaultImplementation | [`0x70f12862...`](https://explorer.swellnetwork.io/address/0x70f1286239228B28A047c727C2df390045299486) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 52/52 |
-| ✓ evc | [`0x08739CBe...`](https://explorer.swellnetwork.io/address/0x08739CBede6E28E387685ba20e6409bD16969Cde) | [ethereum-vault-connector](https://github.com/euler-xyz/ethereum-vault-connector) | [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29ef7e4964736e47675e0588630d6afbfd7) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 9/9 |
-| ✓ feeFlowController | [`0xA93Ff8C4...`](https://explorer.swellnetwork.io/address/0xA93Ff8C4CC2Ba56Ee182B70bb07F2C75DA249879) | [fee-flow](https://github.com/euler-xyz/fee-flow) | [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94e9cd68f65e11f07da9a69f726177cb9c) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 6/6 |
-| ✓ fixedCyclicalBinaryIRMFactory | [`0xb30F5540...`](https://explorer.swellnetwork.io/address/0xb30F5540dd93Fd5569c9638B7bF11A4a926E8D17) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
-| ✓ governorAccessControlEmergencyFactory | [`0x88B049E6...`](https://explorer.swellnetwork.io/address/0x88B049E6e1A3e11306aC437bbedD0077a2859A36) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 48/48 |
+| ✓ eVaultFactory | [`0x238bF86b...`](https://explorer.swellnetwork.io/address/0x238bF86bb451ec3CA69BB855f91BDA001aB118b9) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e051f5d769f7c6edb9be30198a55117d4) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
+| ✓ eVaultImplementation | [`0x70f12862...`](https://explorer.swellnetwork.io/address/0x70f1286239228B28A047c727C2df390045299486) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 52/52 |
+| ✓ evc | [`0x08739CBe...`](https://explorer.swellnetwork.io/address/0x08739CBede6E28E387685ba20e6409bD16969Cde) | [ethereum-vault-connector](https://github.com/euler-xyz/ethereum-vault-connector) | [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29ef7e4964736e47675e0588630d6afbfd7) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 9/9 |
+| ✓ feeFlowController | [`0xA93Ff8C4...`](https://explorer.swellnetwork.io/address/0xA93Ff8C4CC2Ba56Ee182B70bb07F2C75DA249879) | [fee-flow](https://github.com/euler-xyz/fee-flow) | [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94e9cd68f65e11f07da9a69f726177cb9c) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
+| ✓ fixedCyclicalBinaryIRMFactory | [`0xb30F5540...`](https://explorer.swellnetwork.io/address/0xb30F5540dd93Fd5569c9638B7bF11A4a926E8D17) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
+| ✓ governorAccessControlEmergencyFactory | [`0x88B049E6...`](https://explorer.swellnetwork.io/address/0x88B049E6e1A3e11306aC437bbedD0077a2859A36) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 48/48 |
 | ✓ kinkIRMFactory | [`0xBECb652F...`](https://explorer.swellnetwork.io/address/0xBECb652Fded7024765575165A98Bfe30b7374058) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 5/5 |
-| ✓ kinkyIRMFactory | [`0xb6d62828...`](https://explorer.swellnetwork.io/address/0xb6d62828ba6063B9d4fD504A70d6a9B2f24b1918) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
-| ✓ oracleRouterFactory | [`0x0135fC26...`](https://explorer.swellnetwork.io/address/0x0135fC2605ff2C89E550C2d4C7d75068A4782B43) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | [`f52cb43b`](https://github.com/euler-xyz/euler-price-oracle/tree/f52cb43b587c7fa90a7e722d52698003451feb62) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 13/13 |
-| ✓ protocolConfig | [`0x6682Af28...`](https://explorer.swellnetwork.io/address/0x6682Af2820633067A1de5bE99b2DCb2d38F1e241) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
-| ✓ rEUL | [`0x021694af...`](https://explorer.swellnetwork.io/address/0x021694af083d67950Ac994E63e0a70C30D913836) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 21/21 |
-| ✓ sequenceRegistry | [`0xC4589C61...`](https://explorer.swellnetwork.io/address/0xC4589C6199516F96B422D91020563Fe65b28918e) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
+| ✓ kinkyIRMFactory | [`0xb6d62828...`](https://explorer.swellnetwork.io/address/0xb6d62828ba6063B9d4fD504A70d6a9B2f24b1918) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
+| ✓ oracleRouterFactory | [`0x0135fC26...`](https://explorer.swellnetwork.io/address/0x0135fC2605ff2C89E550C2d4C7d75068A4782B43) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | [`deeffa7b`](https://github.com/euler-xyz/euler-price-oracle/tree/deeffa7b518618202802f37865ed654070a7175f) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 13/13 |
+| ✓ protocolConfig | [`0x6682Af28...`](https://explorer.swellnetwork.io/address/0x6682Af2820633067A1de5bE99b2DCb2d38F1e241) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e051f5d769f7c6edb9be30198a55117d4) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
+| ✓ rEUL | [`0x021694af...`](https://explorer.swellnetwork.io/address/0x021694af083d67950Ac994E63e0a70C30D913836) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 21/21 |
+| ✓ sequenceRegistry | [`0xC4589C61...`](https://explorer.swellnetwork.io/address/0xC4589C6199516F96B422D91020563Fe65b28918e) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e051f5d769f7c6edb9be30198a55117d4) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
 | ✓ swapVerifier | [`0x392C1570...`](https://explorer.swellnetwork.io/address/0x392C1570b3Bf29B113944b759cAa9a9282DA12Fe) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
+
+
+## Contracts Without Exact Match
+
+These contracts could not be matched to any commit in the repository.
+Showing diff between explorer source and current `master`:
+
+### eulerSwapV1Factory
+
+- **Address:** [`0x976dd85654B3b2f9fb66280ACE30Cab7C81a2130`](https://explorer.swellnetwork.io/address/0x976dd85654B3b2f9fb66280ACE30Cab7C81a2130)
+- **Files matching:** 22/55
+
+```diff
+--- local/src/EulerSwapFactory.sol
++++ explorer/src/EulerSwapFactory.sol
+@@ -1,72 +1,210 @@
+-// SPDX-License-Identifier: BUSL-1.1
++// SPDX-License-Identifier: GPL-2.0-or-later
+ pragma solidity ^0.8.27;
++
++import {EnumerableSet} from "openzeppelin-contracts/utils/structs/EnumerableSet.sol";
+ 
+ import {IEulerSwapFactory, IEulerSwap} from "./interfaces/IEulerSwapFactory.sol";
+ import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
++import {GenericFactory} from "GenericFactory/GenericFactory.sol";
+ 
+ import {EulerSwap} from "./EulerSwap.sol";
++import {ProtocolFee} from "./utils/ProtocolFee.sol";
+ import {MetaProxyDeployer} from "./utils/MetaProxyDeployer.sol";
+ 
+ /// @title EulerSwapFactory contract
+ /// @custom:security-contact EMAIL
+ /// @author Euler Labs (https://www.eulerlabs.com/)
+-contract EulerSwapFactory is IEulerSwapFactory, EVCUtil {
++contract EulerSwapFactory is IEulerSwapFactory, EVCUtil, ProtocolFee {
++    using EnumerableSet for EnumerableSet.AddressSet;
++
++    /// @dev Vaults must be deployed by this factory
++    address public immutable evkFactory;
+     /// @dev The EulerSwap code instance that will be proxied to
+     address public immutable eulerSwapImpl;
+ 
+-    /// @dev Set of pool addresses deployed by this factory
+-    mapping(address pool => bool) public deployedPools;
+-
++    /// @dev Mapping from euler account to pool, if installed
++    mapping(address eulerAccount => address) internal installedPools;
++    /// @dev Set of all pool addresses
++    EnumerableSet.AddressSet internal allPools;
++    /// @dev Mapping from sorted pair of underlyings to set of pools
++    mapping(address asset0 => mapping(address asset1 => EnumerableSet.AddressSet)) internal poolMap;
++
++    event PoolDeployed(address indexed asset0, address indexed asset1, address indexed eulerAccount, address pool);
++    event PoolConfig(address indexed pool, IEulerSwap.Params params, IEulerSwap.InitialState initialState);
++    event PoolUninstalled(address indexed asset0, address indexed asset1, address indexed eulerAccount, address pool);
++
++    error InvalidQuery();
+     error Unauthorized();
++    error OldOperatorStillInstalled();
+     error OperatorNotInstalled();
+-
+-    event PoolDeployed(
+-        address indexed asset0,
+--- lib/v4-periphery/lib/v4-core/src/interfaces/IPoolManager.sol: NOT FOUND locally
+--- lib/v4-periphery/lib/v4-core/src/types/Currency.sol: NOT FOUND locally
+--- local/src/UniswapHook.sol
++++ explorer/src/UniswapHook.sol
+@@ -1,4 +1,4 @@
+-// SPDX-License-Identifier: BUSL-1.1
++// SPDX-License-Identifier: GPL-2.0-or-later
+ pragma solidity ^0.8.27;
+ 
+ import {IPoolManager} from "@uniswap/v4-core/src/interfaces/IPoolManager.sol";
+@@ -14,38 +14,40 @@
+ 
+ import {IEVault} from "EVault/IEVault.sol";
+ 
+-import {EulerSwapBase} from "./EulerSwapBase.sol";
+ import {IEulerSwap} from "./interfaces/IEulerSwap.sol";
++import "./Events.sol";
++import {CtxLib} from "./libraries/CtxLib.sol";
+ import {QuoteLib} from "./libraries/QuoteLib.sol";
+-import {SwapLib} from "./libraries/SwapLib.sol";
++import {CurveLib} from "./libraries/CurveLib.sol";
++import {FundsLib} from "./libraries/FundsLib.sol";
+ 
+-abstract contract UniswapHook is EulerSwapBase, BaseHook {
++contract UniswapHook is BaseHook {
+     using SafeCast for uint256;
+ 
+-    address public immutable protocolFeeConfig;
++    address private immutable evc;
+ 
+     PoolKey internal _poolKey;
+ 
+-    constructor(address evc_, address protocolFeeConfig_, address _poolManager)
+-        EulerSwapBase(evc_)
+-        BaseHook(IPoolManager(_poolManager))
+-    {
+-        protocolFeeConfig = protocolFeeConfig_;
++    error LockedHook();
++
++    constructor(address evc_, address _poolManager) BaseHook(IPoolManager(_poolManager)) {
++        evc = evc_;
+     }
+ 
+-    function activateHook(IEulerSwap.StaticParams memory sParams) internal nonReentrant {
+-        if (address(poolManager) == address(0)) return;
+-
++    function activateHook(IEulerSwap.Params memory p) internal {
+         Hooks.validateHookPermissions(this, getHookPermissions());
+ 
+-        address asset0Addr = IEVault(sParams.supplyVault0).asset();
+... (393 more lines)
+```
+
+### eulerSwapV1Implementation
+
+- **Address:** [`0x3620dAb0DB5595479a4D5408595D48FbE48CeA2A`](https://explorer.swellnetwork.io/address/0x3620dAb0DB5595479a4D5408595D48FbE48CeA2A)
+- **Files matching:** 18/46
+
+```diff
+--- local/src/EulerSwap.sol
++++ explorer/src/EulerSwap.sol
+@@ -1,84 +1,113 @@
+-// SPDX-License-Identifier: BUSL-1.1
++// SPDX-License-Identifier: GPL-2.0-or-later
+ pragma solidity ^0.8.27;
+ 
+-import {IERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
++import {IEulerSwapCallee} from "./interfaces/IEulerSwapCallee.sol";
+ 
+-import {IEulerSwapCallee} from "./interfaces/IEulerSwapCallee.sol";
++import {EVCUtil} from "evc/utils/EVCUtil.sol";
++import {IEVC} from "evc/interfaces/IEthereumVaultConnector.sol";
+ import {IEVault} from "EVault/IEVault.sol";
+ 
+ import {IEulerSwap} from "./interfaces/IEulerSwap.sol";
+ import {UniswapHook} from "./UniswapHook.sol";
++import "./Events.sol";
+ import {CtxLib} from "./libraries/CtxLib.sol";
++import {FundsLib} from "./libraries/FundsLib.sol";
++import {CurveLib} from "./libraries/CurveLib.sol";
+ import {QuoteLib} from "./libraries/QuoteLib.sol";
+-import {SwapLib} from "./libraries/SwapLib.sol";
+ 
+-contract EulerSwap is IEulerSwap, UniswapHook {
+-    bytes32 public constant curve = bytes32("EulerSwap v2");
+-    address public immutable managementImpl;
++contract EulerSwap is IEulerSwap, EVCUtil, UniswapHook {
++    bytes32 public constant curve = bytes32("EulerSwap v1");
+ 
++    error Locked();
++    error AlreadyActivated();
++    error BadParam();
+     error AmountTooBig();
++    error AssetsOutOfOrderOrEqual();
+ 
+-    constructor(address evc_, address protocolFeeConfig_, address poolManager_, address managementImpl_)
+-        UniswapHook(evc_, protocolFeeConfig_, poolManager_)
+-    {
+-        managementImpl = managementImpl_;
++    constructor(address evc_, address poolManager_) EVCUtil(evc_) UniswapHook(evc_, poolManager_) {
++        CtxLib.Storage storage s = CtxLib.getStorage();
++
++        s.status = 2; // can only be used via delegatecall proxy
++    }
++
++    modifier nonReentrant() {
++        CtxLib.Storage storage s = CtxLib.getStorage();
++
++        require(s.status == 1, Locked());
+--- lib/v4-periphery/lib/v4-core/src/interfaces/IPoolManager.sol: NOT FOUND locally
+--- lib/v4-periphery/lib/v4-core/src/types/Currency.sol: NOT FOUND locally
+--- local/src/UniswapHook.sol
++++ explorer/src/UniswapHook.sol
+@@ -1,4 +1,4 @@
+-// SPDX-License-Identifier: BUSL-1.1
++// SPDX-License-Identifier: GPL-2.0-or-later
+ pragma solidity ^0.8.27;
+ 
+ import {IPoolManager} from "@uniswap/v4-core/src/interfaces/IPoolManager.sol";
+@@ -14,38 +14,40 @@
+ 
+ import {IEVault} from "EVault/IEVault.sol";
+ 
+-import {EulerSwapBase} from "./EulerSwapBase.sol";
+ import {IEulerSwap} from "./interfaces/IEulerSwap.sol";
++import "./Events.sol";
++import {CtxLib} from "./libraries/CtxLib.sol";
+ import {QuoteLib} from "./libraries/QuoteLib.sol";
+-import {SwapLib} from "./libraries/SwapLib.sol";
++import {CurveLib} from "./libraries/CurveLib.sol";
++import {FundsLib} from "./libraries/FundsLib.sol";
+ 
+-abstract contract UniswapHook is EulerSwapBase, BaseHook {
++contract UniswapHook is BaseHook {
+     using SafeCast for uint256;
+ 
+-    address public immutable protocolFeeConfig;
++    address private immutable evc;
+ 
+     PoolKey internal _poolKey;
+ 
+-    constructor(address evc_, address protocolFeeConfig_, address _poolManager)
+-        EulerSwapBase(evc_)
+-        BaseHook(IPoolManager(_poolManager))
+-    {
+-        protocolFeeConfig = protocolFeeConfig_;
++    error LockedHook();
++
++    constructor(address evc_, address _poolManager) BaseHook(IPoolManager(_poolManager)) {
++        evc = evc_;
+     }
+ 
+-    function activateHook(IEulerSwap.StaticParams memory sParams) internal nonReentrant {
+-        if (address(poolManager) == address(0)) return;
+-
++    function activateHook(IEulerSwap.Params memory p) internal {
+         Hooks.validateHookPermissions(this, getHookPermissions());
+ 
+-        address asset0Addr = IEVault(sParams.supplyVault0).asset();
+... (282 more lines)
+```
 
 
 ## Changes Since Deployment
@@ -53,7 +277,7 @@ These diffs help identify any changes made to the codebase after deployment.
 
 - **Deployed from:** [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e)
 - **Compare to master:** [`a7d3c29e...master`](https://github.com/euler-xyz/ethereum-vault-connector/compare/a7d3c29e...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
 
 _No diff available - see GitHub compare link above._
 
@@ -285,9 +509,9 @@ _Showing first 100 of 132 lines. [View full diff on GitHub](https://github.com/e
 
 #### oracleRouterFactory
 
-- **Deployed from:** [`f52cb43b`](https://github.com/euler-xyz/euler-price-oracle/tree/f52cb43b)
-- **Compare to master:** [`f52cb43b...master`](https://github.com/euler-xyz/euler-price-oracle/compare/f52cb43b...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **Deployed from:** [`deeffa7b`](https://github.com/euler-xyz/euler-price-oracle/tree/deeffa7b)
+- **Compare to master:** [`deeffa7b...master`](https://github.com/euler-xyz/euler-price-oracle/compare/deeffa7b...master)
+- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
 
 _No diff available - see GitHub compare link above._
 
@@ -297,7 +521,7 @@ _No diff available - see GitHub compare link above._
 
 - **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
 - **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **evk-periphery:** [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a)
 
 _No diff available - see GitHub compare link above._
 
@@ -305,7 +529,7 @@ _No diff available - see GitHub compare link above._
 
 - **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
 - **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **evk-periphery:** [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a)
 
 _No diff available - see GitHub compare link above._
 
@@ -313,7 +537,7 @@ _No diff available - see GitHub compare link above._
 
 - **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
 - **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **evk-periphery:** [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a)
 
 _No diff available - see GitHub compare link above._
 
@@ -321,7 +545,7 @@ _No diff available - see GitHub compare link above._
 
 - **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
 - **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **evk-periphery:** [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a)
 
 _No diff available - see GitHub compare link above._
 
@@ -329,7 +553,7 @@ _No diff available - see GitHub compare link above._
 
 - **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
 - **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **evk-periphery:** [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a)
 
 _No diff available - see GitHub compare link above._
 
@@ -337,9 +561,9 @@ _No diff available - see GitHub compare link above._
 
 #### eVaultFactory
 
-- **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
-- **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
 _No diff available - see GitHub compare link above._
 
@@ -347,357 +571,83 @@ _No diff available - see GitHub compare link above._
 
 - **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
 - **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
 
 _No diff available - see GitHub compare link above._
 
 #### protocolConfig
 
-- **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
-- **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
 _No diff available - see GitHub compare link above._
 
 #### sequenceRegistry
 
-- **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
-- **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
+- **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
+- **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
 _No diff available - see GitHub compare link above._
 
 ### evk-periphery
+
+#### adaptiveCurveIRMFactory
+
+- **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+- **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
+
+_No diff available - see GitHub compare link above._
 
 #### eulOFTAdapter
 
 - **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
 - **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
 
-```diff
-diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
-index 929f5d96..2ca592c0 100644
---- a/src/Chainlink/DataStreamsVerifier.sol
-+++ b/src/Chainlink/DataStreamsVerifier.sol
-@@ -3,7 +3,7 @@
- pragma solidity ^0.8.0;
- 
- import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
--import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/extensions/ERC20Wrapper.sol";
-+import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
- 
- /// @title Verifier Proxy Interface
- /// @notice Interface for interacting with Chainlink's verifier proxy contract
-diff --git a/src/ERC20/deployed/ERC20BurnableMintable.sol b/src/ERC20/deployed/ERC20BurnableMintable.sol
-index 82413624..19bb8e81 100644
---- a/src/ERC20/deployed/ERC20BurnableMintable.sol
-+++ b/src/ERC20/deployed/ERC20BurnableMintable.sol
-@@ -45,7 +45,7 @@ contract ERC20BurnableMintable is AccessControlEnumerable, ERC20Burnable, ERC20P
-     /// @notice Mints new tokens and assigns them to an account
-     /// @param _account The address that will receive the minted tokens
-     /// @param _amount The amount of tokens to mint
--    function mint(address _account, uint256 _amount) external onlyRole(MINTER_ROLE) {
-+    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
-         _mint(_account, _amount);
-     }
- 
-diff --git a/src/ERC20/deployed/ERC20Synth.sol b/src/ERC20/deployed/ERC20Synth.sol
-new file mode 100644
-index 00000000..f8ff9775
---- /dev/null
-+++ b/src/ERC20/deployed/ERC20Synth.sol
-@@ -0,0 +1,257 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {ERC20BurnableMintable} from "./ERC20BurnableMintable.sol";
-+import {EnumerableSet} from "openzeppelin-contracts/utils/structs/EnumerableSet.sol";
-+import {AccessControl, IAccessControl, Context} from "openzeppelin-contracts/access/AccessControl.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
-+import {IEVault} from "evk/EVault/IEVault.sol";
-+
-+/// @title ERC20Synth
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice ERC20-compatible synthetic token with EVC support, role-based minting, burning, and supply management.
-+/// @dev This contract is designed for token bridging and synthetic asset vaults. Minting is controlled by MINTER_ROLE,
-+/// and minting capacity is tracked per minter. The REVOKE_MINTER_ROLE can revoke minting rights in emergencies.
-+/// The contract supports excluding certain addresses from total supply calculations (e.g., vaults).
-+contract ERC20Synth is ERC20BurnableMintable, EVCUtil {
-+    using EnumerableSet for EnumerableSet.AddressSet;
-+
-+    /// @notice Struct holding minting capacity and minted amount for a minter.
-+    struct MinterData {
-+        uint128 capacity;
-+        uint128 minted;
-+    }
-+
-+    /// @notice Role that allows allocation and deallocation to vaults.
-+    bytes32 public constant ALLOCATOR_ROLE = keccak256("ALLOCATOR_ROLE");
-+
-+    /// @notice Mapping of minter address to their minting data (capacity and minted amount).
-+    mapping(address => MinterData) public minters;
-+
-+    /// @notice Set of addresses to ignore for total supply calculations (e.g., vaults, contract itself).
-+    EnumerableSet.AddressSet internal _ignoredForTotalSupply;
-+
-+    /// @notice Emitted when a minter's capacity is set or updated.
-+    /// @param minter The address of the minter.
-+    /// @param capacity The new minting capacity for the minter.
-+    event MinterCapacitySet(address indexed minter, uint256 capacity);
-+
-+    /// @notice Emitted when an account is added to the set of addresses ignored for total supply.
-+    /// @param account The address of the account.
-+    event IgnoredForTotalSupplyAdded(address indexed account);
-+
-+    /// @notice Emitted when an account is removed from the set of addresses ignored for total supply.
-+    /// @param account The address of the account.
-+    event IgnoredForTotalSupplyRemoved(address indexed account);
-+
-+    /// @notice Emitted when tokens are allocated to a vault.
-+    /// @param vault The address of the vault.
-+    /// @param amount The amount of tokens allocated.
-+    event Allocated(address indexed vault, uint256 amount);
-+
-+    /// @notice Emitted when tokens are deallocated from a vault.
-+    /// @param vault The address of the vault.
-+    /// @param amount The amount of tokens deallocated.
-+    event Deallocated(address indexed vault, uint256 amount);
-+
-+    /// @notice Error thrown when a minter exceeds their minting capacity.
-+    error CapacityReached();
-+
-+    /// @notice Deploys the ERC20Synth contract.
-+    /// @param evc_ Address of the EVC (Ethereum Vault Connector).
-+    /// @param admin_ Address to be granted DEFAULT_ADMIN_ROLE.
-+    /// @param name_ Name of the token.
-+    /// @param symbol_ Symbol of the token.
-+    /// @param decimals_ Number of decimals for the token.
-+    constructor(address evc_, address admin_, string memory name_, string memory symbol_, uint8 decimals_)
-```
+_No diff available - see GitHub compare link above._
 
-_Showing first 100 of 3316 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)_
+#### fixedCyclicalBinaryIRMFactory
+
+- **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+- **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
+
+_No diff available - see GitHub compare link above._
+
+#### governorAccessControlEmergencyFactory
+
+- **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+- **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
+
+_No diff available - see GitHub compare link above._
 
 #### kinkIRMFactory
 
 - **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 - **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
 
-```diff
-diff --git a/src/AccessControl/SelectorAccessControl.sol b/src/AccessControl/SelectorAccessControl.sol
-new file mode 100644
-index 00000000..6510aad6
---- /dev/null
-+++ b/src/AccessControl/SelectorAccessControl.sol
-@@ -0,0 +1,83 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {ContextUpgradeable} from "openzeppelin-contracts-upgradeable/utils/ContextUpgradeable.sol";
-+import {AccessControlEnumerableUpgradeable} from
-+    "openzeppelin-contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
-+import {
-+    AccessControlUpgradeable,
-+    IAccessControl
-+} from "openzeppelin-contracts-upgradeable/access/AccessControlUpgradeable.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
-+
-+/// @title SelectorAccessControl
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice A utility contract with the EVC support that allows for access control based on specific selectors.
-+abstract contract SelectorAccessControl is EVCUtil, AccessControlEnumerableUpgradeable {
-+    /// @notice The wildcard for all selectors. A caller with this role can call any function selector.
-+    bytes32 public constant WILD_CARD = bytes32(type(uint256).max);
-+
-+    /// @notice Constructor for SelectorAccessControl
-+    /// @param evc The address of the Ethereum Vault Connector (EVC)
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    constructor(address evc, address admin) EVCUtil(evc) {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+        _disableInitializers();
-+    }
-+
-+    /// @notice Initializes the contract, setting up the admin role
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    function initialize(address admin) public initializer {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+    }
-+
-+    /// @dev Grants `role` to `account`.
-+    function grantRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.grantRole(role, account);
-+    }
-+
-+    /// @dev Revokes `role` from `account`.
-+    function revokeRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.revokeRole(role, account);
-+    }
-+
-+    /// @dev Revokes `role` from the calling account.
-+    function renounceRole(bytes32 role, address callerConfirmation)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.renounceRole(role, callerConfirmation);
-+    }
-+
-+    /// @notice Authenticates the caller based on their role and the function selector called
-+    /// @dev Checks if the caller has either the wildcard role or the specific role for the current function selector
-+    /// @dev If the caller doesn't have the required role, it reverts with a NotAuthorized error
-+    function _authenticateCaller() internal view virtual {
-+        address msgSender = _msgSender();
-+
-+        // Don't revert if whitelisted for wildcard or specific selector
-+        if (!hasRole(WILD_CARD, msgSender) && !hasRole(msg.sig, msgSender)) revert NotAuthorized();
-+    }
-+
-+    /// @notice Retrieves the message sender in the context of the EVC.
-+    /// @dev This function returns the account on behalf of which the current operation is being performed, which is
-+    /// either msg.sender or the account authenticated by the EVC.
-+    /// @return The address of the message sender.
-+    function _msgSender() internal view virtual override (EVCUtil, ContextUpgradeable) returns (address) {
-+        return EVCUtil._msgSender();
-+    }
-+}
-diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
-new file mode 100644
-index 00000000..2ca592c0
---- /dev/null
-+++ b/src/Chainlink/DataStreamsVerifier.sol
-@@ -0,0 +1,109 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
-```
+_No diff available - see GitHub compare link above._
 
-_Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
+#### kinkyIRMFactory
+
+- **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+- **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
+
+_No diff available - see GitHub compare link above._
+
+#### rEUL
+
+- **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+- **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
+
+_No diff available - see GitHub compare link above._
 
 #### swapVerifier
 
 - **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 - **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
 
-```diff
-diff --git a/src/AccessControl/SelectorAccessControl.sol b/src/AccessControl/SelectorAccessControl.sol
-new file mode 100644
-index 00000000..6510aad6
---- /dev/null
-+++ b/src/AccessControl/SelectorAccessControl.sol
-@@ -0,0 +1,83 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {ContextUpgradeable} from "openzeppelin-contracts-upgradeable/utils/ContextUpgradeable.sol";
-+import {AccessControlEnumerableUpgradeable} from
-+    "openzeppelin-contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
-+import {
-+    AccessControlUpgradeable,
-+    IAccessControl
-+} from "openzeppelin-contracts-upgradeable/access/AccessControlUpgradeable.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
-+
-+/// @title SelectorAccessControl
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice A utility contract with the EVC support that allows for access control based on specific selectors.
-+abstract contract SelectorAccessControl is EVCUtil, AccessControlEnumerableUpgradeable {
-+    /// @notice The wildcard for all selectors. A caller with this role can call any function selector.
-+    bytes32 public constant WILD_CARD = bytes32(type(uint256).max);
-+
-+    /// @notice Constructor for SelectorAccessControl
-+    /// @param evc The address of the Ethereum Vault Connector (EVC)
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    constructor(address evc, address admin) EVCUtil(evc) {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+        _disableInitializers();
-+    }
-+
-+    /// @notice Initializes the contract, setting up the admin role
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    function initialize(address admin) public initializer {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+    }
-+
-+    /// @dev Grants `role` to `account`.
-+    function grantRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.grantRole(role, account);
-+    }
-+
-+    /// @dev Revokes `role` from `account`.
-+    function revokeRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.revokeRole(role, account);
-+    }
-+
-+    /// @dev Revokes `role` from the calling account.
-+    function renounceRole(bytes32 role, address callerConfirmation)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.renounceRole(role, callerConfirmation);
-+    }
-+
-+    /// @notice Authenticates the caller based on their role and the function selector called
-+    /// @dev Checks if the caller has either the wildcard role or the specific role for the current function selector
-+    /// @dev If the caller doesn't have the required role, it reverts with a NotAuthorized error
-+    function _authenticateCaller() internal view virtual {
-+        address msgSender = _msgSender();
-+
-+        // Don't revert if whitelisted for wildcard or specific selector
-+        if (!hasRole(WILD_CARD, msgSender) && !hasRole(msg.sig, msgSender)) revert NotAuthorized();
-+    }
-+
-+    /// @notice Retrieves the message sender in the context of the EVC.
-+    /// @dev This function returns the account on behalf of which the current operation is being performed, which is
-+    /// either msg.sender or the account authenticated by the EVC.
-+    /// @return The address of the message sender.
-+    function _msgSender() internal view virtual override (EVCUtil, ContextUpgradeable) returns (address) {
-+        return EVCUtil._msgSender();
-+    }
-+}
-diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
-new file mode 100644
-index 00000000..2ca592c0
---- /dev/null
-+++ b/src/Chainlink/DataStreamsVerifier.sol
-@@ -0,0 +1,109 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
-```
-
-_Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
+_No diff available - see GitHub compare link above._
 
 ### fee-flow
 
@@ -705,7 +655,7 @@ _Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/
 
 - **Deployed from:** [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94)
 - **Compare to master:** [`4a419c94...master`](https://github.com/euler-xyz/fee-flow/compare/4a419c94...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
+- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
 
 _No diff available - see GitHub compare link above._
 
@@ -715,7 +665,7 @@ _No diff available - see GitHub compare link above._
 
 - **Deployed from:** [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7)
 - **Compare to master:** [`9eb7b8a7...master`](https://github.com/euler-xyz/reward-streams/compare/9eb7b8a7...master)
-- **evk-periphery:** [`8695c72c`](https://github.com/euler-xyz/evk-periphery/tree/8695c72c)
+- **evk-periphery:** [`deploy-s`](https://github.com/euler-xyz/evk-periphery/tree/deploy-s)
 
 _No diff available - see GitHub compare link above._
 
