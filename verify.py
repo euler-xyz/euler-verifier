@@ -60,7 +60,7 @@ def checkout_repo(repo_dir: Path, commit: str) -> bool:
             cwd=repo_dir,
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=120,
         )
         return True
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
