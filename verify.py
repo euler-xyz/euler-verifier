@@ -64,7 +64,7 @@ def checkout_repo(repo_dir: Path, commit: str, recursive: bool = False) -> bool:
             cwd=repo_dir,
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=300 if recursive else 120,
         )
         return True
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
