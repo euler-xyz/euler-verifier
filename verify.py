@@ -42,7 +42,7 @@ from verifier_lib.commits import EVK_PERIPHERY_DIR, EULER_EARN_DIR, EULER_SWAP_D
 from verifier_lib.report import generate_report, print_summary
 
 
-def checkout_repo(repo_dir: Path, commit: str) -> bool:
+def checkout_repo(repo_dir: Path, commit: str, recursive: bool = False) -> bool:
     """Checkout a repo to a specific commit with proper submodule handling."""
     try:
         # Checkout the commit
@@ -53,10 +53,14 @@ def checkout_repo(repo_dir: Path, commit: str) -> bool:
             capture_output=True,
             text=True,
         )
-        
-        # Update submodules recursively (needed for nested deps like euler-swap's EVK/OZ)
+
+        # Update submodules (recursive needed for euler-swap's nested EVK/OZ deps,
+        # but too slow for evk-periphery which has many nested submodules)
+        cmd = ["git", "submodule", "update", "--init", "--force"]
+        if recursive:
+            cmd.append("--recursive")
         subprocess.run(
-            ["git", "submodule", "update", "--init", "--force", "--recursive"],
+            cmd,
             cwd=repo_dir,
             capture_output=True,
             text=True,
@@ -298,15 +302,18 @@ def verify_contract(
     # Determine repo and submodules (network-aware for special cases like Linea)
     repo_path = get_repo_path(contract_name, network_name)
     submodules = get_submodule_paths(contract_name, network_name)
-    
+
+    # euler-swap standalone needs recursive submodule init for nested EVK/OZ deps
+    needs_recursive = (repo_path == EULER_SWAP_DIR)
+
     # Get commits to try
     commits_to_try = get_commits_to_try(contract_name, network_name)
-    
+
     # Try each commit
     for evk_commit in commits_to_try:
         print(f"    Trying {evk_commit}...", flush=True)
-        
-        if not checkout_repo(repo_path, evk_commit):
+
+        if not checkout_repo(repo_path, evk_commit, recursive=needs_recursive):
             continue
         
         # Initialize nested submodules if needed (e.g., reward-streams has its own OZ)
@@ -346,9 +353,9 @@ def verify_contract(
             if evk_commit in commits_to_try:
                 continue
             
-            if not checkout_repo(repo_path, evk_commit):
+            if not checkout_repo(repo_path, evk_commit, recursive=needs_recursive):
                 continue
-            
+
             # Initialize nested submodules if needed
             init_nested_submodules(repo_path, submodules)
             
