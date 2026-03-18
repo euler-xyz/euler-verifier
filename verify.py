@@ -54,9 +54,9 @@ def checkout_repo(repo_dir: Path, commit: str) -> bool:
             text=True,
         )
         
-        # Update direct submodules only (not recursive - too slow)
+        # Update submodules recursively (needed for nested deps like euler-swap's EVK/OZ)
         subprocess.run(
-            ["git", "submodule", "update", "--init", "--force"],
+            ["git", "submodule", "update", "--init", "--force", "--recursive"],
             cwd=repo_dir,
             capture_output=True,
             text=True,
