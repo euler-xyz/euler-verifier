@@ -148,6 +148,10 @@ class SourceComparator:
         # @openzeppelin/contracts/ -> normalized away
         normalized = re.sub(r'@openzeppelin/contracts/', '', normalized)
 
+        # Normalize import paths to filename only (handles flattened deployments
+        # where e.g. "openzeppelin-contracts/access/Ownable.sol" becomes "../access/Ownable.sol")
+        normalized = re.sub(r'(from\s+["\'])[^"\']*?([^/"\']+\.sol)(["\'])', r'\1\2\3', normalized)
+
         # Strip trailing whitespace and trailing empty lines
         lines = normalized.split('\n')
         lines = [line.rstrip() for line in lines]
