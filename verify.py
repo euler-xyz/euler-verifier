@@ -110,16 +110,51 @@ def get_recent_commits(repo_dir: Path, max_commits: int = 100) -> List[str]:
 
 
 def extract_src_paths(sources: dict) -> List[str]:
-    """Extract src/ file paths from explorer sources dict."""
-    return [p for p in sources.keys() if p.startswith("src/") and p.endswith(".sol")]
+    """Extract src/ file paths from explorer sources dict.
+
+    Handles both direct paths (src/Foo.sol) and submodule-prefixed paths
+    (lib/euler-vault-kit/src/Foo.sol) — stripping the prefix to get
+    paths relative to the repo/submodule root.
+    """
+    paths = []
+    for p in sources.keys():
+        if not p.endswith(".sol"):
+            continue
+        if p.startswith("src/"):
+            paths.append(p)
+        elif "/src/" in p:
+            # Strip lib/<submodule>/ prefix → src/...
+            paths.append("src/" + p.split("/src/", 1)[1])
+    return paths
+
+
+def _run_scoped_diff(cwd: Path, source_commit: str, source_paths: List[str] = None) -> Optional[str]:
+    """Run git diff scoped to the contract's actual source files.
+
+    Only shows changes to files that are part of the deployed contract,
+    excluding new files added to the repo after deployment.
+    """
+    # Use exact file paths if available, otherwise fall back to src/
+    diff_paths = sorted(set(source_paths)) if source_paths else ["src/"]
+
+    try:
+        cmd = ["git", "diff", f"{source_commit}...master", "--"] + diff_paths
+        result = subprocess.run(
+            cmd, cwd=cwd, capture_output=True, text=True, timeout=30,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+        return None
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return None
 
 
 def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, network_name: str = None, source_paths: List[str] = None) -> Optional[str]:
     """
-    Get diff between source commit and master for relevant source files.
+    Get diff between source commit and master for the contract's actual source files.
 
-    For submodule contracts, generates diff in the submodule directory within evk-periphery.
-    For native evk-periphery contracts, scopes diff to contract-relevant src/ paths.
+    Only shows changes to files that are part of the deployed contract — new files
+    added to the repo after deployment are excluded.
     """
     if source_commit in ("master", "main"):
         return None
@@ -133,19 +168,7 @@ def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, 
 
     # For standalone repos (euler-earn), diff in that repo
     if contract_name in {"eulerEarnFactory", "eulerEarnPublicAllocator"}:
-        try:
-            result = subprocess.run(
-                ["git", "diff", f"{source_commit}...master", "--", "src/"],
-                cwd=EULER_EARN_DIR,
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-            if result.returncode == 0 and result.stdout.strip():
-                return result.stdout.strip()
-            return None
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-            return None
+        return _run_scoped_diff(EULER_EARN_DIR, source_commit, source_paths)
 
     # For evk-periphery submodule contracts, diff inside the submodule itself
     # (git diff from the parent repo can't see inside submodules)
@@ -153,50 +176,10 @@ def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, 
         submodule_dir = EVK_PERIPHERY_DIR / submodule_path
         if not submodule_dir.exists():
             return None
-        try:
-            result = subprocess.run(
-                ["git", "diff", f"{source_commit}...master", "--", "src/"],
-                cwd=submodule_dir,
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-            if result.returncode == 0 and result.stdout.strip():
-                return result.stdout.strip()
-            return None
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-            return None
+        return _run_scoped_diff(submodule_dir, source_commit, source_paths)
 
-    # For native evk-periphery contracts, scope diff to contract-relevant files
-    # Extract unique src/ directories from the contract's source files
-    diff_paths = ["src/"]
-    if source_paths:
-        src_dirs = set()
-        for p in source_paths:
-            if p.startswith("src/"):
-                # Use top-level src/ subdirectory (e.g., src/Swaps/, src/InterestRateModels/)
-                parts = p.split("/")
-                if len(parts) >= 3:
-                    src_dirs.add(f"src/{parts[1]}/")
-                else:
-                    src_dirs.add(p)
-        if src_dirs:
-            diff_paths = sorted(src_dirs)
-
-    try:
-        cmd = ["git", "diff", f"{source_commit}...master", "--"] + diff_paths
-        result = subprocess.run(
-            cmd,
-            cwd=EVK_PERIPHERY_DIR,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-        return None
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-        return None
+    # For native evk-periphery contracts
+    return _run_scoped_diff(EVK_PERIPHERY_DIR, source_commit, source_paths)
 
 
 def try_standalone_fallback(
