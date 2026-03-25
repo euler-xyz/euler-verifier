@@ -7,8 +7,18 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
+import re
+
 from .config import NetworkConfig, ROOT_DIR
 from .commits import get_repo_for_contract, get_github_url, EULERSWAP_V1_CONTRACTS, EULERSWAP_V1_TAG
+
+_HEX_RE = re.compile(r'^[0-9a-fA-F]+$')
+
+def short_ref(ref: str) -> str:
+    """Shorten a git ref for display: truncate SHA hashes to 8 chars, keep tag/branch names intact."""
+    if len(ref) > 8 and _HEX_RE.match(ref):
+        return ref[:8]
+    return ref
 
 
 @dataclass
@@ -129,11 +139,7 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
             repo_name, github_path, _ = get_repo_for_contract(r.contract_name)
             repo_link = f"[{repo_name}](https://github.com/{github_path})"
             
-            # Use short commit hash for display (8 chars max) BUT preserve special tags like eulerswap-1.0
-            if r.source_commit.startswith("eulerswap") or r.source_commit in ("master", "main"):
-                commit_short = r.source_commit
-            else:
-                commit_short = r.source_commit[:8] if len(r.source_commit) > 8 else r.source_commit
+            commit_short = short_ref(r.source_commit)
             commit_url = f"https://github.com/{github_path}/tree/{r.source_commit}"
             commit_link = f"[`{commit_short}`]({commit_url})"
             files_str = f"{r.matching_files}/{r.total_files}" if r.total_files > 0 else "-"
@@ -144,7 +150,7 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
             elif repo_name == "euler-earn":
                 evk_link = "-"  # Standalone euler-earn
             elif r.evk_periphery_commit:
-                evk_short = r.evk_periphery_commit[:8] if len(r.evk_periphery_commit) > 8 else r.evk_periphery_commit
+                evk_short = short_ref(r.evk_periphery_commit)
                 evk_link = f"[`{evk_short}`]({EVK_PERIPHERY_URL}/tree/{r.evk_periphery_commit})"
             elif r.source_commit == "master":
                 evk_link = f"[`master`]({EVK_PERIPHERY_URL})"
@@ -226,8 +232,7 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
             
             for r in repo_results:
                 _, github_path, _ = get_repo_for_contract(r.contract_name)
-                # Use short hash for display
-                commit_short = r.source_commit[:8] if len(r.source_commit) > 8 else r.source_commit
+                commit_short = short_ref(r.source_commit)
                 commit_url = f"https://github.com/{github_path}/tree/{commit_short}"
                 compare_url = f"https://github.com/{github_path}/compare/{commit_short}...master"
                 
@@ -240,7 +245,7 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
                 
                 # Add evk-periphery reference if applicable
                 if r.evk_periphery_commit and repo_name != "evk-periphery":
-                    evk_short = r.evk_periphery_commit[:8] if len(r.evk_periphery_commit) > 8 else r.evk_periphery_commit
+                    evk_short = short_ref(r.evk_periphery_commit)
                     lines.append(f"- **evk-periphery:** [`{evk_short}`]({EVK_PERIPHERY_URL}/tree/{evk_short})")
                 
                 lines.append("")
