@@ -55,7 +55,110 @@ These diffs help identify any changes made to the codebase after deployment.
 - **Compare to master:** [`084b3228...master`](https://github.com/euler-xyz/ethereum-vault-connector/compare/084b3228...master)
 - **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
-_No diff available - see GitHub compare link above._
+```diff
+diff --git a/src/EthereumVaultConnector.sol b/src/EthereumVaultConnector.sol
+index 95009da..e6bc820 100644
+--- a/src/EthereumVaultConnector.sol
++++ b/src/EthereumVaultConnector.sol
+@@ -27,6 +27,8 @@ contract EthereumVaultConnector is Events, Errors, TransientStorage, IEVC {
+     string public constant name = "Ethereum Vault Connector";
+ 
+     uint160 internal constant ACCOUNT_ID_OFFSET = 8;
++    address internal constant EIP_7587_PRECOMPILES = 0x0000000000000000000000000000000000000100;
++    address internal constant COMMON_PREDEPLOYS = 0x4200000000000000000000000000000000000000;
+     bytes32 internal constant HASHED_NAME = keccak256(bytes(name));
+ 
+     bytes32 internal constant TYPE_HASH =
+@@ -1045,7 +1047,8 @@ contract EthereumVaultConnector is Events, Errors, TransientStorage, IEVC {
+     function isSignerValid(address signer) internal pure virtual returns (bool) {
+         // not valid if the signer address falls into any of the precompiles/predeploys
+         // addresses space (depends on the chain ID).
+-        return !haveCommonOwnerInternal(signer, address(0));
++        return !haveCommonOwnerInternal(signer, address(0)) && !haveCommonOwnerInternal(signer, EIP_7587_PRECOMPILES)
++            && !haveCommonOwnerInternal(signer, COMMON_PREDEPLOYS);
+     }
+ 
+     /// @notice Computes the permit hash for a given set of parameters.
+diff --git a/src/utils/EVCUtil.sol b/src/utils/EVCUtil.sol
+index cf57295..dc4e432 100644
+--- a/src/utils/EVCUtil.sol
++++ b/src/utils/EVCUtil.sol
+@@ -29,7 +29,7 @@ abstract contract EVCUtil {
+ 
+     /// @notice Returns the address of the Ethereum Vault Connector (EVC) used by this contract.
+     /// @return The address of the EVC contract.
+-    function EVC() external view returns (address) {
++    function EVC() external view virtual returns (address) {
+         return address(evc);
+     }
+ 
+@@ -49,6 +49,18 @@ abstract contract EVCUtil {
+         _;
+     }
+ 
++    /// @notice Ensures a standard authentication path on the EVC allowing the account owner or any of its EVC accounts.
++    /// @dev This modifier checks if the caller is the EVC and if so, verifies the execution context.
++    /// It reverts if the operator is authenticated, control collateral is in progress, or checks are in progress.
++    /// @dev This modifier must not be used on functions utilized by liquidation flows, i.e. transfer or withdraw.
++    /// @dev This modifier must not be used on checkAccountStatus and checkVaultStatus functions.
++    /// @dev This modifier can be used on access controlled functions to prevent non-standard authentication paths on
++    /// the EVC.
++    modifier onlyEVCAccount() virtual {
++        _authenticateCallerWithStandardContextState(false);
++        _;
++    }
++
+     /// @notice Ensures a standard authentication path on the EVC.
+     /// @dev This modifier checks if the caller is the EVC and if so, verifies the execution context.
+     /// It reverts if the operator is authenticated, control collateral is in progress, or checks are in progress.
+@@ -59,7 +71,7 @@ abstract contract EVCUtil {
+     /// @dev This modifier can be used on access controlled functions to prevent non-standard authentication paths on
+     /// the EVC.
+     modifier onlyEVCAccountOwner() virtual {
+-        _onlyEVCAccountOwner();
++        _authenticateCallerWithStandardContextState(true);
+         _;
+     }
+ 
+@@ -121,6 +133,29 @@ abstract contract EVCUtil {
+         return sender;
+     }
+ 
++    /// @notice Retrieves the message sender, ensuring it's any EVC account meaning that the execution context is in a
++    /// standard state (not operator authenticated, not control collateral in progress, not checks in progress).
++    /// @dev This function must not be used on functions utilized by liquidation flows, i.e. transfer or withdraw.
++    /// @dev This function must not be used on checkAccountStatus and checkVaultStatus functions.
++    /// @dev This function can be used on access controlled functions to prevent non-standard authentication paths on
++    /// the EVC.
++    /// @return The address of the message sender.
++    function _msgSenderOnlyEVCAccount() internal view returns (address) {
++        return _authenticateCallerWithStandardContextState(false);
++    }
++
++    /// @notice Retrieves the message sender, ensuring it's the EVC account owner and that the execution context is in a
++    /// standard state (not operator authenticated, not control collateral in progress, not checks in progress).
++    /// @dev It assumes that if the caller is not the EVC, the caller is the account owner.
++    /// @dev This function must not be used on functions utilized by liquidation flows, i.e. transfer or withdraw.
++    /// @dev This function must not be used on checkAccountStatus and checkVaultStatus functions.
++    /// @dev This function can be used on access controlled functions to prevent non-standard authentication paths on
++    /// the EVC.
++    /// @return The address of the message sender.
++    function _msgSenderOnlyEVCAccountOwner() internal view returns (address) {
++        return _authenticateCallerWithStandardContextState(true);
++    }
++
+     /// @notice Calls the current external function through the EVC.
+     /// @dev This function is used to route the current call through the EVC if it's not already coming from the EVC. It
+     /// makes the EVC set the execution context and call back this contract with unchanged calldata. msg.sender is used
+@@ -159,12 +194,14 @@ abstract contract EVCUtil {
+         }
+     }
+ 
+-    /// @notice Ensures that the function is called only by the EVC account owner
++    /// @notice Ensures that the function is called only by the EVC account owner or any of its EVC accounts
+```
+
+_Showing first 100 of 136 lines. [View full diff on GitHub](https://github.com/euler-xyz/ethereum-vault-connector/compare/084b3228...master)_
 
 ### euler-price-oracle
 
@@ -65,7 +168,110 @@ _No diff available - see GitHub compare link above._
 - **Compare to master:** [`dda7da3c...master`](https://github.com/euler-xyz/euler-price-oracle/compare/dda7da3c...master)
 - **evk-periphery:** [`5e066711`](https://github.com/euler-xyz/evk-periphery/tree/5e066711)
 
-_No diff available - see GitHub compare link above._
+```diff
+diff --git a/src/adapter/chainlink/ChainlinkInfrequentOracle.sol b/src/adapter/chainlink/ChainlinkInfrequentOracle.sol
+new file mode 100644
+index 0000000..b406107
+--- /dev/null
++++ b/src/adapter/chainlink/ChainlinkInfrequentOracle.sol
+@@ -0,0 +1,75 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++pragma solidity ^0.8.0;
++
++import {BaseAdapter, Errors, IPriceOracle} from "../BaseAdapter.sol";
++import {AggregatorV3Interface} from "./AggregatorV3Interface.sol";
++import {ScaleUtils, Scale} from "../../lib/ScaleUtils.sol";
++
++/// @title ChainlinkInfrequentOracle
++/// @custom:security-contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/)
++/// @notice PriceOracle adapter for Chainlink push-based price feeds.
++/// @dev Integration Note: `maxStaleness` is an immutable parameter set in the constructor.
++/// If the aggregator's heartbeat changes, this adapter may exhibit unintended behavior.
++/// Modified from `ChainlinkOracle` to allow larger values for `maxStaleness`.
++contract ChainlinkInfrequentOracle is BaseAdapter {
++    /// @inheritdoc IPriceOracle
++    string public constant name = "ChainlinkInfrequentOracle";
++    /// @notice The minimum permitted value for `maxStaleness`.
++    uint256 internal constant MAX_STALENESS_LOWER_BOUND = 1 minutes;
++    /// @notice The maximum permitted value for `maxStaleness`.
++    uint256 internal constant MAX_STALENESS_UPPER_BOUND = type(uint256).max;
++    /// @notice The address of the base asset corresponding to the feed.
++    address public immutable base;
++    /// @notice The address of the quote asset corresponding to the feed.
++    address public immutable quote;
++    /// @notice The address of the Chainlink price feed.
++    /// @dev https://docs.chain.link/data-feeds/price-feeds/addresses
++    address public immutable feed;
++    /// @notice The maximum allowed age of the price.
++    /// @dev Reverts if block.timestamp - updatedAt > maxStaleness.
++    uint256 public immutable maxStaleness;
++    /// @notice The scale factors used for decimal conversions.
++    Scale internal immutable scale;
++
++    /// @notice Deploy a ChainlinkOracle.
++    /// @param _base The address of the base asset corresponding to the feed.
++    /// @param _quote The address of the quote asset corresponding to the feed.
++    /// @param _feed The address of the Chainlink price feed.
++    /// @param _maxStaleness The maximum allowed age of the price.
++    /// @dev Consider setting `_maxStaleness` to slightly more than the feed's heartbeat
++    /// to account for possible network delays when the heartbeat is triggered.
++    constructor(address _base, address _quote, address _feed, uint256 _maxStaleness) {
++        if (_maxStaleness < MAX_STALENESS_LOWER_BOUND || _maxStaleness > MAX_STALENESS_UPPER_BOUND) {
++            revert Errors.PriceOracle_InvalidConfiguration();
++        }
++
++        base = _base;
++        quote = _quote;
++        feed = _feed;
++        maxStaleness = _maxStaleness;
++
++        // The scale factor is used to correctly convert decimals.
++        uint8 baseDecimals = _getDecimals(base);
++        uint8 quoteDecimals = _getDecimals(quote);
++        uint8 feedDecimals = AggregatorV3Interface(feed).decimals();
++        scale = ScaleUtils.calcScale(baseDecimals, quoteDecimals, feedDecimals);
++    }
++
++    /// @notice Get the quote from the Chainlink feed.
++    /// @param inAmount The amount of `base` to convert.
++    /// @param _base The token that is being priced.
++    /// @param _quote The token that is the unit of account.
++    /// @return The converted amount using the Chainlink feed.
++    function _getQuote(uint256 inAmount, address _base, address _quote) internal view override returns (uint256) {
++        bool inverse = ScaleUtils.getDirectionOrRevert(_base, base, _quote, quote);
++
++        (, int256 answer,, uint256 updatedAt,) = AggregatorV3Interface(feed).latestRoundData();
++        if (answer <= 0) revert Errors.PriceOracle_InvalidAnswer();
++        uint256 staleness = block.timestamp - updatedAt;
++        if (staleness > maxStaleness) revert Errors.PriceOracle_TooStale(staleness, maxStaleness);
++
++        uint256 price = uint256(answer);
++        return ScaleUtils.calcOutAmount(inAmount, price, scale, inverse);
++    }
++}
+diff --git a/src/adapter/curve/CurveEMAOracle.sol b/src/adapter/curve/CurveEMAOracle.sol
+new file mode 100644
+index 0000000..5b98e12
+--- /dev/null
++++ b/src/adapter/curve/CurveEMAOracle.sol
+@@ -0,0 +1,66 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++pragma solidity ^0.8.0;
++
++import {ScaleUtils, Scale} from "../../lib/ScaleUtils.sol";
++import {BaseAdapter, Errors, IPriceOracle} from "../BaseAdapter.sol";
++import {ICurvePool} from "./ICurvePool.sol";
++
++/// @title CurveEMAOracle
++/// @custom:security-contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/)
++/// @notice Adapter utilizing the EMA price oracle in Curve pools.
++contract CurveEMAOracle is BaseAdapter {
++    /// @inheritdoc IPriceOracle
+```
+
+_Showing first 100 of 699 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-price-oracle/compare/dda7da3c...master)_
 
 ### euler-swap
 
@@ -117,7 +323,56 @@ _No diff available - see GitHub compare link above._
 - **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
 - **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
-_No diff available - see GitHub compare link above._
+```diff
+diff --git a/src/EVault/modules/Governance.sol b/src/EVault/modules/Governance.sol
+index 5c728ed..08c5c96 100644
+--- a/src/EVault/modules/Governance.sol
++++ b/src/EVault/modules/Governance.sol
+@@ -290,7 +290,7 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+         ConfigAmount newBorrowLTV = borrowLTV.toConfigAmount();
+         ConfigAmount newLiquidationLTV = liquidationLTV.toConfigAmount();
+ 
+-        // The borrow LTV must be lower than or equal to the the converged liquidation LTV
++        // The borrow LTV must be lower than or equal to the converged liquidation LTV
+         if (newBorrowLTV > newLiquidationLTV) revert E_LTVBorrow();
+ 
+         LTVConfig memory currentLTV = vaultStorage.ltvLookup[collateral];
+@@ -304,12 +304,6 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+ 
+         if (!currentLTV.isRecognizedCollateral()) vaultStorage.ltvList.push(collateral);
+ 
+-        if (!newLiquidationLTV.isZero()) {
+-            // Ensure that this collateral can be priced by the configured oracle
+-            (, IPriceOracle _oracle, address _unitOfAccount) = ProxyUtils.metadata();
+-            _oracle.getQuote(1e18, collateral, _unitOfAccount);
+-        }
+-
+         emit GovSetLTV(
+             collateral,
+             newLTV.borrowLTV.toUint16(),
+diff --git a/src/Synths/ESynth.sol b/src/Synths/ESynth.sol
+index cece73c..e059d29 100644
+--- a/src/Synths/ESynth.sol
++++ b/src/Synths/ESynth.sol
+@@ -177,4 +177,17 @@ contract ESynth is ERC20EVCCompatible, Ownable {
+         }
+         return total;
+     }
++
++    /// @dev Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be
++    /// called by the current owner.
++    /// NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is
++    /// only available to the owner.
++    function renounceOwnership() public virtual override onlyEVCAccountOwner {
++        super.renounceOwnership();
++    }
++
++    /// @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
++    function transferOwnership(address newOwner) public virtual override onlyEVCAccountOwner {
++        super.transferOwnership(newOwner);
++    }
+ }
+```
 
 #### eVaultImplementation
 
@@ -125,7 +380,56 @@ _No diff available - see GitHub compare link above._
 - **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
 - **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
-_No diff available - see GitHub compare link above._
+```diff
+diff --git a/src/EVault/modules/Governance.sol b/src/EVault/modules/Governance.sol
+index 5c728ed..08c5c96 100644
+--- a/src/EVault/modules/Governance.sol
++++ b/src/EVault/modules/Governance.sol
+@@ -290,7 +290,7 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+         ConfigAmount newBorrowLTV = borrowLTV.toConfigAmount();
+         ConfigAmount newLiquidationLTV = liquidationLTV.toConfigAmount();
+ 
+-        // The borrow LTV must be lower than or equal to the the converged liquidation LTV
++        // The borrow LTV must be lower than or equal to the converged liquidation LTV
+         if (newBorrowLTV > newLiquidationLTV) revert E_LTVBorrow();
+ 
+         LTVConfig memory currentLTV = vaultStorage.ltvLookup[collateral];
+@@ -304,12 +304,6 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+ 
+         if (!currentLTV.isRecognizedCollateral()) vaultStorage.ltvList.push(collateral);
+ 
+-        if (!newLiquidationLTV.isZero()) {
+-            // Ensure that this collateral can be priced by the configured oracle
+-            (, IPriceOracle _oracle, address _unitOfAccount) = ProxyUtils.metadata();
+-            _oracle.getQuote(1e18, collateral, _unitOfAccount);
+-        }
+-
+         emit GovSetLTV(
+             collateral,
+             newLTV.borrowLTV.toUint16(),
+diff --git a/src/Synths/ESynth.sol b/src/Synths/ESynth.sol
+index cece73c..e059d29 100644
+--- a/src/Synths/ESynth.sol
++++ b/src/Synths/ESynth.sol
+@@ -177,4 +177,17 @@ contract ESynth is ERC20EVCCompatible, Ownable {
+         }
+         return total;
+     }
++
++    /// @dev Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be
++    /// called by the current owner.
++    /// NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is
++    /// only available to the owner.
++    function renounceOwnership() public virtual override onlyEVCAccountOwner {
++        super.renounceOwnership();
++    }
++
++    /// @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
++    function transferOwnership(address newOwner) public virtual override onlyEVCAccountOwner {
++        super.transferOwnership(newOwner);
++    }
+ }
+```
 
 #### protocolConfig
 
@@ -133,7 +437,56 @@ _No diff available - see GitHub compare link above._
 - **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
 - **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
-_No diff available - see GitHub compare link above._
+```diff
+diff --git a/src/EVault/modules/Governance.sol b/src/EVault/modules/Governance.sol
+index 5c728ed..08c5c96 100644
+--- a/src/EVault/modules/Governance.sol
++++ b/src/EVault/modules/Governance.sol
+@@ -290,7 +290,7 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+         ConfigAmount newBorrowLTV = borrowLTV.toConfigAmount();
+         ConfigAmount newLiquidationLTV = liquidationLTV.toConfigAmount();
+ 
+-        // The borrow LTV must be lower than or equal to the the converged liquidation LTV
++        // The borrow LTV must be lower than or equal to the converged liquidation LTV
+         if (newBorrowLTV > newLiquidationLTV) revert E_LTVBorrow();
+ 
+         LTVConfig memory currentLTV = vaultStorage.ltvLookup[collateral];
+@@ -304,12 +304,6 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+ 
+         if (!currentLTV.isRecognizedCollateral()) vaultStorage.ltvList.push(collateral);
+ 
+-        if (!newLiquidationLTV.isZero()) {
+-            // Ensure that this collateral can be priced by the configured oracle
+-            (, IPriceOracle _oracle, address _unitOfAccount) = ProxyUtils.metadata();
+-            _oracle.getQuote(1e18, collateral, _unitOfAccount);
+-        }
+-
+         emit GovSetLTV(
+             collateral,
+             newLTV.borrowLTV.toUint16(),
+diff --git a/src/Synths/ESynth.sol b/src/Synths/ESynth.sol
+index cece73c..e059d29 100644
+--- a/src/Synths/ESynth.sol
++++ b/src/Synths/ESynth.sol
+@@ -177,4 +177,17 @@ contract ESynth is ERC20EVCCompatible, Ownable {
+         }
+         return total;
+     }
++
++    /// @dev Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be
++    /// called by the current owner.
++    /// NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is
++    /// only available to the owner.
++    function renounceOwnership() public virtual override onlyEVCAccountOwner {
++        super.renounceOwnership();
++    }
++
++    /// @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
++    function transferOwnership(address newOwner) public virtual override onlyEVCAccountOwner {
++        super.transferOwnership(newOwner);
++    }
+ }
+```
 
 #### sequenceRegistry
 
@@ -141,7 +494,56 @@ _No diff available - see GitHub compare link above._
 - **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
 - **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
-_No diff available - see GitHub compare link above._
+```diff
+diff --git a/src/EVault/modules/Governance.sol b/src/EVault/modules/Governance.sol
+index 5c728ed..08c5c96 100644
+--- a/src/EVault/modules/Governance.sol
++++ b/src/EVault/modules/Governance.sol
+@@ -290,7 +290,7 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+         ConfigAmount newBorrowLTV = borrowLTV.toConfigAmount();
+         ConfigAmount newLiquidationLTV = liquidationLTV.toConfigAmount();
+ 
+-        // The borrow LTV must be lower than or equal to the the converged liquidation LTV
++        // The borrow LTV must be lower than or equal to the converged liquidation LTV
+         if (newBorrowLTV > newLiquidationLTV) revert E_LTVBorrow();
+ 
+         LTVConfig memory currentLTV = vaultStorage.ltvLookup[collateral];
+@@ -304,12 +304,6 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+ 
+         if (!currentLTV.isRecognizedCollateral()) vaultStorage.ltvList.push(collateral);
+ 
+-        if (!newLiquidationLTV.isZero()) {
+-            // Ensure that this collateral can be priced by the configured oracle
+-            (, IPriceOracle _oracle, address _unitOfAccount) = ProxyUtils.metadata();
+-            _oracle.getQuote(1e18, collateral, _unitOfAccount);
+-        }
+-
+         emit GovSetLTV(
+             collateral,
+             newLTV.borrowLTV.toUint16(),
+diff --git a/src/Synths/ESynth.sol b/src/Synths/ESynth.sol
+index cece73c..e059d29 100644
+--- a/src/Synths/ESynth.sol
++++ b/src/Synths/ESynth.sol
+@@ -177,4 +177,17 @@ contract ESynth is ERC20EVCCompatible, Ownable {
+         }
+         return total;
+     }
++
++    /// @dev Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be
++    /// called by the current owner.
++    /// NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is
++    /// only available to the owner.
++    function renounceOwnership() public virtual override onlyEVCAccountOwner {
++        super.renounceOwnership();
++    }
++
++    /// @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
++    function transferOwnership(address newOwner) public virtual override onlyEVCAccountOwner {
++        super.transferOwnership(newOwner);
++    }
+ }
+```
 
 ### evk-periphery
 

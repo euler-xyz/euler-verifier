@@ -14,10 +14,10 @@
 
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
-| ✓ adaptiveCurveIRMFactory | [`0xc65a0e2a...`](https://lineascan.build/address/0xc65a0e2a410Ca52B0a5b57b1d239a857b3cd618b) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
-| ✓ balanceTracker | [`0xB9E491A3...`](https://lineascan.build/address/0xB9E491A3BB9d4B155d31a9cA6B9dE245CA16AAe6) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 17/17 |
+| ✓ adaptiveCurveIRMFactory | [`0xc65a0e2a...`](https://lineascan.build/address/0xc65a0e2a410Ca52B0a5b57b1d239a857b3cd618b) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
+| ✓ balanceTracker | [`0xB9E491A3...`](https://lineascan.build/address/0xB9E491A3BB9d4B155d31a9cA6B9dE245CA16AAe6) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 17/17 |
 | ✗ eulerEarnFactory | [`0x377879A0...`](https://lineascan.build/address/0x377879A039343FEc7564e54616e519328951DA6D) | [euler-earn](https://github.com/euler-xyz/euler-earn) | not found | - | 33/35 |
-| ✓ eulerEarnPublicAllocator | [`0x4148f90e...`](https://lineascan.build/address/0x4148f90e03facFF8D2d5EFb475E36F94b4Ab4994) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 14/14 |
+| ✓ eulerEarnPublicAllocator | [`0x4148f90e...`](https://lineascan.build/address/0x4148f90e03facFF8D2d5EFb475E36F94b4Ab4994) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`origin/deployment-script`](https://github.com/euler-xyz/euler-earn/tree/origin/deployment-script) | - | 14/14 |
 | ✓ eulerSwapV1Factory | [`0x970B065B...`](https://lineascan.build/address/0x970B065B572CC0118535Ad1101663CDBE7Db1e21) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f4052d7ab3116235ec754368b7125dbd5082) | - | 57/57 |
 | ✓ eulerSwapV1Implementation | [`0x2b07caff...`](https://lineascan.build/address/0x2b07caff83C15c5a70C4C0867DFE7A0BE01025B0) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f4052d7ab3116235ec754368b7125dbd5082) | - | 48/48 |
 | ✓ eulerSwapV1Periphery | [`0x0de305aB...`](https://lineascan.build/address/0x0de305aB93902914909951A00079ea1df3FD98eA) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f4052d7ab3116235ec754368b7125dbd5082) | - | 11/11 |
@@ -106,6 +106,118 @@ These diffs help identify any changes made to the codebase after deployment.
 - **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
 
 _No diff available - see GitHub compare link above._
+
+### euler-earn
+
+#### eulerEarnPublicAllocator
+
+- **Deployed from:** [`origin/deployment-script`](https://github.com/euler-xyz/euler-earn/tree/origin/deployment-script)
+- **Compare to master:** [`origin/deployment-script...master`](https://github.com/euler-xyz/euler-earn/compare/origin/deployment-script...master)
+
+```diff
+diff --git a/src/EulerEarn.sol b/src/EulerEarn.sol
+index 4635a89..27c1873 100644
+--- a/src/EulerEarn.sol
++++ b/src/EulerEarn.sol
+@@ -17,12 +17,12 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+ import {EventsLib} from "./libraries/EventsLib.sol";
+ import {SafeERC20Permit2Lib} from "./libraries/SafeERC20Permit2Lib.sol";
+ import {UtilsLib, WAD} from "./libraries/UtilsLib.sol";
+-import {SafeCast} from "../lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol";
+-import {IERC20Metadata} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
++import {SafeCast} from "openzeppelin-contracts/utils/math/SafeCast.sol";
++import {IERC20Metadata} from "openzeppelin-contracts/token/ERC20/extensions/IERC20Metadata.sol";
+ 
+-import {Context} from "../lib/openzeppelin-contracts/contracts/utils/Context.sol";
+-import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
+-import {Ownable2Step, Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable2Step.sol";
++import {Context} from "openzeppelin-contracts/utils/Context.sol";
++import {ReentrancyGuard} from "openzeppelin-contracts/utils/ReentrancyGuard.sol";
++import {Ownable2Step, Ownable} from "openzeppelin-contracts/access/Ownable2Step.sol";
+ import {
+     IERC20,
+     IERC4626,
+@@ -30,8 +30,8 @@ import {
+     ERC4626,
+     Math,
+     SafeERC20
+-} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC4626.sol";
+-import {EVCUtil} from "../lib/ethereum-vault-connector/src/utils/EVCUtil.sol";
++} from "openzeppelin-contracts/token/ERC20/extensions/ERC4626.sol";
++import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
+ 
+ /// @title EulerEarn
+ /// @author Forked with gratitude from Morpho Labs. Inspired by Silo Labs.
+diff --git a/src/EulerEarnFactory.sol b/src/EulerEarnFactory.sol
+index 758185e..e7fd335 100644
+--- a/src/EulerEarnFactory.sol
++++ b/src/EulerEarnFactory.sol
+@@ -10,8 +10,8 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+ 
+ import {EulerEarn} from "./EulerEarn.sol";
+ 
+-import {Ownable, Context} from "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+-import {EVCUtil} from "../lib/ethereum-vault-connector/src/utils/EVCUtil.sol";
++import {Ownable, Context} from "openzeppelin-contracts/access/Ownable.sol";
++import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
+ 
+ /// @title EulerEarnFactory
+ /// @author Forked with gratitude from Morpho Labs. Inspired by Silo Labs.
+diff --git a/src/PublicAllocator.sol b/src/PublicAllocator.sol
+index f71306c..9527976 100644
+--- a/src/PublicAllocator.sol
++++ b/src/PublicAllocator.sol
+@@ -14,8 +14,8 @@ import {IEulerEarn, MarketAllocation} from "./interfaces/IEulerEarn.sol";
+ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+ import {EventsLib} from "./libraries/EventsLib.sol";
+ 
+-import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
+-import {EVCUtil} from "../lib/ethereum-vault-connector/src/utils/EVCUtil.sol";
++import {IERC4626} from "openzeppelin-contracts/interfaces/IERC4626.sol";
++import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
+ 
+ /// @title PublicAllocator
+ /// @author Forked with gratitude from Morpho Labs. Inspired by Silo Labs.
+diff --git a/src/interfaces/IEulerEarn.sol b/src/interfaces/IEulerEarn.sol
+index 27334f2..ed18e7e 100644
+--- a/src/interfaces/IEulerEarn.sol
++++ b/src/interfaces/IEulerEarn.sol
+@@ -3,8 +3,8 @@ pragma solidity >=0.5.0;
+ 
+ import {IEulerEarnFactory} from "./IEulerEarnFactory.sol";
+ 
+-import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
+-import {IERC20Permit} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol";
++import {IERC4626} from "openzeppelin-contracts/interfaces/IERC4626.sol";
++import {IERC20Permit} from "openzeppelin-contracts/token/ERC20/extensions/IERC20Permit.sol";
+ 
+ import {MarketConfig, PendingUint136, PendingAddress} from "../libraries/PendingLib.sol";
+ 
+diff --git a/src/interfaces/IPublicAllocator.sol b/src/interfaces/IPublicAllocator.sol
+index b222ce3..4a9067b 100644
+--- a/src/interfaces/IPublicAllocator.sol
++++ b/src/interfaces/IPublicAllocator.sol
+@@ -3,7 +3,7 @@ pragma solidity >=0.5.0;
+ 
+ import {MarketAllocation} from "./IEulerEarn.sol";
+ 
+-import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
++import {IERC4626} from "openzeppelin-contracts/interfaces/IERC4626.sol";
+ 
+ /// @dev Max settable flow cap, such that caps can always be stored on 128 bits.
+ /// @dev The actual max possible flow cap is type(uint128).max-1.
+diff --git a/src/libraries/ErrorsLib.sol b/src/libraries/ErrorsLib.sol
+index 300bb22..da0feca 100644
+--- a/src/libraries/ErrorsLib.sol
++++ b/src/libraries/ErrorsLib.sol
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ pragma solidity ^0.8.0;
+ 
+-import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
+```
+
+_Showing first 100 of 132 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-earn/compare/origin/deployment-script...master)_
 
 ### euler-price-oracle
 
