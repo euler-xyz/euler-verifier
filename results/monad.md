@@ -42,9 +42,9 @@
 This section shows what has changed in the source code between the deployment commit and current `master`.
 These diffs help identify any changes made to the codebase after deployment.
 
-### ethereum-vault-connector
+### ethereum-vault-connector @ `a7d3c29e`
 
-#### evc
+**Contracts:** evc
 
 - **Deployed from:** [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e)
 - **Compare to master:** [`a7d3c29e...master`](https://github.com/euler-xyz/ethereum-vault-connector/compare/a7d3c29e...master)
@@ -52,9 +52,9 @@ These diffs help identify any changes made to the codebase after deployment.
 
 _No diff available - see GitHub compare link above._
 
-### euler-price-oracle
+### euler-price-oracle @ `f52cb43b`
 
-#### oracleRouterFactory
+**Contracts:** oracleRouterFactory
 
 - **Deployed from:** [`f52cb43b`](https://github.com/euler-xyz/euler-price-oracle/tree/f52cb43b)
 - **Compare to master:** [`f52cb43b...master`](https://github.com/euler-xyz/euler-price-oracle/compare/f52cb43b...master)
@@ -62,17 +62,9 @@ _No diff available - see GitHub compare link above._
 
 _No diff available - see GitHub compare link above._
 
-### euler-vault-kit
+### euler-vault-kit @ `422bf244`
 
-#### eVaultFactory
-
-- **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
-- **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
-
-_No diff available - see GitHub compare link above._
-
-#### eVaultImplementation
+**Contracts:** eVaultFactory, eVaultImplementation, protocolConfig, sequenceRegistry
 
 - **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
 - **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
@@ -80,135 +72,9 @@ _No diff available - see GitHub compare link above._
 
 _No diff available - see GitHub compare link above._
 
-#### protocolConfig
+### evk-periphery @ `2b087370`
 
-- **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
-- **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
-
-_No diff available - see GitHub compare link above._
-
-#### sequenceRegistry
-
-- **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
-- **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
-
-_No diff available - see GitHub compare link above._
-
-### evk-periphery
-
-#### eulOFTAdapter
-
-- **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
-- **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
-
-```diff
-diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
-index 929f5d96..2ca592c0 100644
---- a/src/Chainlink/DataStreamsVerifier.sol
-+++ b/src/Chainlink/DataStreamsVerifier.sol
-@@ -3,7 +3,7 @@
- pragma solidity ^0.8.0;
- 
- import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
--import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/extensions/ERC20Wrapper.sol";
-+import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
- 
- /// @title Verifier Proxy Interface
- /// @notice Interface for interacting with Chainlink's verifier proxy contract
-diff --git a/src/ERC20/deployed/ERC20BurnableMintable.sol b/src/ERC20/deployed/ERC20BurnableMintable.sol
-index 82413624..19bb8e81 100644
---- a/src/ERC20/deployed/ERC20BurnableMintable.sol
-+++ b/src/ERC20/deployed/ERC20BurnableMintable.sol
-@@ -45,7 +45,7 @@ contract ERC20BurnableMintable is AccessControlEnumerable, ERC20Burnable, ERC20P
-     /// @notice Mints new tokens and assigns them to an account
-     /// @param _account The address that will receive the minted tokens
-     /// @param _amount The amount of tokens to mint
--    function mint(address _account, uint256 _amount) external onlyRole(MINTER_ROLE) {
-+    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
-         _mint(_account, _amount);
-     }
- 
-diff --git a/src/ERC20/deployed/ERC20Synth.sol b/src/ERC20/deployed/ERC20Synth.sol
-new file mode 100644
-index 00000000..f8ff9775
---- /dev/null
-+++ b/src/ERC20/deployed/ERC20Synth.sol
-@@ -0,0 +1,257 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {ERC20BurnableMintable} from "./ERC20BurnableMintable.sol";
-+import {EnumerableSet} from "openzeppelin-contracts/utils/structs/EnumerableSet.sol";
-+import {AccessControl, IAccessControl, Context} from "openzeppelin-contracts/access/AccessControl.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
-+import {IEVault} from "evk/EVault/IEVault.sol";
-+
-+/// @title ERC20Synth
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice ERC20-compatible synthetic token with EVC support, role-based minting, burning, and supply management.
-+/// @dev This contract is designed for token bridging and synthetic asset vaults. Minting is controlled by MINTER_ROLE,
-+/// and minting capacity is tracked per minter. The REVOKE_MINTER_ROLE can revoke minting rights in emergencies.
-+/// The contract supports excluding certain addresses from total supply calculations (e.g., vaults).
-+contract ERC20Synth is ERC20BurnableMintable, EVCUtil {
-+    using EnumerableSet for EnumerableSet.AddressSet;
-+
-+    /// @notice Struct holding minting capacity and minted amount for a minter.
-+    struct MinterData {
-+        uint128 capacity;
-+        uint128 minted;
-+    }
-+
-+    /// @notice Role that allows allocation and deallocation to vaults.
-+    bytes32 public constant ALLOCATOR_ROLE = keccak256("ALLOCATOR_ROLE");
-+
-+    /// @notice Mapping of minter address to their minting data (capacity and minted amount).
-+    mapping(address => MinterData) public minters;
-+
-+    /// @notice Set of addresses to ignore for total supply calculations (e.g., vaults, contract itself).
-+    EnumerableSet.AddressSet internal _ignoredForTotalSupply;
-+
-+    /// @notice Emitted when a minter's capacity is set or updated.
-+    /// @param minter The address of the minter.
-+    /// @param capacity The new minting capacity for the minter.
-+    event MinterCapacitySet(address indexed minter, uint256 capacity);
-+
-+    /// @notice Emitted when an account is added to the set of addresses ignored for total supply.
-+    /// @param account The address of the account.
-+    event IgnoredForTotalSupplyAdded(address indexed account);
-+
-+    /// @notice Emitted when an account is removed from the set of addresses ignored for total supply.
-+    /// @param account The address of the account.
-+    event IgnoredForTotalSupplyRemoved(address indexed account);
-+
-+    /// @notice Emitted when tokens are allocated to a vault.
-+    /// @param vault The address of the vault.
-+    /// @param amount The amount of tokens allocated.
-+    event Allocated(address indexed vault, uint256 amount);
-+
-+    /// @notice Emitted when tokens are deallocated from a vault.
-+    /// @param vault The address of the vault.
-+    /// @param amount The amount of tokens deallocated.
-+    event Deallocated(address indexed vault, uint256 amount);
-+
-+    /// @notice Error thrown when a minter exceeds their minting capacity.
-+    error CapacityReached();
-+
-+    /// @notice Deploys the ERC20Synth contract.
-+    /// @param evc_ Address of the EVC (Ethereum Vault Connector).
-+    /// @param admin_ Address to be granted DEFAULT_ADMIN_ROLE.
-+    /// @param name_ Name of the token.
-+    /// @param symbol_ Symbol of the token.
-+    /// @param decimals_ Number of decimals for the token.
-+    constructor(address evc_, address admin_, string memory name_, string memory symbol_, uint8 decimals_)
-```
-
-_Showing first 100 of 3316 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)_
-
-#### swapVerifier
+**Contracts:** swapVerifier
 
 - **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 - **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
@@ -318,9 +184,121 @@ index 00000000..2ca592c0
 
 _Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
 
-### fee-flow
+### evk-periphery @ `392c7bd0`
 
-#### feeFlowController
+**Contracts:** eulOFTAdapter
+
+- **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+- **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
+
+```diff
+diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
+index 929f5d96..2ca592c0 100644
+--- a/src/Chainlink/DataStreamsVerifier.sol
++++ b/src/Chainlink/DataStreamsVerifier.sol
+@@ -3,7 +3,7 @@
+ pragma solidity ^0.8.0;
+ 
+ import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
+-import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/extensions/ERC20Wrapper.sol";
++import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
+ 
+ /// @title Verifier Proxy Interface
+ /// @notice Interface for interacting with Chainlink's verifier proxy contract
+diff --git a/src/ERC20/deployed/ERC20BurnableMintable.sol b/src/ERC20/deployed/ERC20BurnableMintable.sol
+index 82413624..19bb8e81 100644
+--- a/src/ERC20/deployed/ERC20BurnableMintable.sol
++++ b/src/ERC20/deployed/ERC20BurnableMintable.sol
+@@ -45,7 +45,7 @@ contract ERC20BurnableMintable is AccessControlEnumerable, ERC20Burnable, ERC20P
+     /// @notice Mints new tokens and assigns them to an account
+     /// @param _account The address that will receive the minted tokens
+     /// @param _amount The amount of tokens to mint
+-    function mint(address _account, uint256 _amount) external onlyRole(MINTER_ROLE) {
++    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
+         _mint(_account, _amount);
+     }
+ 
+diff --git a/src/ERC20/deployed/ERC20Synth.sol b/src/ERC20/deployed/ERC20Synth.sol
+new file mode 100644
+index 00000000..f8ff9775
+--- /dev/null
++++ b/src/ERC20/deployed/ERC20Synth.sol
+@@ -0,0 +1,257 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++
++pragma solidity ^0.8.0;
++
++import {ERC20BurnableMintable} from "./ERC20BurnableMintable.sol";
++import {EnumerableSet} from "openzeppelin-contracts/utils/structs/EnumerableSet.sol";
++import {AccessControl, IAccessControl, Context} from "openzeppelin-contracts/access/AccessControl.sol";
++import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
++import {IEVault} from "evk/EVault/IEVault.sol";
++
++/// @title ERC20Synth
++/// @custom:security-contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/)
++/// @notice ERC20-compatible synthetic token with EVC support, role-based minting, burning, and supply management.
++/// @dev This contract is designed for token bridging and synthetic asset vaults. Minting is controlled by MINTER_ROLE,
++/// and minting capacity is tracked per minter. The REVOKE_MINTER_ROLE can revoke minting rights in emergencies.
++/// The contract supports excluding certain addresses from total supply calculations (e.g., vaults).
++contract ERC20Synth is ERC20BurnableMintable, EVCUtil {
++    using EnumerableSet for EnumerableSet.AddressSet;
++
++    /// @notice Struct holding minting capacity and minted amount for a minter.
++    struct MinterData {
++        uint128 capacity;
++        uint128 minted;
++    }
++
++    /// @notice Role that allows allocation and deallocation to vaults.
++    bytes32 public constant ALLOCATOR_ROLE = keccak256("ALLOCATOR_ROLE");
++
++    /// @notice Mapping of minter address to their minting data (capacity and minted amount).
++    mapping(address => MinterData) public minters;
++
++    /// @notice Set of addresses to ignore for total supply calculations (e.g., vaults, contract itself).
++    EnumerableSet.AddressSet internal _ignoredForTotalSupply;
++
++    /// @notice Emitted when a minter's capacity is set or updated.
++    /// @param minter The address of the minter.
++    /// @param capacity The new minting capacity for the minter.
++    event MinterCapacitySet(address indexed minter, uint256 capacity);
++
++    /// @notice Emitted when an account is added to the set of addresses ignored for total supply.
++    /// @param account The address of the account.
++    event IgnoredForTotalSupplyAdded(address indexed account);
++
++    /// @notice Emitted when an account is removed from the set of addresses ignored for total supply.
++    /// @param account The address of the account.
++    event IgnoredForTotalSupplyRemoved(address indexed account);
++
++    /// @notice Emitted when tokens are allocated to a vault.
++    /// @param vault The address of the vault.
++    /// @param amount The amount of tokens allocated.
++    event Allocated(address indexed vault, uint256 amount);
++
++    /// @notice Emitted when tokens are deallocated from a vault.
++    /// @param vault The address of the vault.
++    /// @param amount The amount of tokens deallocated.
++    event Deallocated(address indexed vault, uint256 amount);
++
++    /// @notice Error thrown when a minter exceeds their minting capacity.
++    error CapacityReached();
++
++    /// @notice Deploys the ERC20Synth contract.
++    /// @param evc_ Address of the EVC (Ethereum Vault Connector).
++    /// @param admin_ Address to be granted DEFAULT_ADMIN_ROLE.
++    /// @param name_ Name of the token.
++    /// @param symbol_ Symbol of the token.
++    /// @param decimals_ Number of decimals for the token.
++    constructor(address evc_, address admin_, string memory name_, string memory symbol_, uint8 decimals_)
+```
+
+_Showing first 100 of 3316 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)_
+
+### fee-flow @ `4a419c94`
+
+**Contracts:** feeFlowController
 
 - **Deployed from:** [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94)
 - **Compare to master:** [`4a419c94...master`](https://github.com/euler-xyz/fee-flow/compare/4a419c94...master)
@@ -328,9 +306,9 @@ _Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/
 
 _No diff available - see GitHub compare link above._
 
-### reward-streams
+### reward-streams @ `9eb7b8a7`
 
-#### balanceTracker
+**Contracts:** balanceTracker
 
 - **Deployed from:** [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7)
 - **Compare to master:** [`9eb7b8a7...master`](https://github.com/euler-xyz/reward-streams/compare/9eb7b8a7...master)

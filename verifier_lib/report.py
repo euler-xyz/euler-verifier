@@ -221,53 +221,53 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
             "",
         ])
         
-        # Group by source repo for better organization
-        by_repo = defaultdict(list)
+        # Group by (repo_name, source_commit) to deduplicate identical diffs
+        by_repo_commit = defaultdict(list)
         for r in contracts_with_changes:
-            by_repo[r.repo_name].append(r)
-        
-        for repo_name, repo_results in sorted(by_repo.items()):
-            lines.append(f"### {repo_name}")
+            by_repo_commit[(r.repo_name, r.source_commit)].append(r)
+
+        for (repo_name, source_commit), group in sorted(by_repo_commit.items()):
+            representative = group[0]
+            _, github_path, _ = get_repo_for_contract(representative.contract_name)
+            commit_short = short_ref(source_commit)
+            commit_url = f"https://github.com/{github_path}/tree/{commit_short}"
+            compare_url = f"https://github.com/{github_path}/compare/{commit_short}...master"
+
+            contract_names = ", ".join(r.contract_name for r in group)
+            lines.append(f"### {repo_name} @ `{commit_short}`")
             lines.append("")
-            
-            for r in repo_results:
-                _, github_path, _ = get_repo_for_contract(r.contract_name)
-                commit_short = short_ref(r.source_commit)
-                commit_url = f"https://github.com/{github_path}/tree/{commit_short}"
-                compare_url = f"https://github.com/{github_path}/compare/{commit_short}...master"
-                
-                lines.extend([
-                    f"#### {r.contract_name}",
-                    "",
-                    f"- **Deployed from:** [`{commit_short}`]({commit_url})",
-                    f"- **Compare to master:** [`{commit_short}...master`]({compare_url})",
-                ])
-                
-                # Add evk-periphery reference if applicable
-                if r.evk_periphery_commit and repo_name != "evk-periphery":
-                    evk_short = short_ref(r.evk_periphery_commit)
-                    lines.append(f"- **evk-periphery:** [`{evk_short}`]({EVK_PERIPHERY_URL}/tree/{evk_short})")
-                
-                lines.append("")
-                
-                if r.diff_vs_master:
-                    diff_lines_list = r.diff_vs_master.split('\n')
-                    if len(diff_lines_list) > 100:
-                        lines.append("```diff")
-                        lines.extend(diff_lines_list[:100])
-                        lines.append("```")
-                        lines.append("")
-                        lines.append(f"_Showing first 100 of {len(diff_lines_list)} lines. [View full diff on GitHub]({compare_url})_")
-                    elif diff_lines_list and any(line.strip() for line in diff_lines_list):
-                        lines.append("```diff")
-                        lines.extend(diff_lines_list)
-                        lines.append("```")
-                    else:
-                        lines.append("_No diff available - see GitHub compare link above._")
+            lines.append(f"**Contracts:** {contract_names}")
+            lines.append("")
+            lines.append(f"- **Deployed from:** [`{commit_short}`]({commit_url})")
+            lines.append(f"- **Compare to master:** [`{commit_short}...master`]({compare_url})")
+
+            # Add evk-periphery reference if applicable
+            if representative.evk_periphery_commit and repo_name != "evk-periphery":
+                evk_short = short_ref(representative.evk_periphery_commit)
+                lines.append(f"- **evk-periphery:** [`{evk_short}`]({EVK_PERIPHERY_URL}/tree/{evk_short})")
+
+            lines.append("")
+
+            # Show diff once for the group (all contracts share the same diff)
+            diff = representative.diff_vs_master
+            if diff:
+                diff_lines_list = diff.split('\n')
+                if len(diff_lines_list) > 100:
+                    lines.append("```diff")
+                    lines.extend(diff_lines_list[:100])
+                    lines.append("```")
+                    lines.append("")
+                    lines.append(f"_Showing first 100 of {len(diff_lines_list)} lines. [View full diff on GitHub]({compare_url})_")
+                elif diff_lines_list and any(line.strip() for line in diff_lines_list):
+                    lines.append("```diff")
+                    lines.extend(diff_lines_list)
+                    lines.append("```")
                 else:
                     lines.append("_No diff available - see GitHub compare link above._")
-                
-                lines.append("")
+            else:
+                lines.append("_No diff available - see GitHub compare link above._")
+
+            lines.append("")
     
     # Write report
     content = "\n".join(lines) + "\n"
