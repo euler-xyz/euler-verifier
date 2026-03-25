@@ -21,6 +21,13 @@ def short_ref(ref: str) -> str:
     return ref
 
 
+def clean_ref(ref: str) -> str:
+    """Strip origin/ prefix from git refs for use in GitHub URLs."""
+    if ref.startswith("origin/"):
+        return ref[7:]
+    return ref
+
+
 @dataclass
 class VerificationResult:
     """Result of verifying a single contract."""
@@ -33,6 +40,7 @@ class VerificationResult:
     total_files: int = 0
     diff_lines: List[str] = field(default_factory=list)
     diff_vs_master: Optional[str] = None  # Diff between deployment commit and master
+    source_paths: List[str] = field(default_factory=list)  # src/ file paths from explorer
     error: Optional[str] = None
     
     @property
@@ -139,8 +147,8 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
             repo_name, github_path, _ = get_repo_for_contract(r.contract_name)
             repo_link = f"[{repo_name}](https://github.com/{github_path})"
             
-            commit_short = short_ref(r.source_commit)
-            commit_url = f"https://github.com/{github_path}/tree/{r.source_commit}"
+            commit_short = short_ref(clean_ref(r.source_commit))
+            commit_url = f"https://github.com/{github_path}/tree/{clean_ref(r.source_commit)}"
             commit_link = f"[`{commit_short}`]({commit_url})"
             files_str = f"{r.matching_files}/{r.total_files}" if r.total_files > 0 else "-"
             
@@ -229,7 +237,8 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
         for (repo_name, source_commit), group in sorted(by_repo_commit.items()):
             representative = group[0]
             _, github_path, _ = get_repo_for_contract(representative.contract_name)
-            commit_short = short_ref(source_commit)
+            clean_commit = clean_ref(source_commit)
+            commit_short = short_ref(clean_commit)
             commit_url = f"https://github.com/{github_path}/tree/{commit_short}"
             compare_url = f"https://github.com/{github_path}/compare/{commit_short}...master"
 

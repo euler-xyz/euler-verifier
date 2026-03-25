@@ -350,109 +350,109 @@ index cece73c..e059d29 100644
 - **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
 
 ```diff
-diff --git a/src/AccessControl/SelectorAccessControl.sol b/src/AccessControl/SelectorAccessControl.sol
+diff --git a/src/IRMFactory/EulerFixedCyclicalBinaryIRMFactory.sol b/src/IRMFactory/EulerFixedCyclicalBinaryIRMFactory.sol
 new file mode 100644
-index 00000000..6510aad6
+index 00000000..3093e521
 --- /dev/null
-+++ b/src/AccessControl/SelectorAccessControl.sol
-@@ -0,0 +1,83 @@
++++ b/src/IRMFactory/EulerFixedCyclicalBinaryIRMFactory.sol
+@@ -0,0 +1,46 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +
 +pragma solidity ^0.8.0;
 +
-+import {ContextUpgradeable} from "openzeppelin-contracts-upgradeable/utils/ContextUpgradeable.sol";
-+import {AccessControlEnumerableUpgradeable} from
-+    "openzeppelin-contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
-+import {
-+    AccessControlUpgradeable,
-+    IAccessControl
-+} from "openzeppelin-contracts-upgradeable/access/AccessControlUpgradeable.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
++import {BaseFactory} from "../BaseFactory/BaseFactory.sol";
++import {IRMFixedCyclicalBinary} from "../IRM/IRMFixedCyclicalBinary.sol";
++import {IEulerFixedCyclicalBinaryIRMFactory} from "./interfaces/IEulerFixedCyclicalBinaryIRMFactory.sol";
 +
-+/// @title SelectorAccessControl
++/// @title EulerFixedCyclicalBinaryIRMFactory
 +/// @custom:security-contact security@euler.xyz
 +/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice A utility contract with the EVC support that allows for access control based on specific selectors.
-+abstract contract SelectorAccessControl is EVCUtil, AccessControlEnumerableUpgradeable {
-+    /// @notice The wildcard for all selectors. A caller with this role can call any function selector.
-+    bytes32 public constant WILD_CARD = bytes32(type(uint256).max);
++/// @notice A minimal factory for Fixed Cyclical Binary IRMs.
++contract EulerFixedCyclicalBinaryIRMFactory is BaseFactory, IEulerFixedCyclicalBinaryIRMFactory {
++    // corresponds to 1000% APY
++    uint256 internal constant MAX_ALLOWED_INTEREST_RATE = 75986279153383989049;
 +
-+    /// @notice Constructor for SelectorAccessControl
-+    /// @param evc The address of the Ethereum Vault Connector (EVC)
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    constructor(address evc, address admin) EVCUtil(evc) {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+        _disableInitializers();
-+    }
++    /// @notice Error thrown when the computed interest rate exceeds the maximum allowed limit.
++    error IRMFactory_ExcessiveInterestRate();
 +
-+    /// @notice Initializes the contract, setting up the admin role
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    function initialize(address admin) public initializer {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+    }
++    /// @notice Deploys a new IRMFixedCyclicalBinary.
++    /// @param primaryRate Interest rate applied during the first part of the cycle
++    /// @param secondaryRate Interest rate applied during the second part of the cycle
++    /// @param primaryDuration Duration of the primary part of the cycle in seconds
++    /// @param secondaryDuration Duration of the secondary part of the cycle in seconds
++    /// @param startTimestamp Timestamp of the start of the first cycle
++    /// @return The deployment address.
++    function deploy(
++        uint256 primaryRate,
++        uint256 secondaryRate,
++        uint256 primaryDuration,
++        uint256 secondaryDuration,
++        uint256 startTimestamp
++    ) external override returns (address) {
++        if (primaryRate > MAX_ALLOWED_INTEREST_RATE || secondaryRate > MAX_ALLOWED_INTEREST_RATE) {
++            revert IRMFactory_ExcessiveInterestRate();
++        }
 +
-+    /// @dev Grants `role` to `account`.
-+    function grantRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.grantRole(role, account);
-+    }
++        IRMFixedCyclicalBinary irm =
++            new IRMFixedCyclicalBinary(primaryRate, secondaryRate, primaryDuration, secondaryDuration, startTimestamp);
 +
-+    /// @dev Revokes `role` from `account`.
-+    function revokeRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.revokeRole(role, account);
-+    }
-+
-+    /// @dev Revokes `role` from the calling account.
-+    function renounceRole(bytes32 role, address callerConfirmation)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.renounceRole(role, callerConfirmation);
-+    }
-+
-+    /// @notice Authenticates the caller based on their role and the function selector called
-+    /// @dev Checks if the caller has either the wildcard role or the specific role for the current function selector
-+    /// @dev If the caller doesn't have the required role, it reverts with a NotAuthorized error
-+    function _authenticateCaller() internal view virtual {
-+        address msgSender = _msgSender();
-+
-+        // Don't revert if whitelisted for wildcard or specific selector
-+        if (!hasRole(WILD_CARD, msgSender) && !hasRole(msg.sig, msgSender)) revert NotAuthorized();
-+    }
-+
-+    /// @notice Retrieves the message sender in the context of the EVC.
-+    /// @dev This function returns the account on behalf of which the current operation is being performed, which is
-+    /// either msg.sender or the account authenticated by the EVC.
-+    /// @return The address of the message sender.
-+    function _msgSender() internal view virtual override (EVCUtil, ContextUpgradeable) returns (address) {
-+        return EVCUtil._msgSender();
++        deploymentInfo[address(irm)] = DeploymentInfo(msg.sender, uint96(block.timestamp));
++        deployments.push(address(irm));
++        emit ContractDeployed(address(irm), msg.sender, block.timestamp);
++        return address(irm);
 +    }
 +}
-diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
+diff --git a/src/IRMFactory/EulerIRMAdaptiveCurveFactory.sol b/src/IRMFactory/EulerIRMAdaptiveCurveFactory.sol
 new file mode 100644
-index 00000000..2ca592c0
+index 00000000..ba5dbc9d
 --- /dev/null
-+++ b/src/Chainlink/DataStreamsVerifier.sol
-@@ -0,0 +1,109 @@
++++ b/src/IRMFactory/EulerIRMAdaptiveCurveFactory.sol
+@@ -0,0 +1,45 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +
 +pragma solidity ^0.8.0;
 +
-+import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
++import {BaseFactory} from "../BaseFactory/BaseFactory.sol";
++import {IRMAdaptiveCurve} from "../IRM/IRMAdaptiveCurve.sol";
++
++/// @title EulerIRMAdaptiveCurveFactory
++/// @custom:security-contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/)
++/// @notice A minimal factory for Adaptive Curve IRMs.
++contract EulerIRMAdaptiveCurveFactory is BaseFactory {
++    /// @notice Deploy IRMAdaptiveCurve using the Factory.
++    /// @param _TARGET_UTILIZATION The utilization rate targeted by the interest rate model.
++    /// @param _INITIAL_RATE_AT_TARGET The initial interest rate at target utilization.
++    /// @param _MIN_RATE_AT_TARGET The minimum interest rate at target utilization that the model can adjust to.
++    /// @param _MAX_RATE_AT_TARGET The maximum interest rate at target utilization that the model can adjust to.
++    /// @param _CURVE_STEEPNESS The slope of interest rate above target. The line below target has inverse slope.
++    /// @param _ADJUSTMENT_SPEED The speed at which the rate at target utilization is adjusted up or down.
++    /// @return The deployment address.
++    function deploy(
++        int256 _TARGET_UTILIZATION,
++        int256 _INITIAL_RATE_AT_TARGET,
++        int256 _MIN_RATE_AT_TARGET,
++        int256 _MAX_RATE_AT_TARGET,
++        int256 _CURVE_STEEPNESS,
++        int256 _ADJUSTMENT_SPEED
++    ) external returns (address) {
++        // Deploy IRM.
++        IRMAdaptiveCurve irm = new IRMAdaptiveCurve(
++            _TARGET_UTILIZATION,
++            _INITIAL_RATE_AT_TARGET,
++            _MIN_RATE_AT_TARGET,
++            _MAX_RATE_AT_TARGET,
++            _CURVE_STEEPNESS,
++            _ADJUSTMENT_SPEED
++        );
++
++        // Store the deployment and return the address.
++        deploymentInfo[address(irm)] = DeploymentInfo(msg.sender, uint96(block.timestamp));
++        deployments.push(address(irm));
++        emit ContractDeployed(address(irm), msg.sender, block.timestamp);
 ```
 
-_Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
+_Showing first 100 of 258 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
 
 ### evk-periphery @ `f61809fd`
 
@@ -462,109 +462,109 @@ _Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/
 - **Compare to master:** [`f61809fd...master`](https://github.com/euler-xyz/evk-periphery/compare/f61809fd...master)
 
 ```diff
-diff --git a/src/AccessControl/SelectorAccessControl.sol b/src/AccessControl/SelectorAccessControl.sol
+diff --git a/src/ERC20/deployed/ERC20BurnableMintable.sol b/src/ERC20/deployed/ERC20BurnableMintable.sol
 new file mode 100644
-index 00000000..6510aad6
+index 00000000..19bb8e81
 --- /dev/null
-+++ b/src/AccessControl/SelectorAccessControl.sol
-@@ -0,0 +1,83 @@
++++ b/src/ERC20/deployed/ERC20BurnableMintable.sol
+@@ -0,0 +1,57 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +
 +pragma solidity ^0.8.0;
 +
-+import {ContextUpgradeable} from "openzeppelin-contracts-upgradeable/utils/ContextUpgradeable.sol";
-+import {AccessControlEnumerableUpgradeable} from
-+    "openzeppelin-contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
-+import {
-+    AccessControlUpgradeable,
-+    IAccessControl
-+} from "openzeppelin-contracts-upgradeable/access/AccessControlUpgradeable.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
++import {AccessControlEnumerable} from "openzeppelin-contracts/access/extensions/AccessControlEnumerable.sol";
++import {ERC20, ERC20Burnable} from "openzeppelin-contracts/token/ERC20/extensions/ERC20Burnable.sol";
++import {ERC20Permit} from "openzeppelin-contracts/token/ERC20/extensions/ERC20Permit.sol";
 +
-+/// @title SelectorAccessControl
++/// @title ERC20BurnableMintable
 +/// @custom:security-contact security@euler.xyz
 +/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice A utility contract with the EVC support that allows for access control based on specific selectors.
-+abstract contract SelectorAccessControl is EVCUtil, AccessControlEnumerableUpgradeable {
-+    /// @notice The wildcard for all selectors. A caller with this role can call any function selector.
-+    bytes32 public constant WILD_CARD = bytes32(type(uint256).max);
++/// @notice An ERC20 token contract that allows to mint and burn tokens.
++/// @dev The main purpose of this contract token bridging. Hence, this contract allows the caller with the MINTER_ROLE
++/// to mint new tokens. In case of emergency, the caller with the REVOKE_MINTER_ROLE can revoke the MINTER_ROLE from an
++/// address.
++contract ERC20BurnableMintable is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
++    /// @notice Role that allows revoking minter role from addresses
++    bytes32 public constant REVOKE_MINTER_ROLE = keccak256("REVOKE_MINTER_ROLE");
 +
-+    /// @notice Constructor for SelectorAccessControl
-+    /// @param evc The address of the Ethereum Vault Connector (EVC)
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    constructor(address evc, address admin) EVCUtil(evc) {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+        _disableInitializers();
-+    }
++    /// @notice Role that allows minting new tokens
++    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 +
-+    /// @notice Initializes the contract, setting up the admin role
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    function initialize(address admin) public initializer {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+    }
++    /// @notice Number of decimals
++    uint8 internal immutable _decimals;
 +
-+    /// @dev Grants `role` to `account`.
-+    function grantRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
++    /// @notice Constructor for ERC20BurnableMintable
++    /// @param admin_ Address of the contract admin who will have DEFAULT_ADMIN_ROLE
++    /// @param name_ Name of the token
++    /// @param symbol_ Symbol of the token
++    /// @param decimals_ Number of decimals
++    constructor(address admin_, string memory name_, string memory symbol_, uint8 decimals_)
++        ERC20(name_, symbol_)
++        ERC20Permit(name_)
 +    {
-+        super.grantRole(role, account);
++        _grantRole(DEFAULT_ADMIN_ROLE, admin_);
++        _decimals = decimals_;
 +    }
 +
-+    /// @dev Revokes `role` from `account`.
-+    function revokeRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.revokeRole(role, account);
++    /// @notice Revokes the minter role from an address
++    /// @param minter The address to revoke the minter role from
++    function revokeMinterRole(address minter) external onlyRole(REVOKE_MINTER_ROLE) {
++        _revokeRole(MINTER_ROLE, minter);
 +    }
 +
-+    /// @dev Revokes `role` from the calling account.
-+    function renounceRole(bytes32 role, address callerConfirmation)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.renounceRole(role, callerConfirmation);
++    /// @notice Mints new tokens and assigns them to an account
++    /// @param _account The address that will receive the minted tokens
++    /// @param _amount The amount of tokens to mint
++    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
++        _mint(_account, _amount);
 +    }
 +
-+    /// @notice Authenticates the caller based on their role and the function selector called
-+    /// @dev Checks if the caller has either the wildcard role or the specific role for the current function selector
-+    /// @dev If the caller doesn't have the required role, it reverts with a NotAuthorized error
-+    function _authenticateCaller() internal view virtual {
-+        address msgSender = _msgSender();
-+
-+        // Don't revert if whitelisted for wildcard or specific selector
-+        if (!hasRole(WILD_CARD, msgSender) && !hasRole(msg.sig, msgSender)) revert NotAuthorized();
-+    }
-+
-+    /// @notice Retrieves the message sender in the context of the EVC.
-+    /// @dev This function returns the account on behalf of which the current operation is being performed, which is
-+    /// either msg.sender or the account authenticated by the EVC.
-+    /// @return The address of the message sender.
-+    function _msgSender() internal view virtual override (EVCUtil, ContextUpgradeable) returns (address) {
-+        return EVCUtil._msgSender();
++    /// @notice Returns the number of decimals for the token
++    /// @return The number of decimals
++    function decimals() public view virtual override returns (uint8) {
++        return _decimals;
 +    }
 +}
-diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
+diff --git a/src/ERC20/deployed/ERC20Synth.sol b/src/ERC20/deployed/ERC20Synth.sol
 new file mode 100644
-index 00000000..2ca592c0
+index 00000000..f8ff9775
 --- /dev/null
-+++ b/src/Chainlink/DataStreamsVerifier.sol
-@@ -0,0 +1,109 @@
++++ b/src/ERC20/deployed/ERC20Synth.sol
+@@ -0,0 +1,257 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +
 +pragma solidity ^0.8.0;
 +
-+import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
++import {ERC20BurnableMintable} from "./ERC20BurnableMintable.sol";
++import {EnumerableSet} from "openzeppelin-contracts/utils/structs/EnumerableSet.sol";
++import {AccessControl, IAccessControl, Context} from "openzeppelin-contracts/access/AccessControl.sol";
++import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
++import {IEVault} from "evk/EVault/IEVault.sol";
++
++/// @title ERC20Synth
++/// @custom:security-contact security@euler.xyz
++/// @author Euler Labs (https://www.eulerlabs.com/)
++/// @notice ERC20-compatible synthetic token with EVC support, role-based minting, burning, and supply management.
++/// @dev This contract is designed for token bridging and synthetic asset vaults. Minting is controlled by MINTER_ROLE,
++/// and minting capacity is tracked per minter. The REVOKE_MINTER_ROLE can revoke minting rights in emergencies.
++/// The contract supports excluding certain addresses from total supply calculations (e.g., vaults).
++contract ERC20Synth is ERC20BurnableMintable, EVCUtil {
++    using EnumerableSet for EnumerableSet.AddressSet;
++
++    /// @notice Struct holding minting capacity and minted amount for a minter.
++    struct MinterData {
++        uint128 capacity;
++        uint128 minted;
++    }
++
++    /// @notice Role that allows allocation and deallocation to vaults.
++    bytes32 public constant ALLOCATOR_ROLE = keccak256("ALLOCATOR_ROLE");
++
++    /// @notice Mapping of minter address to their minting data (capacity and minted amount).
++    mapping(address => MinterData) public minters;
 ```
 
-_Showing first 100 of 7728 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/f61809fd...master)_
+_Showing first 100 of 326 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/f61809fd...master)_
 
 ### fee-flow @ `4a419c94`
 

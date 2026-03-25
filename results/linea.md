@@ -17,7 +17,7 @@
 | ✓ adaptiveCurveIRMFactory | [`0xc65a0e2a...`](https://lineascan.build/address/0xc65a0e2a410Ca52B0a5b57b1d239a857b3cd618b) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
 | ✓ balanceTracker | [`0xB9E491A3...`](https://lineascan.build/address/0xB9E491A3BB9d4B155d31a9cA6B9dE245CA16AAe6) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 17/17 |
 | ✗ eulerEarnFactory | [`0x377879A0...`](https://lineascan.build/address/0x377879A039343FEc7564e54616e519328951DA6D) | [euler-earn](https://github.com/euler-xyz/euler-earn) | not found | - | 33/35 |
-| ✓ eulerEarnPublicAllocator | [`0x4148f90e...`](https://lineascan.build/address/0x4148f90e03facFF8D2d5EFb475E36F94b4Ab4994) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`origin/deployment-script`](https://github.com/euler-xyz/euler-earn/tree/origin/deployment-script) | - | 14/14 |
+| ✓ eulerEarnPublicAllocator | [`0x4148f90e...`](https://lineascan.build/address/0x4148f90e03facFF8D2d5EFb475E36F94b4Ab4994) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`deployment-script`](https://github.com/euler-xyz/euler-earn/tree/deployment-script) | - | 14/14 |
 | ✓ eulerSwapV1Factory | [`0x970B065B...`](https://lineascan.build/address/0x970B065B572CC0118535Ad1101663CDBE7Db1e21) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f4052d7ab3116235ec754368b7125dbd5082) | - | 57/57 |
 | ✓ eulerSwapV1Implementation | [`0x2b07caff...`](https://lineascan.build/address/0x2b07caff83C15c5a70C4C0867DFE7A0BE01025B0) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f4052d7ab3116235ec754368b7125dbd5082) | - | 48/48 |
 | ✓ eulerSwapV1Periphery | [`0x0de305aB...`](https://lineascan.build/address/0x0de305aB93902914909951A00079ea1df3FD98eA) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`b948f405`](https://github.com/euler-xyz/euler-swap/tree/b948f4052d7ab3116235ec754368b7125dbd5082) | - | 11/11 |
@@ -107,12 +107,12 @@ These diffs help identify any changes made to the codebase after deployment.
 
 _No diff available - see GitHub compare link above._
 
-### euler-earn @ `origin/deployment-script`
+### euler-earn @ `deployment-script`
 
 **Contracts:** eulerEarnPublicAllocator
 
-- **Deployed from:** [`origin/deployment-script`](https://github.com/euler-xyz/euler-earn/tree/origin/deployment-script)
-- **Compare to master:** [`origin/deployment-script...master`](https://github.com/euler-xyz/euler-earn/compare/origin/deployment-script...master)
+- **Deployed from:** [`deployment-script`](https://github.com/euler-xyz/euler-earn/tree/deployment-script)
+- **Compare to master:** [`deployment-script...master`](https://github.com/euler-xyz/euler-earn/compare/deployment-script...master)
 
 ```diff
 diff --git a/src/EulerEarn.sol b/src/EulerEarn.sol
@@ -217,7 +217,7 @@ index 300bb22..da0feca 100644
 -import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 ```
 
-_Showing first 100 of 132 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-earn/compare/origin/deployment-script...master)_
+_Showing first 100 of 132 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-earn/compare/deployment-script...master)_
 
 ### euler-price-oracle @ `f52cb43b`
 
@@ -257,109 +257,109 @@ _No diff available - see GitHub compare link above._
 - **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
 
 ```diff
-diff --git a/src/AccessControl/SelectorAccessControl.sol b/src/AccessControl/SelectorAccessControl.sol
-new file mode 100644
-index 00000000..6510aad6
---- /dev/null
-+++ b/src/AccessControl/SelectorAccessControl.sol
-@@ -0,0 +1,83 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
+diff --git a/src/Swaps/ISwapper.sol b/src/Swaps/ISwapper.sol
+index a8ad0b2c..f65112de 100644
+--- a/src/Swaps/ISwapper.sol
++++ b/src/Swaps/ISwapper.sol
+@@ -25,6 +25,8 @@ interface ISwapper {
+         address tokenOut;
+         // Vault to which the unused input in exact output swap will be deposited back
+         address vaultIn;
++        // An EVC compatible account address, to which the unused input in exact output swap will be deposited back
++        address accountIn;
+         // In swapping modes (0 and 1) - address of the intended recipient of the bought tokens
+         // In swap and repay mode (2) - address of the liability vault of the account, where to repay debt
+         // Note that if the swap uses off-chain encoded payload, the receiver might be ignored. The user
+@@ -35,7 +37,8 @@ interface ISwapper {
+         // In swap and repay mode (2) - amount of debt the account should have after swap and repay.
+         //    To repay all debt without leaving any dust, set this to zero.
+         uint256 amountOut;
+-        // Auxiliary payload for swap providers
++        // Auxiliary payload for swap providers. For GenericHandler it's an abi encoded tuple: target contract address
++        // and call data
+         bytes data;
+     }
+ 
+diff --git a/src/Swaps/SwapVerifier.sol b/src/Swaps/SwapVerifier.sol
+index e4972629..4688cda3 100644
+--- a/src/Swaps/SwapVerifier.sol
++++ b/src/Swaps/SwapVerifier.sol
+@@ -2,18 +2,27 @@
+ 
+ pragma solidity ^0.8.0;
+ 
+-import {IEVault, IERC20} from "evk/EVault/IEVault.sol";
++import {IEVault} from "evk/EVault/IEVault.sol";
++import {TransferFromSender} from "./TransferFromSender.sol";
++import {IEVault, IERC4626} from "evk/EVault/IEVault.sol";
++import {SafeERC20, IERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
+ 
+ /// @title SwapVerifier
+ /// @custom:security-contact security@euler.xyz
+ /// @author Euler Labs (https://www.eulerlabs.com/)
+-/// @notice Simple contract used to verify post swap conditions
++/// @notice Simple contract used to verify post swap conditions. Includes TransferFromSender helper for gas savings.
+ /// @dev This contract is the only trusted code in the EVK swap periphery
+-contract SwapVerifier {
++contract SwapVerifier is TransferFromSender {
+     error SwapVerifier_skimMin();
++    error SwapVerifier_depositMin();
+     error SwapVerifier_debtMax();
+     error SwapVerifier_pastDeadline();
+ 
++    /// @notice Contract constructor
++    /// @param evc Address of the EthereumVaultConnector contract
++    /// @param permit2 Address of the Permit2 contract
++    constructor(address evc, address permit2) TransferFromSender(evc, permit2) {}
 +
-+pragma solidity ^0.8.0;
+     /// @notice Verify results of a regular swap, when bought tokens are sent to the vault and skim for the buyer
+     /// @param vault The EVault to query
+     /// @param receiver Account to skim to
+@@ -23,7 +32,6 @@ contract SwapVerifier {
+     /// @dev Calling this function is then necessary to perform slippage check and claim the output for the buyer
+     function verifyAmountMinAndSkim(address vault, address receiver, uint256 amountMin, uint256 deadline) external {
+         if (deadline < block.timestamp) revert SwapVerifier_pastDeadline();
+-        if (amountMin == 0) return;
+ 
+         uint256 cash = IEVault(vault).cash();
+         uint256 balance = IERC20(IEVault(vault).asset()).balanceOf(vault);
+@@ -35,6 +43,25 @@ contract SwapVerifier {
+         IEVault(vault).skim(type(uint256).max, receiver);
+     }
+ 
++    /// @notice Verify results of a regular swap, when bought tokens are sent to the verifier, and deposit for the buyer
++    /// @param vault The ERC4626 vault to deposit to
++    /// @param receiver Account to deposit for
++    /// @param amountMin Minimum amount of assets that should be available for deposit
++    /// @param deadline Timestamp after which the swap transaction is outdated
++    /// @dev Swapper contract will send bought assets to the verifier in certain situations.
++    /// @dev Calling this function is then necessary to perform slippage check and claim the output for the buyer
++    function verifyAmountMinAndDeposit(address vault, address receiver, uint256 amountMin, uint256 deadline) external {
++        if (deadline < block.timestamp) revert SwapVerifier_pastDeadline();
 +
-+import {ContextUpgradeable} from "openzeppelin-contracts-upgradeable/utils/ContextUpgradeable.sol";
-+import {AccessControlEnumerableUpgradeable} from
-+    "openzeppelin-contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
-+import {
-+    AccessControlUpgradeable,
-+    IAccessControl
-+} from "openzeppelin-contracts-upgradeable/access/AccessControlUpgradeable.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
++        IERC20 asset = IERC20(IERC4626(vault).asset());
++        uint256 balance = asset.balanceOf(address(this));
 +
-+/// @title SelectorAccessControl
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice A utility contract with the EVC support that allows for access control based on specific selectors.
-+abstract contract SelectorAccessControl is EVCUtil, AccessControlEnumerableUpgradeable {
-+    /// @notice The wildcard for all selectors. A caller with this role can call any function selector.
-+    bytes32 public constant WILD_CARD = bytes32(type(uint256).max);
++        if (balance < amountMin) revert SwapVerifier_depositMin();
 +
-+    /// @notice Constructor for SelectorAccessControl
-+    /// @param evc The address of the Ethereum Vault Connector (EVC)
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    constructor(address evc, address admin) EVCUtil(evc) {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+        _disableInitializers();
++        SafeERC20.forceApprove(asset, vault, balance);
++        IERC4626(vault).deposit(balance, receiver);
 +    }
 +
-+    /// @notice Initializes the contract, setting up the admin role
-+    /// @param admin The address to be granted the DEFAULT_ADMIN_ROLE
-+    function initialize(address admin) public initializer {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-+    }
-+
-+    /// @dev Grants `role` to `account`.
-+    function grantRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.grantRole(role, account);
-+    }
-+
-+    /// @dev Revokes `role` from `account`.
-+    function revokeRole(bytes32 role, address account)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.revokeRole(role, account);
-+    }
-+
-+    /// @dev Revokes `role` from the calling account.
-+    function renounceRole(bytes32 role, address callerConfirmation)
-+        public
-+        virtual
-+        override (AccessControlUpgradeable, IAccessControl)
-+        onlyEVCAccountOwner
-+    {
-+        super.renounceRole(role, callerConfirmation);
-+    }
-+
-+    /// @notice Authenticates the caller based on their role and the function selector called
-+    /// @dev Checks if the caller has either the wildcard role or the specific role for the current function selector
-+    /// @dev If the caller doesn't have the required role, it reverts with a NotAuthorized error
-+    function _authenticateCaller() internal view virtual {
-+        address msgSender = _msgSender();
-+
-+        // Don't revert if whitelisted for wildcard or specific selector
-+        if (!hasRole(WILD_CARD, msgSender) && !hasRole(msg.sig, msgSender)) revert NotAuthorized();
-+    }
-+
-+    /// @notice Retrieves the message sender in the context of the EVC.
-+    /// @dev This function returns the account on behalf of which the current operation is being performed, which is
-+    /// either msg.sender or the account authenticated by the EVC.
-+    /// @return The address of the message sender.
-+    function _msgSender() internal view virtual override (EVCUtil, ContextUpgradeable) returns (address) {
-+        return EVCUtil._msgSender();
-+    }
-+}
-diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
-new file mode 100644
-index 00000000..2ca592c0
---- /dev/null
-+++ b/src/Chainlink/DataStreamsVerifier.sol
-@@ -0,0 +1,109 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
+     /// @notice Verify results of a swap and repay operation, when debt is repaid down to a requested target
+     /// @param vault The EVault to query
+     /// @param account User account to query
+diff --git a/src/Swaps/Swapper.sol b/src/Swaps/Swapper.sol
+index ba152868..4fbde542 100644
+--- a/src/Swaps/Swapper.sol
++++ b/src/Swaps/Swapper.sol
+@@ -8,20 +8,18 @@ import {RevertBytes} from "evk/EVault/shared/lib/RevertBytes.sol";
+ 
+ import {ISwapper} from "./ISwapper.sol";
+ 
 ```
 
-_Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
+_Showing first 100 of 592 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
 
 ### evk-periphery @ `392c7bd0`
 
@@ -369,19 +369,6 @@ _Showing first 100 of 9989 lines. [View full diff on GitHub](https://github.com/
 - **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
 
 ```diff
-diff --git a/src/Chainlink/DataStreamsVerifier.sol b/src/Chainlink/DataStreamsVerifier.sol
-index 929f5d96..2ca592c0 100644
---- a/src/Chainlink/DataStreamsVerifier.sol
-+++ b/src/Chainlink/DataStreamsVerifier.sol
-@@ -3,7 +3,7 @@
- pragma solidity ^0.8.0;
- 
- import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
--import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/extensions/ERC20Wrapper.sol";
-+import {IERC20, SafeERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
- 
- /// @title Verifier Proxy Interface
- /// @notice Interface for interacting with Chainlink's verifier proxy contract
 diff --git a/src/ERC20/deployed/ERC20BurnableMintable.sol b/src/ERC20/deployed/ERC20BurnableMintable.sol
 index 82413624..19bb8e81 100644
 --- a/src/ERC20/deployed/ERC20BurnableMintable.sol
@@ -469,9 +456,22 @@ index 00000000..f8ff9775
 +    /// @param symbol_ Symbol of the token.
 +    /// @param decimals_ Number of decimals for the token.
 +    constructor(address evc_, address admin_, string memory name_, string memory symbol_, uint8 decimals_)
++        ERC20BurnableMintable(admin_, name_, symbol_, decimals_)
++        EVCUtil(evc_)
++    {
++        _ignoredForTotalSupply.add(address(this));
++        emit IgnoredForTotalSupplyAdded(address(this));
++    }
++
++    /// @notice Grants a role to an account. Only callable by EVC account owner.
++    /// @param role The role to grant.
++    /// @param account The address to grant the role to.
++    function grantRole(bytes32 role, address account)
++        public
++        virtual
 ```
 
-_Showing first 100 of 3316 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)_
+_Showing first 100 of 447 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)_
 
 ### fee-flow @ `4a419c94`
 
