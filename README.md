@@ -35,19 +35,14 @@ Reports are generated in `results/`. Each report shows which commit was used to 
 | BSC | 56 | ✅ 26/26 | [bsc.md](results/bsc.md) |
 | Avalanche | 43114 | ✅ 26/26 | [avalanche.md](results/avalanche.md) |
 | Linea | 59144 | ⚠️ 25/26 | [linea.md](results/linea.md) |
-| Swell | 1923 | ✅ 25/25 | [swell.md](results/swell.md) |
-| Sonic | 146 | ✅ 25/25 | [sonic.md](results/sonic.md) |
-| Bob | 60808 | ✅ 25/25 | [bob.md](results/bob.md) |
-| Berachain | 80094 | ✅ 25/25 | [berachain.md](results/berachain.md) |
-| Unichain | 130 | ✅ 25/25 | [unichain.md](results/unichain.md) |
-
-### Testing Networks
-
-| Network | Chain ID | Status | Report |
-|---------|----------|--------|--------|
-| Optimism | 10 | ✅ 17/17 | [optimism.md](results/optimism.md) |
-| Gnosis | 100 | ✅ 14/14 | [gnosis.md](results/gnosis.md) |
-| Polygon | 137 | ✅ 14/14 | [polygon.md](results/polygon.md) |
+| Swell | 1923 | ✅ 26/26 | [swell.md](results/swell.md) |
+| Sonic | 146 | ✅ 26/26 | [sonic.md](results/sonic.md) |
+| Bob | 60808 | ✅ 26/26 | [bob.md](results/bob.md) |
+| Berachain | 80094 | ✅ 26/26 | [berachain.md](results/berachain.md) |
+| Unichain | 130 | ✅ 26/26 | [unichain.md](results/unichain.md) |
+| Monad | 143 | ✅ 21/21 | [monad.md](results/monad.md) |
+| TAC | 239 | ✅ 26/26 | [tac.md](results/tac.md) |
+| Plasma | 9745 | ⚠️ 7/26 | [plasma.md](results/plasma.md) |
 
 ## CLI Options
 
@@ -81,6 +76,7 @@ euler-verifier/
 │   ├── commits.py         # Known deployment commits
 │   └── report.py          # Markdown report generation
 ├── results/               # Verification reports
+├── standalone/            # Per-network verification scripts
 ├── repos/                 # Cloned source repositories
 ├── euler-interfaces/      # Contract addresses (submodule)
 ├── cache/                 # API response cache
