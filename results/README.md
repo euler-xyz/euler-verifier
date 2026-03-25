@@ -10,41 +10,42 @@
 | [BSC](bsc.md) | 56 | ✅ 100% | 26/26 | |
 | [Avalanche](avalanche.md) | 43114 | ✅ 100% | 26/26 | |
 | [Linea](linea.md) | 59144 | ⚠️ 96% | 25/26 | eulerEarnFactory: 24KB optimizations |
-| [Swell](swell.md) | 1923 | ✅ 100% | 25/25 | |
-| [Sonic](sonic.md) | 146 | ✅ 100% | 25/25 | |
-| [Bob](bob.md) | 60808 | ✅ 100% | 25/25 | |
-| [Berachain](berachain.md) | 80094 | ✅ 100% | 25/25 | |
-| [Unichain](unichain.md) | 130 | ✅ 100% | 25/25 | |
+| [Swell](swell.md) | 1923 | ✅ 100% | 26/26 | |
+| [Sonic](sonic.md) | 146 | ✅ 100% | 26/26 | |
+| [Bob](bob.md) | 60808 | ✅ 100% | 26/26 | |
+| [Berachain](berachain.md) | 80094 | ✅ 100% | 26/26 | |
+| [Unichain](unichain.md) | 130 | ✅ 100% | 26/26 | |
+| [Monad](monad.md) | 143 | ✅ 100% | 21/21 | |
+| [TAC](tac.md) | 239 | ✅ 100% | 26/26 | |
+| [Plasma](plasma.md) | 9745 | ⚠️ 27% | 7/26 | Most contracts not verified on explorer |
 
-## Testing Networks
+## Report Structure
 
-| Network | Chain ID | Status | Contracts | Notes |
-|---------|----------|--------|-----------|-------|
-| [Optimism](optimism.md) | 10 | ✅ 100% | 17/17 | |
-| [Gnosis](gnosis.md) | 100 | ✅ 100% | 14/14 | |
-| [Polygon](polygon.md) | 137 | ✅ 100% | 14/14 | |
+Each report contains:
 
-## Notes on Partial Matches
-
-### Linea (96%)
-- **eulerEarnFactory**: Deployed with 24KB size optimizations (commented out `setName`/`setSymbol`)
-
-## Key Commits
-
-| Commit | Description |
-|--------|-------------|
-| `master` | Current mainline |
-| `773453b` | euler-earn deployment commit |
-| `deploy-swell` | Swell-specific balanceTracker |
-| `eulerswap-1.0` | EulerSwap V1 release tag |
-| `2b087370` | Core contracts deployment |
+1. **Summary table** — all contracts with address, source repo, deployment commit, evk-periphery ref, and file match count
+2. **Changes Since Deployment** — diffs between the deployment commit and current `master`, scoped to only the files that are part of each deployed contract
 
 ## Running Verification
 
 ```bash
-# Quick verification (known commits only)
-uv run python3 verify_mainnet.py
+# Verify a single network
+uv run python verify.py mainnet
 
-# Exhaustive search (all commits, slower but more thorough)
-uv run python3 verify_mainnet.py --exhaustive
+# Verify all production networks
+uv run python verify.py --all
+
+# Deep search through git history
+uv run python verify.py mainnet --exhaustive
+
+# List available networks
+uv run python verify.py --list
 ```
+
+## Notes
+
+### Linea (96%)
+- **eulerEarnFactory**: Deployed with 24KB size optimizations (commented out `setName`/`setSymbol`)
+
+### Plasma (27%)
+- Most contracts are not yet verified on the Plasma block explorer
