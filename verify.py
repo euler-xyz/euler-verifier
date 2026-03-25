@@ -109,23 +109,28 @@ def get_recent_commits(repo_dir: Path, max_commits: int = 100) -> List[str]:
         return []
 
 
-def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, network_name: str = None) -> Optional[str]:
+def extract_src_paths(sources: dict) -> List[str]:
+    """Extract src/ file paths from explorer sources dict."""
+    return [p for p in sources.keys() if p.startswith("src/") and p.endswith(".sol")]
+
+
+def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, network_name: str = None, source_paths: List[str] = None) -> Optional[str]:
     """
     Get diff between source commit and master for relevant source files.
-    
+
     For submodule contracts, generates diff in the submodule directory within evk-periphery.
-    For native evk-periphery contracts, generates diff directly.
+    For native evk-periphery contracts, scopes diff to contract-relevant src/ paths.
     """
     if source_commit in ("master", "main"):
         return None
-    
+
     # EulerSwap V1 uses eulerswap-1.0 tag - don't compare to master (V2 is different)
     # But on networks where V1 is deployed from evk-periphery (like Linea), we can diff
     if source_commit == EULERSWAP_V1_TAG or (contract_name in EULERSWAP_V1_CONTRACTS and not network_name):
         return None
-    
+
     repo_name, _, submodule_path = get_repo_for_contract(contract_name, network_name)
-    
+
     # For standalone repos (euler-earn), diff in that repo
     if contract_name in {"eulerEarnFactory", "eulerEarnPublicAllocator"}:
         try:
@@ -141,7 +146,7 @@ def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, 
             return None
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             return None
-    
+
     # For evk-periphery submodule contracts, diff inside the submodule itself
     # (git diff from the parent repo can't see inside submodules)
     if submodule_path:
@@ -161,11 +166,27 @@ def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, 
             return None
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             return None
-    
-    # For native evk-periphery contracts
+
+    # For native evk-periphery contracts, scope diff to contract-relevant files
+    # Extract unique src/ directories from the contract's source files
+    diff_paths = ["src/"]
+    if source_paths:
+        src_dirs = set()
+        for p in source_paths:
+            if p.startswith("src/"):
+                # Use top-level src/ subdirectory (e.g., src/Swaps/, src/InterestRateModels/)
+                parts = p.split("/")
+                if len(parts) >= 3:
+                    src_dirs.add(f"src/{parts[1]}/")
+                else:
+                    src_dirs.add(p)
+        if src_dirs:
+            diff_paths = sorted(src_dirs)
+
     try:
+        cmd = ["git", "diff", f"{source_commit}...master", "--"] + diff_paths
         result = subprocess.run(
-            ["git", "diff", f"{source_commit}...master", "--", "src/"],
+            cmd,
             cwd=EVK_PERIPHERY_DIR,
             capture_output=True,
             text=True,
@@ -333,7 +354,8 @@ def verify_contract(
             print(f"    ✓ Verified at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
 
             # Get diff vs master for "Changes Since Deployment" section
-            diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name)
+            src_paths = extract_src_paths(sources)
+            diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name, src_paths)
             if diff_vs_master:
                 print(f"    → Changes since deployment detected", flush=True)
 
@@ -350,6 +372,7 @@ def verify_contract(
                 matching_files=matching,
                 total_files=total,
                 diff_vs_master=diff_vs_master,
+                source_paths=src_paths,
             )
 
     # Exhaustive search if enabled
@@ -378,7 +401,8 @@ def verify_contract(
                 print(f"    ✓ Found at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
 
                 # Get diff vs master
-                diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name)
+                src_paths = extract_src_paths(sources)
+                diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name, src_paths)
                 if diff_vs_master:
                     print(f"    → Changes since deployment detected", flush=True)
 
@@ -393,6 +417,7 @@ def verify_contract(
                     matching_files=matching,
                     total_files=total,
                     diff_vs_master=diff_vs_master,
+                    source_paths=src_paths,
                 )
     
     # Try fallback with nested submodule overrides

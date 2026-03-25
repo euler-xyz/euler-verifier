@@ -47,9 +47,9 @@
 This section shows what has changed in the source code between the deployment commit and current `master`.
 These diffs help identify any changes made to the codebase after deployment.
 
-### ethereum-vault-connector
+### ethereum-vault-connector @ `a7d3c29e`
 
-#### evc
+**Contracts:** evc
 
 - **Deployed from:** [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e)
 - **Compare to master:** [`a7d3c29e...master`](https://github.com/euler-xyz/ethereum-vault-connector/compare/a7d3c29e...master)
@@ -57,9 +57,9 @@ These diffs help identify any changes made to the codebase after deployment.
 
 _No diff available - see GitHub compare link above._
 
-### euler-price-oracle
+### euler-price-oracle @ `f52cb43b`
 
-#### oracleRouterFactory
+**Contracts:** oracleRouterFactory
 
 - **Deployed from:** [`f52cb43b`](https://github.com/euler-xyz/euler-price-oracle/tree/f52cb43b)
 - **Compare to master:** [`f52cb43b...master`](https://github.com/euler-xyz/euler-price-oracle/compare/f52cb43b...master)
@@ -67,17 +67,9 @@ _No diff available - see GitHub compare link above._
 
 _No diff available - see GitHub compare link above._
 
-### euler-vault-kit
+### euler-vault-kit @ `422bf244`
 
-#### eVaultFactory
-
-- **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
-- **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
-- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
-
-_No diff available - see GitHub compare link above._
-
-#### eVaultImplementation
+**Contracts:** eVaultFactory, eVaultImplementation
 
 - **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
 - **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
