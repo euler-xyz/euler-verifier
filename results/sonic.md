@@ -63,7 +63,6 @@ _No diff available - see GitHub compare link above._
 
 - **Deployed from:** [`773453b`](https://github.com/euler-xyz/euler-earn/tree/773453b)
 - **Compare to master:** [`773453b...master`](https://github.com/euler-xyz/euler-earn/compare/773453b...master)
-- **evk-periphery:** [`773453b`](https://github.com/euler-xyz/evk-periphery/tree/773453b)
 
 ```diff
 diff --git a/src/EulerEarn.sol b/src/EulerEarn.sol

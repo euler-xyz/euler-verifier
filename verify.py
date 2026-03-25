@@ -142,13 +142,16 @@ def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, 
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             return None
     
-    # For evk-periphery submodule contracts, diff within the submodule
+    # For evk-periphery submodule contracts, diff inside the submodule itself
+    # (git diff from the parent repo can't see inside submodules)
     if submodule_path:
+        submodule_dir = EVK_PERIPHERY_DIR / submodule_path
+        if not submodule_dir.exists():
+            return None
         try:
-            # Diff within the submodule directory at evk-periphery level
             result = subprocess.run(
-                ["git", "diff", f"{evk_commit}...master", "--", f"{submodule_path}/src/"],
-                cwd=EVK_PERIPHERY_DIR,
+                ["git", "diff", f"{source_commit}...master", "--", "src/"],
+                cwd=submodule_dir,
                 capture_output=True,
                 text=True,
                 timeout=30,

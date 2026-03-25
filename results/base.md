@@ -14,8 +14,8 @@
 
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
-| ✓ adaptiveCurveIRMFactory | [`0xae752d78...`](https://basescan.org/address/0xae752d786ecAf6683f61b7D910F221edD003895b) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
-| ✓ balanceTracker | [`0x029fDEe8...`](https://basescan.org/address/0x029fDEe85BEdB0553D6fdc538546586641DD7438) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`deploy-s`](https://github.com/euler-xyz/evk-periphery/tree/deploy-swell) | 17/17 |
+| ✓ adaptiveCurveIRMFactory | [`0xae752d78...`](https://basescan.org/address/0xae752d786ecAf6683f61b7D910F221edD003895b) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
+| ✓ balanceTracker | [`0x029fDEe8...`](https://basescan.org/address/0x029fDEe85BEdB0553D6fdc538546586641DD7438) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`8695c72c`](https://github.com/euler-xyz/evk-periphery/tree/8695c72c) | 17/17 |
 | ✓ eulerEarnFactory | [`0x75F49a26...`](https://basescan.org/address/0x75F49a2621b6DeC6a5baB22ce961bF3e676EFAE6) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 35/35 |
 | ✓ eulerEarnPublicAllocator | [`0x0dFFc3A5...`](https://basescan.org/address/0x0dFFc3A53693bCd8e42FAd9be94fB8f1Fb64A8EE) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 14/14 |
 | ✓ eulerSwapV1Factory | [`0xf0CFe22d...`](https://basescan.org/address/0xf0CFe22d23699ff1B2CFe6B8f706A6DB63911262) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 55/55 |
@@ -125,7 +125,56 @@ _No diff available - see GitHub compare link above._
 - **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
 - **evk-periphery:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 
-_No diff available - see GitHub compare link above._
+```diff
+diff --git a/src/EVault/modules/Governance.sol b/src/EVault/modules/Governance.sol
+index 5c728ed..08c5c96 100644
+--- a/src/EVault/modules/Governance.sol
++++ b/src/EVault/modules/Governance.sol
+@@ -290,7 +290,7 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+         ConfigAmount newBorrowLTV = borrowLTV.toConfigAmount();
+         ConfigAmount newLiquidationLTV = liquidationLTV.toConfigAmount();
+ 
+-        // The borrow LTV must be lower than or equal to the the converged liquidation LTV
++        // The borrow LTV must be lower than or equal to the converged liquidation LTV
+         if (newBorrowLTV > newLiquidationLTV) revert E_LTVBorrow();
+ 
+         LTVConfig memory currentLTV = vaultStorage.ltvLookup[collateral];
+@@ -304,12 +304,6 @@ abstract contract GovernanceModule is IGovernance, BalanceUtils, BorrowUtils, LT
+ 
+         if (!currentLTV.isRecognizedCollateral()) vaultStorage.ltvList.push(collateral);
+ 
+-        if (!newLiquidationLTV.isZero()) {
+-            // Ensure that this collateral can be priced by the configured oracle
+-            (, IPriceOracle _oracle, address _unitOfAccount) = ProxyUtils.metadata();
+-            _oracle.getQuote(1e18, collateral, _unitOfAccount);
+-        }
+-
+         emit GovSetLTV(
+             collateral,
+             newLTV.borrowLTV.toUint16(),
+diff --git a/src/Synths/ESynth.sol b/src/Synths/ESynth.sol
+index cece73c..e059d29 100644
+--- a/src/Synths/ESynth.sol
++++ b/src/Synths/ESynth.sol
+@@ -177,4 +177,17 @@ contract ESynth is ERC20EVCCompatible, Ownable {
+         }
+         return total;
+     }
++
++    /// @dev Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be
++    /// called by the current owner.
++    /// NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is
++    /// only available to the owner.
++    function renounceOwnership() public virtual override onlyEVCAccountOwner {
++        super.renounceOwnership();
++    }
++
++    /// @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
++    function transferOwnership(address newOwner) public virtual override onlyEVCAccountOwner {
++        super.transferOwnership(newOwner);
++    }
+ }
+```
 
 #### protocolConfig
 

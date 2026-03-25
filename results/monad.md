@@ -17,7 +17,7 @@
 | ✓ adaptiveCurveIRMFactory | [`0x967803d8...`](https://monadvision.com/address/0x967803d884DF006A7150Bc3fCD416b813fbCbF4A) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 6/6 |
 | ✓ balanceTracker | [`0xa231DccE...`](https://monadvision.com/address/0xa231DccE58EA5A43E69EF351D89ea4212Ec0f30b) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 17/17 |
 | ✓ eulerEarnFactory | [`0xF463d4Ac...`](https://monadvision.com/address/0xF463d4Acb650cc6C4E1D6cD4D0d1b0cb224094cF) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 37/37 |
-| ✓ eulerEarnPublicAllocator | [`0x65A66F24...`](https://monadvision.com/address/0x65A66F24a25E8CF651C9e31D296623298C80F742) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`392c7bd0`](https://github.com/euler-xyz/euler-earn/tree/392c7bd0) | - | 14/14 |
+| ✓ eulerEarnPublicAllocator | [`0x65A66F24...`](https://monadvision.com/address/0x65A66F24a25E8CF651C9e31D296623298C80F742) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 14/14 |
 | ✓ eulerSwapV1Factory | [`0x34f8f028...`](https://monadvision.com/address/0x34f8f028c6a446a464c10a135f44fc6fb2cee1a9) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`5d270c7`](https://github.com/euler-xyz/euler-swap/tree/5d270c7) | - | 55/55 |
 | ✓ eulerSwapV1Implementation | [`0xbfd5c7bb...`](https://monadvision.com/address/0xbfd5c7bb1c208fec761284af7db6ff1f4314372c) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`5d270c7`](https://github.com/euler-xyz/euler-swap/tree/5d270c7) | - | 46/46 |
 | ✓ eulerSwapV1Periphery | [`0xd1f69cf9...`](https://monadvision.com/address/0xd1f69cf959c1a3aae7bee5ec677222d259585b27) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`98c05c5`](https://github.com/euler-xyz/euler-swap/tree/98c05c5) | - | 9/9 |
@@ -48,17 +48,7 @@ These diffs help identify any changes made to the codebase after deployment.
 
 - **Deployed from:** [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e)
 - **Compare to master:** [`a7d3c29e...master`](https://github.com/euler-xyz/ethereum-vault-connector/compare/a7d3c29e...master)
-- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
-
-_No diff available - see GitHub compare link above._
-
-### euler-earn
-
-#### eulerEarnPublicAllocator
-
-- **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/euler-earn/tree/392c7bd0)
-- **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/euler-earn/compare/392c7bd0...master)
-- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+- **evk-periphery:** [`master`](https://github.com/euler-xyz/evk-periphery/tree/master)
 
 _No diff available - see GitHub compare link above._
 
