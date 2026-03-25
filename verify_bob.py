@@ -488,7 +488,7 @@ def verify_contract(contract_name: str, address: str, fetcher: BlockscoutFetcher
         checkout_repo(repo_path, found_commit)
         source_commit = get_submodule_commit(repo_path, submod_path)
     elif found_commit:
-        source_commit = found_commit[:8] if len(found_commit) > 8 else found_commit
+        source_commit = found_commit[:8] if len(found_commit) > 8 and all(c in '0123456789abcdefABCDEF' for c in found_commit) else found_commit
     
     result = VerificationResult(
         contract_name=contract_name,

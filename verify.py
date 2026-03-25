@@ -325,60 +325,68 @@ def verify_contract(
         if matching == total and total > 0:
             # Resolve actual source commit (submodule commit if applicable)
             repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit, network_name)
-            
+            _, _, submodule_path = get_repo_for_contract(contract_name, network_name)
+
             print(f"    ✓ Verified at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
-            
+
             # Get diff vs master for "Changes Since Deployment" section
             diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name)
             if diff_vs_master:
                 print(f"    → Changes since deployment detected", flush=True)
-            
+
+            # Only set evk_periphery_commit for submodule-based contracts
+            # (not for standalone repos like euler-earn or euler-swap, and not for native evk-periphery contracts)
+            evk_ref = evk_commit if submodule_path else None
+
             return VerificationResult(
                 contract_name=contract_name,
                 address=address,
                 verified=True,
                 source_commit=source_commit,
-                evk_periphery_commit=evk_commit if repo_name != "evk-periphery" else None,
+                evk_periphery_commit=evk_ref,
                 matching_files=matching,
                 total_files=total,
                 diff_vs_master=diff_vs_master,
             )
-    
+
     # Exhaustive search if enabled
     if exhaustive:
         print(f"    Searching through recent commits...", flush=True)
         recent = get_recent_commits(repo_path, 200)
-        
+
         for evk_commit in recent:
             if evk_commit in commits_to_try:
                 continue
-            
+
             if not checkout_repo(repo_path, evk_commit, recursive=needs_recursive):
                 continue
 
             # Initialize nested submodules if needed
             init_nested_submodules(repo_path, submodules)
-            
+
             comparator = SourceComparator(repo_path, submodules)
             matching, total, diff_lines = comparator.compare_sources(sources)
-            
+
             if matching == total and total > 0:
                 # Resolve actual source commit
                 repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit, network_name)
-                
+                _, _, submodule_path = get_repo_for_contract(contract_name, network_name)
+
                 print(f"    ✓ Found at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
-                
+
                 # Get diff vs master
                 diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name)
                 if diff_vs_master:
                     print(f"    → Changes since deployment detected", flush=True)
-                
+
+                evk_ref = evk_commit if submodule_path else None
+
                 return VerificationResult(
                     contract_name=contract_name,
                     address=address,
                     verified=True,
                     source_commit=source_commit,
-                    evk_periphery_commit=evk_commit if repo_name != "evk-periphery" else None,
+                    evk_periphery_commit=evk_ref,
                     matching_files=matching,
                     total_files=total,
                     diff_vs_master=diff_vs_master,
