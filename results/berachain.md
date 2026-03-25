@@ -113,21 +113,6 @@ index 758185e..e7fd335 100644
  
  /// @title EulerEarnFactory
  /// @author Forked with gratitude from Morpho Labs. Inspired by Silo Labs.
-diff --git a/src/PublicAllocator.sol b/src/PublicAllocator.sol
-index f71306c..9527976 100644
---- a/src/PublicAllocator.sol
-+++ b/src/PublicAllocator.sol
-@@ -14,8 +14,8 @@ import {IEulerEarn, MarketAllocation} from "./interfaces/IEulerEarn.sol";
- import {ErrorsLib} from "./libraries/ErrorsLib.sol";
- import {EventsLib} from "./libraries/EventsLib.sol";
- 
--import {IERC4626} from "../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
--import {EVCUtil} from "../lib/ethereum-vault-connector/src/utils/EVCUtil.sol";
-+import {IERC4626} from "openzeppelin-contracts/interfaces/IERC4626.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
- 
- /// @title PublicAllocator
- /// @author Forked with gratitude from Morpho Labs. Inspired by Silo Labs.
 diff --git a/src/interfaces/IEulerEarn.sol b/src/interfaces/IEulerEarn.sol
 index 27334f2..ed18e7e 100644
 --- a/src/interfaces/IEulerEarn.sol
@@ -165,9 +150,24 @@ index 300bb22..da0feca 100644
  pragma solidity ^0.8.0;
  
 -import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
++import {IERC4626} from "openzeppelin-contracts/interfaces/IERC4626.sol";
+ 
+ /// @title ErrorsLib
+ /// @author Forked with gratitude from Morpho Labs. Inspired by Silo Labs.
+diff --git a/src/libraries/EventsLib.sol b/src/libraries/EventsLib.sol
+index f9dc967..862b344 100644
+--- a/src/libraries/EventsLib.sol
++++ b/src/libraries/EventsLib.sol
+@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
+ 
+ import {FlowCapsConfig} from "../interfaces/IPublicAllocator.sol";
+ 
+-import {IERC4626} from "../../lib/openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
++import {IERC4626} from "openzeppelin-contracts/interfaces/IERC4626.sol";
+ 
 ```
 
-_Showing first 100 of 132 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-earn/compare/773453b...master)_
+_Showing first 100 of 117 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-earn/compare/773453b...master)_
 
 ### euler-price-oracle @ `f52cb43b`
 
@@ -207,29 +207,6 @@ _No diff available - see GitHub compare link above._
 - **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
 
 ```diff
-diff --git a/src/Swaps/ISwapper.sol b/src/Swaps/ISwapper.sol
-index a8ad0b2c..f65112de 100644
---- a/src/Swaps/ISwapper.sol
-+++ b/src/Swaps/ISwapper.sol
-@@ -25,6 +25,8 @@ interface ISwapper {
-         address tokenOut;
-         // Vault to which the unused input in exact output swap will be deposited back
-         address vaultIn;
-+        // An EVC compatible account address, to which the unused input in exact output swap will be deposited back
-+        address accountIn;
-         // In swapping modes (0 and 1) - address of the intended recipient of the bought tokens
-         // In swap and repay mode (2) - address of the liability vault of the account, where to repay debt
-         // Note that if the swap uses off-chain encoded payload, the receiver might be ignored. The user
-@@ -35,7 +37,8 @@ interface ISwapper {
-         // In swap and repay mode (2) - amount of debt the account should have after swap and repay.
-         //    To repay all debt without leaving any dust, set this to zero.
-         uint256 amountOut;
--        // Auxiliary payload for swap providers
-+        // Auxiliary payload for swap providers. For GenericHandler it's an abi encoded tuple: target contract address
-+        // and call data
-         bytes data;
-     }
- 
 diff --git a/src/Swaps/SwapVerifier.sol b/src/Swaps/SwapVerifier.sol
 index e4972629..4688cda3 100644
 --- a/src/Swaps/SwapVerifier.sol
@@ -299,17 +276,7 @@ index e4972629..4688cda3 100644
      /// @notice Verify results of a swap and repay operation, when debt is repaid down to a requested target
      /// @param vault The EVault to query
      /// @param account User account to query
-diff --git a/src/Swaps/Swapper.sol b/src/Swaps/Swapper.sol
-index ba152868..4fbde542 100644
---- a/src/Swaps/Swapper.sol
-+++ b/src/Swaps/Swapper.sol
-@@ -8,20 +8,18 @@ import {RevertBytes} from "evk/EVault/shared/lib/RevertBytes.sol";
- 
- import {ISwapper} from "./ISwapper.sol";
- 
 ```
-
-_Showing first 100 of 592 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
 
 ### evk-periphery @ `392c7bd0`
 
@@ -331,97 +298,7 @@ index 82413624..19bb8e81 100644
 +    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
          _mint(_account, _amount);
      }
- 
-diff --git a/src/ERC20/deployed/ERC20Synth.sol b/src/ERC20/deployed/ERC20Synth.sol
-new file mode 100644
-index 00000000..f8ff9775
---- /dev/null
-+++ b/src/ERC20/deployed/ERC20Synth.sol
-@@ -0,0 +1,257 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {ERC20BurnableMintable} from "./ERC20BurnableMintable.sol";
-+import {EnumerableSet} from "openzeppelin-contracts/utils/structs/EnumerableSet.sol";
-+import {AccessControl, IAccessControl, Context} from "openzeppelin-contracts/access/AccessControl.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
-+import {IEVault} from "evk/EVault/IEVault.sol";
-+
-+/// @title ERC20Synth
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice ERC20-compatible synthetic token with EVC support, role-based minting, burning, and supply management.
-+/// @dev This contract is designed for token bridging and synthetic asset vaults. Minting is controlled by MINTER_ROLE,
-+/// and minting capacity is tracked per minter. The REVOKE_MINTER_ROLE can revoke minting rights in emergencies.
-+/// The contract supports excluding certain addresses from total supply calculations (e.g., vaults).
-+contract ERC20Synth is ERC20BurnableMintable, EVCUtil {
-+    using EnumerableSet for EnumerableSet.AddressSet;
-+
-+    /// @notice Struct holding minting capacity and minted amount for a minter.
-+    struct MinterData {
-+        uint128 capacity;
-+        uint128 minted;
-+    }
-+
-+    /// @notice Role that allows allocation and deallocation to vaults.
-+    bytes32 public constant ALLOCATOR_ROLE = keccak256("ALLOCATOR_ROLE");
-+
-+    /// @notice Mapping of minter address to their minting data (capacity and minted amount).
-+    mapping(address => MinterData) public minters;
-+
-+    /// @notice Set of addresses to ignore for total supply calculations (e.g., vaults, contract itself).
-+    EnumerableSet.AddressSet internal _ignoredForTotalSupply;
-+
-+    /// @notice Emitted when a minter's capacity is set or updated.
-+    /// @param minter The address of the minter.
-+    /// @param capacity The new minting capacity for the minter.
-+    event MinterCapacitySet(address indexed minter, uint256 capacity);
-+
-+    /// @notice Emitted when an account is added to the set of addresses ignored for total supply.
-+    /// @param account The address of the account.
-+    event IgnoredForTotalSupplyAdded(address indexed account);
-+
-+    /// @notice Emitted when an account is removed from the set of addresses ignored for total supply.
-+    /// @param account The address of the account.
-+    event IgnoredForTotalSupplyRemoved(address indexed account);
-+
-+    /// @notice Emitted when tokens are allocated to a vault.
-+    /// @param vault The address of the vault.
-+    /// @param amount The amount of tokens allocated.
-+    event Allocated(address indexed vault, uint256 amount);
-+
-+    /// @notice Emitted when tokens are deallocated from a vault.
-+    /// @param vault The address of the vault.
-+    /// @param amount The amount of tokens deallocated.
-+    event Deallocated(address indexed vault, uint256 amount);
-+
-+    /// @notice Error thrown when a minter exceeds their minting capacity.
-+    error CapacityReached();
-+
-+    /// @notice Deploys the ERC20Synth contract.
-+    /// @param evc_ Address of the EVC (Ethereum Vault Connector).
-+    /// @param admin_ Address to be granted DEFAULT_ADMIN_ROLE.
-+    /// @param name_ Name of the token.
-+    /// @param symbol_ Symbol of the token.
-+    /// @param decimals_ Number of decimals for the token.
-+    constructor(address evc_, address admin_, string memory name_, string memory symbol_, uint8 decimals_)
-+        ERC20BurnableMintable(admin_, name_, symbol_, decimals_)
-+        EVCUtil(evc_)
-+    {
-+        _ignoredForTotalSupply.add(address(this));
-+        emit IgnoredForTotalSupplyAdded(address(this));
-+    }
-+
-+    /// @notice Grants a role to an account. Only callable by EVC account owner.
-+    /// @param role The role to grant.
-+    /// @param account The address to grant the role to.
-+    function grantRole(bytes32 role, address account)
-+        public
-+        virtual
 ```
-
-_Showing first 100 of 447 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)_
 
 ### fee-flow @ `4a419c94`
 

@@ -257,8 +257,14 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
 
             lines.append("")
 
-            # Show diff once for the group (all contracts share the same diff)
-            diff = representative.diff_vs_master
+            # Combine diffs from all contracts in the group (each is scoped to its own files)
+            seen_diffs = set()
+            combined_diff_parts = []
+            for r in group:
+                if r.diff_vs_master and r.diff_vs_master not in seen_diffs:
+                    seen_diffs.add(r.diff_vs_master)
+                    combined_diff_parts.append(r.diff_vs_master)
+            diff = "\n".join(combined_diff_parts) if combined_diff_parts else None
             if diff:
                 diff_lines_list = diff.split('\n')
                 if len(diff_lines_list) > 100:

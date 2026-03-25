@@ -79,86 +79,7 @@ index 95009da..e6bc820 100644
      }
  
      /// @notice Computes the permit hash for a given set of parameters.
-diff --git a/src/utils/EVCUtil.sol b/src/utils/EVCUtil.sol
-index cf57295..dc4e432 100644
---- a/src/utils/EVCUtil.sol
-+++ b/src/utils/EVCUtil.sol
-@@ -29,7 +29,7 @@ abstract contract EVCUtil {
- 
-     /// @notice Returns the address of the Ethereum Vault Connector (EVC) used by this contract.
-     /// @return The address of the EVC contract.
--    function EVC() external view returns (address) {
-+    function EVC() external view virtual returns (address) {
-         return address(evc);
-     }
- 
-@@ -49,6 +49,18 @@ abstract contract EVCUtil {
-         _;
-     }
- 
-+    /// @notice Ensures a standard authentication path on the EVC allowing the account owner or any of its EVC accounts.
-+    /// @dev This modifier checks if the caller is the EVC and if so, verifies the execution context.
-+    /// It reverts if the operator is authenticated, control collateral is in progress, or checks are in progress.
-+    /// @dev This modifier must not be used on functions utilized by liquidation flows, i.e. transfer or withdraw.
-+    /// @dev This modifier must not be used on checkAccountStatus and checkVaultStatus functions.
-+    /// @dev This modifier can be used on access controlled functions to prevent non-standard authentication paths on
-+    /// the EVC.
-+    modifier onlyEVCAccount() virtual {
-+        _authenticateCallerWithStandardContextState(false);
-+        _;
-+    }
-+
-     /// @notice Ensures a standard authentication path on the EVC.
-     /// @dev This modifier checks if the caller is the EVC and if so, verifies the execution context.
-     /// It reverts if the operator is authenticated, control collateral is in progress, or checks are in progress.
-@@ -59,7 +71,7 @@ abstract contract EVCUtil {
-     /// @dev This modifier can be used on access controlled functions to prevent non-standard authentication paths on
-     /// the EVC.
-     modifier onlyEVCAccountOwner() virtual {
--        _onlyEVCAccountOwner();
-+        _authenticateCallerWithStandardContextState(true);
-         _;
-     }
- 
-@@ -121,6 +133,29 @@ abstract contract EVCUtil {
-         return sender;
-     }
- 
-+    /// @notice Retrieves the message sender, ensuring it's any EVC account meaning that the execution context is in a
-+    /// standard state (not operator authenticated, not control collateral in progress, not checks in progress).
-+    /// @dev This function must not be used on functions utilized by liquidation flows, i.e. transfer or withdraw.
-+    /// @dev This function must not be used on checkAccountStatus and checkVaultStatus functions.
-+    /// @dev This function can be used on access controlled functions to prevent non-standard authentication paths on
-+    /// the EVC.
-+    /// @return The address of the message sender.
-+    function _msgSenderOnlyEVCAccount() internal view returns (address) {
-+        return _authenticateCallerWithStandardContextState(false);
-+    }
-+
-+    /// @notice Retrieves the message sender, ensuring it's the EVC account owner and that the execution context is in a
-+    /// standard state (not operator authenticated, not control collateral in progress, not checks in progress).
-+    /// @dev It assumes that if the caller is not the EVC, the caller is the account owner.
-+    /// @dev This function must not be used on functions utilized by liquidation flows, i.e. transfer or withdraw.
-+    /// @dev This function must not be used on checkAccountStatus and checkVaultStatus functions.
-+    /// @dev This function can be used on access controlled functions to prevent non-standard authentication paths on
-+    /// the EVC.
-+    /// @return The address of the message sender.
-+    function _msgSenderOnlyEVCAccountOwner() internal view returns (address) {
-+        return _authenticateCallerWithStandardContextState(true);
-+    }
-+
-     /// @notice Calls the current external function through the EVC.
-     /// @dev This function is used to route the current call through the EVC if it's not already coming from the EVC. It
-     /// makes the EVC set the execution context and call back this contract with unchanged calldata. msg.sender is used
-@@ -159,12 +194,14 @@ abstract contract EVCUtil {
-         }
-     }
- 
--    /// @notice Ensures that the function is called only by the EVC account owner
-+    /// @notice Ensures that the function is called only by the EVC account owner or any of its EVC accounts
 ```
-
-_Showing first 100 of 136 lines. [View full diff on GitHub](https://github.com/euler-xyz/ethereum-vault-connector/compare/084b3228...master)_
 
 ### euler-price-oracle @ `dda7da3c`
 
@@ -168,110 +89,7 @@ _Showing first 100 of 136 lines. [View full diff on GitHub](https://github.com/e
 - **Compare to master:** [`dda7da3c...master`](https://github.com/euler-xyz/euler-price-oracle/compare/dda7da3c...master)
 - **evk-periphery:** [`5e066711`](https://github.com/euler-xyz/evk-periphery/tree/5e066711)
 
-```diff
-diff --git a/src/adapter/chainlink/ChainlinkInfrequentOracle.sol b/src/adapter/chainlink/ChainlinkInfrequentOracle.sol
-new file mode 100644
-index 0000000..b406107
---- /dev/null
-+++ b/src/adapter/chainlink/ChainlinkInfrequentOracle.sol
-@@ -0,0 +1,75 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+pragma solidity ^0.8.0;
-+
-+import {BaseAdapter, Errors, IPriceOracle} from "../BaseAdapter.sol";
-+import {AggregatorV3Interface} from "./AggregatorV3Interface.sol";
-+import {ScaleUtils, Scale} from "../../lib/ScaleUtils.sol";
-+
-+/// @title ChainlinkInfrequentOracle
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice PriceOracle adapter for Chainlink push-based price feeds.
-+/// @dev Integration Note: `maxStaleness` is an immutable parameter set in the constructor.
-+/// If the aggregator's heartbeat changes, this adapter may exhibit unintended behavior.
-+/// Modified from `ChainlinkOracle` to allow larger values for `maxStaleness`.
-+contract ChainlinkInfrequentOracle is BaseAdapter {
-+    /// @inheritdoc IPriceOracle
-+    string public constant name = "ChainlinkInfrequentOracle";
-+    /// @notice The minimum permitted value for `maxStaleness`.
-+    uint256 internal constant MAX_STALENESS_LOWER_BOUND = 1 minutes;
-+    /// @notice The maximum permitted value for `maxStaleness`.
-+    uint256 internal constant MAX_STALENESS_UPPER_BOUND = type(uint256).max;
-+    /// @notice The address of the base asset corresponding to the feed.
-+    address public immutable base;
-+    /// @notice The address of the quote asset corresponding to the feed.
-+    address public immutable quote;
-+    /// @notice The address of the Chainlink price feed.
-+    /// @dev https://docs.chain.link/data-feeds/price-feeds/addresses
-+    address public immutable feed;
-+    /// @notice The maximum allowed age of the price.
-+    /// @dev Reverts if block.timestamp - updatedAt > maxStaleness.
-+    uint256 public immutable maxStaleness;
-+    /// @notice The scale factors used for decimal conversions.
-+    Scale internal immutable scale;
-+
-+    /// @notice Deploy a ChainlinkOracle.
-+    /// @param _base The address of the base asset corresponding to the feed.
-+    /// @param _quote The address of the quote asset corresponding to the feed.
-+    /// @param _feed The address of the Chainlink price feed.
-+    /// @param _maxStaleness The maximum allowed age of the price.
-+    /// @dev Consider setting `_maxStaleness` to slightly more than the feed's heartbeat
-+    /// to account for possible network delays when the heartbeat is triggered.
-+    constructor(address _base, address _quote, address _feed, uint256 _maxStaleness) {
-+        if (_maxStaleness < MAX_STALENESS_LOWER_BOUND || _maxStaleness > MAX_STALENESS_UPPER_BOUND) {
-+            revert Errors.PriceOracle_InvalidConfiguration();
-+        }
-+
-+        base = _base;
-+        quote = _quote;
-+        feed = _feed;
-+        maxStaleness = _maxStaleness;
-+
-+        // The scale factor is used to correctly convert decimals.
-+        uint8 baseDecimals = _getDecimals(base);
-+        uint8 quoteDecimals = _getDecimals(quote);
-+        uint8 feedDecimals = AggregatorV3Interface(feed).decimals();
-+        scale = ScaleUtils.calcScale(baseDecimals, quoteDecimals, feedDecimals);
-+    }
-+
-+    /// @notice Get the quote from the Chainlink feed.
-+    /// @param inAmount The amount of `base` to convert.
-+    /// @param _base The token that is being priced.
-+    /// @param _quote The token that is the unit of account.
-+    /// @return The converted amount using the Chainlink feed.
-+    function _getQuote(uint256 inAmount, address _base, address _quote) internal view override returns (uint256) {
-+        bool inverse = ScaleUtils.getDirectionOrRevert(_base, base, _quote, quote);
-+
-+        (, int256 answer,, uint256 updatedAt,) = AggregatorV3Interface(feed).latestRoundData();
-+        if (answer <= 0) revert Errors.PriceOracle_InvalidAnswer();
-+        uint256 staleness = block.timestamp - updatedAt;
-+        if (staleness > maxStaleness) revert Errors.PriceOracle_TooStale(staleness, maxStaleness);
-+
-+        uint256 price = uint256(answer);
-+        return ScaleUtils.calcOutAmount(inAmount, price, scale, inverse);
-+    }
-+}
-diff --git a/src/adapter/curve/CurveEMAOracle.sol b/src/adapter/curve/CurveEMAOracle.sol
-new file mode 100644
-index 0000000..5b98e12
---- /dev/null
-+++ b/src/adapter/curve/CurveEMAOracle.sol
-@@ -0,0 +1,66 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+pragma solidity ^0.8.0;
-+
-+import {ScaleUtils, Scale} from "../../lib/ScaleUtils.sol";
-+import {BaseAdapter, Errors, IPriceOracle} from "../BaseAdapter.sol";
-+import {ICurvePool} from "./ICurvePool.sol";
-+
-+/// @title CurveEMAOracle
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice Adapter utilizing the EMA price oracle in Curve pools.
-+contract CurveEMAOracle is BaseAdapter {
-+    /// @inheritdoc IPriceOracle
-```
-
-_Showing first 100 of 699 lines. [View full diff on GitHub](https://github.com/euler-xyz/euler-price-oracle/compare/dda7da3c...master)_
+_No diff available - see GitHub compare link above._
 
 ### euler-swap @ `81cf6dc9`
 
@@ -318,28 +136,6 @@ index 5c728ed..08c5c96 100644
          emit GovSetLTV(
              collateral,
              newLTV.borrowLTV.toUint16(),
-diff --git a/src/Synths/ESynth.sol b/src/Synths/ESynth.sol
-index cece73c..e059d29 100644
---- a/src/Synths/ESynth.sol
-+++ b/src/Synths/ESynth.sol
-@@ -177,4 +177,17 @@ contract ESynth is ERC20EVCCompatible, Ownable {
-         }
-         return total;
-     }
-+
-+    /// @dev Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be
-+    /// called by the current owner.
-+    /// NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is
-+    /// only available to the owner.
-+    function renounceOwnership() public virtual override onlyEVCAccountOwner {
-+        super.renounceOwnership();
-+    }
-+
-+    /// @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
-+    function transferOwnership(address newOwner) public virtual override onlyEVCAccountOwner {
-+        super.transferOwnership(newOwner);
-+    }
- }
 ```
 
 ### evk-periphery @ `2b087370`
@@ -350,109 +146,109 @@ index cece73c..e059d29 100644
 - **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
 
 ```diff
-diff --git a/src/IRMFactory/EulerFixedCyclicalBinaryIRMFactory.sol b/src/IRMFactory/EulerFixedCyclicalBinaryIRMFactory.sol
-new file mode 100644
-index 00000000..3093e521
---- /dev/null
-+++ b/src/IRMFactory/EulerFixedCyclicalBinaryIRMFactory.sol
-@@ -0,0 +1,46 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
+diff --git a/src/IRMFactory/EulerKinkIRMFactory.sol b/src/IRMFactory/EulerKinkIRMFactory.sol
+index 2b651a40..1d7b8fbf 100644
+--- a/src/IRMFactory/EulerKinkIRMFactory.sol
++++ b/src/IRMFactory/EulerKinkIRMFactory.sol
+@@ -4,12 +4,13 @@ pragma solidity ^0.8.0;
+ 
+ import {BaseFactory} from "../BaseFactory/BaseFactory.sol";
+ import {IRMLinearKink} from "evk/InterestRateModels/IRMLinearKink.sol";
++import {IEulerKinkIRMFactory} from "./interfaces/IEulerKinkIRMFactory.sol";
+ 
+ /// @title EulerKinkIRMFactory
+ /// @custom:security-contact security@euler.xyz
+ /// @author Euler Labs (https://www.eulerlabs.com/)
+ /// @notice A minimal factory for Kink IRMs.
+-contract EulerKinkIRMFactory is BaseFactory {
++contract EulerKinkIRMFactory is BaseFactory, IEulerKinkIRMFactory {
+     // corresponds to 1000% APY
+     uint256 internal constant MAX_ALLOWED_INTEREST_RATE = 75986279153383989049;
+ 
+@@ -22,7 +23,11 @@ contract EulerKinkIRMFactory is BaseFactory {
+     /// @param slope2 Slope of the function after the kink
+     /// @param kink Utilization at which the slope of the interest rate function changes. In type(uint32).max scale
+     /// @return The deployment address.
+-    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint32 kink) external returns (address) {
++    function deploy(uint256 baseRate, uint256 slope1, uint256 slope2, uint32 kink)
++        external
++        override
++        returns (address)
++    {
+         IRMLinearKink irm = new IRMLinearKink(baseRate, slope1, slope2, kink);
+ 
+         // verify if the IRM is functional
+diff --git a/src/Swaps/SwapVerifier.sol b/src/Swaps/SwapVerifier.sol
+index e4972629..4688cda3 100644
+--- a/src/Swaps/SwapVerifier.sol
++++ b/src/Swaps/SwapVerifier.sol
+@@ -2,18 +2,27 @@
+ 
+ pragma solidity ^0.8.0;
+ 
+-import {IEVault, IERC20} from "evk/EVault/IEVault.sol";
++import {IEVault} from "evk/EVault/IEVault.sol";
++import {TransferFromSender} from "./TransferFromSender.sol";
++import {IEVault, IERC4626} from "evk/EVault/IEVault.sol";
++import {SafeERC20, IERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
+ 
+ /// @title SwapVerifier
+ /// @custom:security-contact security@euler.xyz
+ /// @author Euler Labs (https://www.eulerlabs.com/)
+-/// @notice Simple contract used to verify post swap conditions
++/// @notice Simple contract used to verify post swap conditions. Includes TransferFromSender helper for gas savings.
+ /// @dev This contract is the only trusted code in the EVK swap periphery
+-contract SwapVerifier {
++contract SwapVerifier is TransferFromSender {
+     error SwapVerifier_skimMin();
++    error SwapVerifier_depositMin();
+     error SwapVerifier_debtMax();
+     error SwapVerifier_pastDeadline();
+ 
++    /// @notice Contract constructor
++    /// @param evc Address of the EthereumVaultConnector contract
++    /// @param permit2 Address of the Permit2 contract
++    constructor(address evc, address permit2) TransferFromSender(evc, permit2) {}
 +
-+pragma solidity ^0.8.0;
+     /// @notice Verify results of a regular swap, when bought tokens are sent to the vault and skim for the buyer
+     /// @param vault The EVault to query
+     /// @param receiver Account to skim to
+@@ -23,7 +32,6 @@ contract SwapVerifier {
+     /// @dev Calling this function is then necessary to perform slippage check and claim the output for the buyer
+     function verifyAmountMinAndSkim(address vault, address receiver, uint256 amountMin, uint256 deadline) external {
+         if (deadline < block.timestamp) revert SwapVerifier_pastDeadline();
+-        if (amountMin == 0) return;
+ 
+         uint256 cash = IEVault(vault).cash();
+         uint256 balance = IERC20(IEVault(vault).asset()).balanceOf(vault);
+@@ -35,6 +43,25 @@ contract SwapVerifier {
+         IEVault(vault).skim(type(uint256).max, receiver);
+     }
+ 
++    /// @notice Verify results of a regular swap, when bought tokens are sent to the verifier, and deposit for the buyer
++    /// @param vault The ERC4626 vault to deposit to
++    /// @param receiver Account to deposit for
++    /// @param amountMin Minimum amount of assets that should be available for deposit
++    /// @param deadline Timestamp after which the swap transaction is outdated
++    /// @dev Swapper contract will send bought assets to the verifier in certain situations.
++    /// @dev Calling this function is then necessary to perform slippage check and claim the output for the buyer
++    function verifyAmountMinAndDeposit(address vault, address receiver, uint256 amountMin, uint256 deadline) external {
++        if (deadline < block.timestamp) revert SwapVerifier_pastDeadline();
 +
-+import {BaseFactory} from "../BaseFactory/BaseFactory.sol";
-+import {IRMFixedCyclicalBinary} from "../IRM/IRMFixedCyclicalBinary.sol";
-+import {IEulerFixedCyclicalBinaryIRMFactory} from "./interfaces/IEulerFixedCyclicalBinaryIRMFactory.sol";
++        IERC20 asset = IERC20(IERC4626(vault).asset());
++        uint256 balance = asset.balanceOf(address(this));
 +
-+/// @title EulerFixedCyclicalBinaryIRMFactory
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice A minimal factory for Fixed Cyclical Binary IRMs.
-+contract EulerFixedCyclicalBinaryIRMFactory is BaseFactory, IEulerFixedCyclicalBinaryIRMFactory {
-+    // corresponds to 1000% APY
-+    uint256 internal constant MAX_ALLOWED_INTEREST_RATE = 75986279153383989049;
++        if (balance < amountMin) revert SwapVerifier_depositMin();
 +
-+    /// @notice Error thrown when the computed interest rate exceeds the maximum allowed limit.
-+    error IRMFactory_ExcessiveInterestRate();
-+
-+    /// @notice Deploys a new IRMFixedCyclicalBinary.
-+    /// @param primaryRate Interest rate applied during the first part of the cycle
-+    /// @param secondaryRate Interest rate applied during the second part of the cycle
-+    /// @param primaryDuration Duration of the primary part of the cycle in seconds
-+    /// @param secondaryDuration Duration of the secondary part of the cycle in seconds
-+    /// @param startTimestamp Timestamp of the start of the first cycle
-+    /// @return The deployment address.
-+    function deploy(
-+        uint256 primaryRate,
-+        uint256 secondaryRate,
-+        uint256 primaryDuration,
-+        uint256 secondaryDuration,
-+        uint256 startTimestamp
-+    ) external override returns (address) {
-+        if (primaryRate > MAX_ALLOWED_INTEREST_RATE || secondaryRate > MAX_ALLOWED_INTEREST_RATE) {
-+            revert IRMFactory_ExcessiveInterestRate();
-+        }
-+
-+        IRMFixedCyclicalBinary irm =
-+            new IRMFixedCyclicalBinary(primaryRate, secondaryRate, primaryDuration, secondaryDuration, startTimestamp);
-+
-+        deploymentInfo[address(irm)] = DeploymentInfo(msg.sender, uint96(block.timestamp));
-+        deployments.push(address(irm));
-+        emit ContractDeployed(address(irm), msg.sender, block.timestamp);
-+        return address(irm);
++        SafeERC20.forceApprove(asset, vault, balance);
++        IERC4626(vault).deposit(balance, receiver);
 +    }
-+}
-diff --git a/src/IRMFactory/EulerIRMAdaptiveCurveFactory.sol b/src/IRMFactory/EulerIRMAdaptiveCurveFactory.sol
-new file mode 100644
-index 00000000..ba5dbc9d
---- /dev/null
-+++ b/src/IRMFactory/EulerIRMAdaptiveCurveFactory.sol
-@@ -0,0 +1,45 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
 +
-+pragma solidity ^0.8.0;
-+
-+import {BaseFactory} from "../BaseFactory/BaseFactory.sol";
-+import {IRMAdaptiveCurve} from "../IRM/IRMAdaptiveCurve.sol";
-+
-+/// @title EulerIRMAdaptiveCurveFactory
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice A minimal factory for Adaptive Curve IRMs.
-+contract EulerIRMAdaptiveCurveFactory is BaseFactory {
-+    /// @notice Deploy IRMAdaptiveCurve using the Factory.
-+    /// @param _TARGET_UTILIZATION The utilization rate targeted by the interest rate model.
-+    /// @param _INITIAL_RATE_AT_TARGET The initial interest rate at target utilization.
-+    /// @param _MIN_RATE_AT_TARGET The minimum interest rate at target utilization that the model can adjust to.
-+    /// @param _MAX_RATE_AT_TARGET The maximum interest rate at target utilization that the model can adjust to.
-+    /// @param _CURVE_STEEPNESS The slope of interest rate above target. The line below target has inverse slope.
-+    /// @param _ADJUSTMENT_SPEED The speed at which the rate at target utilization is adjusted up or down.
-+    /// @return The deployment address.
-+    function deploy(
-+        int256 _TARGET_UTILIZATION,
-+        int256 _INITIAL_RATE_AT_TARGET,
-+        int256 _MIN_RATE_AT_TARGET,
-+        int256 _MAX_RATE_AT_TARGET,
-+        int256 _CURVE_STEEPNESS,
-+        int256 _ADJUSTMENT_SPEED
-+    ) external returns (address) {
-+        // Deploy IRM.
-+        IRMAdaptiveCurve irm = new IRMAdaptiveCurve(
-+            _TARGET_UTILIZATION,
-+            _INITIAL_RATE_AT_TARGET,
-+            _MIN_RATE_AT_TARGET,
-+            _MAX_RATE_AT_TARGET,
-+            _CURVE_STEEPNESS,
-+            _ADJUSTMENT_SPEED
-+        );
-+
-+        // Store the deployment and return the address.
-+        deploymentInfo[address(irm)] = DeploymentInfo(msg.sender, uint96(block.timestamp));
-+        deployments.push(address(irm));
-+        emit ContractDeployed(address(irm), msg.sender, block.timestamp);
+     /// @notice Verify results of a swap and repay operation, when debt is repaid down to a requested target
+     /// @param vault The EVault to query
 ```
 
-_Showing first 100 of 258 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
+_Showing first 100 of 101 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
 
 ### evk-periphery @ `f61809fd`
 
@@ -461,110 +257,7 @@ _Showing first 100 of 258 lines. [View full diff on GitHub](https://github.com/e
 - **Deployed from:** [`f61809fd`](https://github.com/euler-xyz/evk-periphery/tree/f61809fd)
 - **Compare to master:** [`f61809fd...master`](https://github.com/euler-xyz/evk-periphery/compare/f61809fd...master)
 
-```diff
-diff --git a/src/ERC20/deployed/ERC20BurnableMintable.sol b/src/ERC20/deployed/ERC20BurnableMintable.sol
-new file mode 100644
-index 00000000..19bb8e81
---- /dev/null
-+++ b/src/ERC20/deployed/ERC20BurnableMintable.sol
-@@ -0,0 +1,57 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {AccessControlEnumerable} from "openzeppelin-contracts/access/extensions/AccessControlEnumerable.sol";
-+import {ERC20, ERC20Burnable} from "openzeppelin-contracts/token/ERC20/extensions/ERC20Burnable.sol";
-+import {ERC20Permit} from "openzeppelin-contracts/token/ERC20/extensions/ERC20Permit.sol";
-+
-+/// @title ERC20BurnableMintable
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice An ERC20 token contract that allows to mint and burn tokens.
-+/// @dev The main purpose of this contract token bridging. Hence, this contract allows the caller with the MINTER_ROLE
-+/// to mint new tokens. In case of emergency, the caller with the REVOKE_MINTER_ROLE can revoke the MINTER_ROLE from an
-+/// address.
-+contract ERC20BurnableMintable is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
-+    /// @notice Role that allows revoking minter role from addresses
-+    bytes32 public constant REVOKE_MINTER_ROLE = keccak256("REVOKE_MINTER_ROLE");
-+
-+    /// @notice Role that allows minting new tokens
-+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-+
-+    /// @notice Number of decimals
-+    uint8 internal immutable _decimals;
-+
-+    /// @notice Constructor for ERC20BurnableMintable
-+    /// @param admin_ Address of the contract admin who will have DEFAULT_ADMIN_ROLE
-+    /// @param name_ Name of the token
-+    /// @param symbol_ Symbol of the token
-+    /// @param decimals_ Number of decimals
-+    constructor(address admin_, string memory name_, string memory symbol_, uint8 decimals_)
-+        ERC20(name_, symbol_)
-+        ERC20Permit(name_)
-+    {
-+        _grantRole(DEFAULT_ADMIN_ROLE, admin_);
-+        _decimals = decimals_;
-+    }
-+
-+    /// @notice Revokes the minter role from an address
-+    /// @param minter The address to revoke the minter role from
-+    function revokeMinterRole(address minter) external onlyRole(REVOKE_MINTER_ROLE) {
-+        _revokeRole(MINTER_ROLE, minter);
-+    }
-+
-+    /// @notice Mints new tokens and assigns them to an account
-+    /// @param _account The address that will receive the minted tokens
-+    /// @param _amount The amount of tokens to mint
-+    function mint(address _account, uint256 _amount) external virtual onlyRole(MINTER_ROLE) {
-+        _mint(_account, _amount);
-+    }
-+
-+    /// @notice Returns the number of decimals for the token
-+    /// @return The number of decimals
-+    function decimals() public view virtual override returns (uint8) {
-+        return _decimals;
-+    }
-+}
-diff --git a/src/ERC20/deployed/ERC20Synth.sol b/src/ERC20/deployed/ERC20Synth.sol
-new file mode 100644
-index 00000000..f8ff9775
---- /dev/null
-+++ b/src/ERC20/deployed/ERC20Synth.sol
-@@ -0,0 +1,257 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+pragma solidity ^0.8.0;
-+
-+import {ERC20BurnableMintable} from "./ERC20BurnableMintable.sol";
-+import {EnumerableSet} from "openzeppelin-contracts/utils/structs/EnumerableSet.sol";
-+import {AccessControl, IAccessControl, Context} from "openzeppelin-contracts/access/AccessControl.sol";
-+import {EVCUtil} from "ethereum-vault-connector/utils/EVCUtil.sol";
-+import {IEVault} from "evk/EVault/IEVault.sol";
-+
-+/// @title ERC20Synth
-+/// @custom:security-contact security@euler.xyz
-+/// @author Euler Labs (https://www.eulerlabs.com/)
-+/// @notice ERC20-compatible synthetic token with EVC support, role-based minting, burning, and supply management.
-+/// @dev This contract is designed for token bridging and synthetic asset vaults. Minting is controlled by MINTER_ROLE,
-+/// and minting capacity is tracked per minter. The REVOKE_MINTER_ROLE can revoke minting rights in emergencies.
-+/// The contract supports excluding certain addresses from total supply calculations (e.g., vaults).
-+contract ERC20Synth is ERC20BurnableMintable, EVCUtil {
-+    using EnumerableSet for EnumerableSet.AddressSet;
-+
-+    /// @notice Struct holding minting capacity and minted amount for a minter.
-+    struct MinterData {
-+        uint128 capacity;
-+        uint128 minted;
-+    }
-+
-+    /// @notice Role that allows allocation and deallocation to vaults.
-+    bytes32 public constant ALLOCATOR_ROLE = keccak256("ALLOCATOR_ROLE");
-+
-+    /// @notice Mapping of minter address to their minting data (capacity and minted amount).
-+    mapping(address => MinterData) public minters;
-```
-
-_Showing first 100 of 326 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/f61809fd...master)_
+_No diff available - see GitHub compare link above._
 
 ### fee-flow @ `4a419c94`
 
