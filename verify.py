@@ -23,7 +23,6 @@ from verifier_lib import (
     load_networks,
     load_contracts,
     create_fetcher,
-    CommitMatchCache,
     SourceComparator,
     VerificationResult,
     get_commits_to_try,
@@ -182,6 +181,43 @@ def get_diff_vs_master(contract_name: str, source_commit: str, evk_commit: str, 
     return _run_scoped_diff(EVK_PERIPHERY_DIR, source_commit, source_paths)
 
 
+def _try_override_combinations(
+    repo_path: Path,
+    nested_overrides: list,
+):
+    """Yield descriptions of successfully applied submodule override combinations.
+
+    For each valid combination of nested submodule versions, checks out the
+    submodules and yields a description string (e.g., "lib/openzeppelin-contracts@v5.1.0").
+    The caller should test whether the combination produces a source match.
+    """
+    from itertools import product
+
+    override_options = []
+    for submod_path, versions in nested_overrides:
+        submod_dir = repo_path / submod_path
+        if not submod_dir.exists():
+            return None  # Required submodule missing
+        override_options.append([(submod_path, v) for v in versions])
+
+    for combo in product(*override_options):
+        desc_parts = []
+        ok = True
+        for submod_path, version in combo:
+            try:
+                subprocess.run(
+                    ["git", "checkout", "-f", version],
+                    cwd=repo_path / submod_path,
+                    check=True, capture_output=True, text=True,
+                )
+                desc_parts.append(f"{submod_path}@{version}")
+            except subprocess.CalledProcessError:
+                ok = False
+                break
+        if ok:
+            yield " + ".join(desc_parts)
+
+
 def try_standalone_fallback(
     contract_name: str,
     sources: dict,
@@ -189,7 +225,7 @@ def try_standalone_fallback(
 ) -> Optional[VerificationResult]:
     """
     Try verifying a contract against a repo with nested submodule overrides.
-    This handles cases where the main repo pins older nested dependencies (EVC, OZ, etc.)
+    Handles cases where the main repo pins older nested dependencies (EVC, OZ, etc.)
     but the contract was deployed with newer versions.
     """
     if contract_name not in STANDALONE_FALLBACKS:
@@ -201,11 +237,7 @@ def try_standalone_fallback(
     if not repo_path.exists():
         return None
 
-    # For evk-periphery fallbacks, use the contract's submodule paths
-    if repo_dir_name == "evk-periphery":
-        submodule_paths = get_submodule_paths(contract_name, network_name)
-    else:
-        submodule_paths = []
+    submodule_paths = get_submodule_paths(contract_name, network_name) if repo_dir_name == "evk-periphery" else []
 
     print(f"    Trying fallback {repo_dir_name}...", flush=True)
 
@@ -213,68 +245,76 @@ def try_standalone_fallback(
         if not checkout_repo(repo_path, commit):
             continue
 
+        # Without overrides, try direct match
         if not nested_overrides:
             comparator = SourceComparator(repo_path, submodule_paths)
             matching, total, _ = comparator.compare_sources(sources)
             if matching == total and total > 0:
                 print(f"    ✓ Verified at {commit} in {repo_dir_name} ({matching}/{total} files)", flush=True)
                 return VerificationResult(
-                    contract_name=contract_name,
-                    address="",
-                    verified=True,
-                    source_commit=commit,
-                    matching_files=matching,
-                    total_files=total,
+                    contract_name=contract_name, address="", verified=True,
+                    source_commit=commit, matching_files=matching, total_files=total,
                 )
-        else:
-            # Generate all combinations of nested overrides
-            from itertools import product
-            override_options = []
-            for submod_path, versions in nested_overrides:
-                submod_dir = repo_path / submod_path
-                if not submod_dir.exists():
-                    override_options.append([(submod_path, None)])
-                else:
-                    override_options.append([(submod_path, v) for v in versions])
+            continue
 
-            for combo in product(*override_options):
-                desc_parts = []
-                ok = True
-                for submod_path, version in combo:
-                    if version is None:
-                        ok = False
-                        break
-                    submod_dir = repo_path / submod_path
-                    try:
-                        subprocess.run(
-                            ["git", "checkout", "-f", version],
-                            cwd=submod_dir,
-                            check=True,
-                            capture_output=True,
-                            text=True,
-                        )
-                        desc_parts.append(f"{submod_path}@{version}")
-                    except subprocess.CalledProcessError:
-                        ok = False
-                        break
-                if not ok:
-                    continue
-
-                comparator = SourceComparator(repo_path, submodule_paths)
-                matching, total, _ = comparator.compare_sources(sources)
-                if matching == total and total > 0:
-                    desc = " + ".join(desc_parts)
-                    print(f"    ✓ Verified at {commit} in {repo_dir_name} + {desc} ({matching}/{total} files)", flush=True)
-                    return VerificationResult(
-                        contract_name=contract_name,
-                        address="",
-                        verified=True,
-                        source_commit=commit,
-                        matching_files=matching,
-                        total_files=total,
-                    )
+        # With overrides, try all combinations
+        for desc in _try_override_combinations(repo_path, nested_overrides):
+            comparator = SourceComparator(repo_path, submodule_paths)
+            matching, total, _ = comparator.compare_sources(sources)
+            if matching == total and total > 0:
+                print(f"    ✓ Verified at {commit} in {repo_dir_name} + {desc} ({matching}/{total} files)", flush=True)
+                return VerificationResult(
+                    contract_name=contract_name, address="", verified=True,
+                    source_commit=commit, matching_files=matching, total_files=total,
+                )
 
     return None
+
+
+def _build_success_result(
+    contract_name: str,
+    address: str,
+    matched_commit: str,
+    network_name: str,
+    sources: dict,
+    matching: int,
+    total: int,
+    label: str = "Verified",
+) -> VerificationResult:
+    """Build a VerificationResult after finding a matching commit.
+
+    Args:
+        matched_commit: The commit where source match was found. For submodule contracts
+            this is the evk-periphery commit; for standalone repos it's the repo's own commit.
+        sources: Explorer source files dict, used to extract paths for scoped diffing.
+        label: Display label for the console message ("Verified" or "Found").
+    """
+    _, _, source_commit = get_source_commit(contract_name, matched_commit, network_name)
+    _, _, submodule_path = get_repo_for_contract(contract_name, network_name)
+
+    print(f"    ✓ {label} at {source_commit or matched_commit} ({matching}/{total} files)", flush=True)
+
+    src_paths = extract_src_paths(sources)
+    diff_vs_master = get_diff_vs_master(
+        contract_name, source_commit or matched_commit, matched_commit, network_name, src_paths
+    )
+    if diff_vs_master:
+        print(f"    → Changes since deployment detected", flush=True)
+
+    # evk_periphery_commit is only meaningful for submodule-based contracts
+    evk_ref = matched_commit if submodule_path else None
+
+    return VerificationResult(
+        contract_name=contract_name,
+        address=address,
+        verified=True,
+        source_commit=source_commit,
+        evk_periphery_commit=evk_ref,
+        matching_files=matching,
+        total_files=total,
+        diff_vs_master=diff_vs_master,
+        source_paths=src_paths,
+    )
 
 
 def verify_contract(
@@ -284,39 +324,34 @@ def verify_contract(
     network_name: str,
     exhaustive: bool = False,
 ) -> VerificationResult:
-    """Verify a single contract."""
+    """Verify a single contract by finding its deployment commit.
+
+    Fetches verified source from the block explorer, then searches through
+    known commits (and optionally all recent commits) to find an exact match.
+    Falls back to standalone repo verification with submodule overrides if needed.
+    """
     print(f"\n  Verifying {contract_name} @ {address}", flush=True)
-    
-    # Get source from explorer
+
     source_data = fetcher.get_verified_source(address)
     if not source_data:
         return VerificationResult(
-            contract_name=contract_name,
-            address=address,
-            verified=False,
-            error="Not verified on explorer",
+            contract_name=contract_name, address=address,
+            verified=False, error="Not verified on explorer",
         )
-    
+
     sources = source_data.get("sources", {})
     if not sources:
         return VerificationResult(
-            contract_name=contract_name,
-            address=address,
-            verified=False,
-            error="No source files",
+            contract_name=contract_name, address=address,
+            verified=False, error="No source files",
         )
-    
-    # Determine repo and submodules (network-aware for special cases like Linea)
+
     repo_path = get_repo_path(contract_name, network_name)
     submodules = get_submodule_paths(contract_name, network_name)
-
-    # euler-swap standalone needs recursive submodule init for nested EVK/OZ deps
     needs_recursive = (repo_path == EULER_SWAP_DIR)
-
-    # Get commits to try
     commits_to_try = get_commits_to_try(contract_name, network_name)
 
-    # Try each commit
+    # Phase 1: Try known deployment commits
     for evk_commit in commits_to_try:
         print(f"    Trying {evk_commit}...", flush=True)
 
@@ -330,35 +365,9 @@ def verify_contract(
         matching, total, diff_lines = comparator.compare_sources(sources)
         
         if matching == total and total > 0:
-            # Resolve actual source commit (submodule commit if applicable)
-            repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit, network_name)
-            _, _, submodule_path = get_repo_for_contract(contract_name, network_name)
+            return _build_success_result(contract_name, address, evk_commit, network_name, sources, matching, total)
 
-            print(f"    ✓ Verified at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
-
-            # Get diff vs master for "Changes Since Deployment" section
-            src_paths = extract_src_paths(sources)
-            diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name, src_paths)
-            if diff_vs_master:
-                print(f"    → Changes since deployment detected", flush=True)
-
-            # Only set evk_periphery_commit for submodule-based contracts
-            # (not for standalone repos like euler-earn or euler-swap, and not for native evk-periphery contracts)
-            evk_ref = evk_commit if submodule_path else None
-
-            return VerificationResult(
-                contract_name=contract_name,
-                address=address,
-                verified=True,
-                source_commit=source_commit,
-                evk_periphery_commit=evk_ref,
-                matching_files=matching,
-                total_files=total,
-                diff_vs_master=diff_vs_master,
-                source_paths=src_paths,
-            )
-
-    # Exhaustive search if enabled
+    # Phase 2: Search through recent git history (slow, optional)
     if exhaustive:
         print(f"    Searching through recent commits...", flush=True)
         recent = get_recent_commits(repo_path, 200)
@@ -377,39 +386,15 @@ def verify_contract(
             matching, total, diff_lines = comparator.compare_sources(sources)
 
             if matching == total and total > 0:
-                # Resolve actual source commit
-                repo_name, repo_url, source_commit = get_source_commit(contract_name, evk_commit, network_name)
-                _, _, submodule_path = get_repo_for_contract(contract_name, network_name)
-
-                print(f"    ✓ Found at {source_commit or evk_commit} ({matching}/{total} files)", flush=True)
-
-                # Get diff vs master
-                src_paths = extract_src_paths(sources)
-                diff_vs_master = get_diff_vs_master(contract_name, source_commit or evk_commit, evk_commit, network_name, src_paths)
-                if diff_vs_master:
-                    print(f"    → Changes since deployment detected", flush=True)
-
-                evk_ref = evk_commit if submodule_path else None
-
-                return VerificationResult(
-                    contract_name=contract_name,
-                    address=address,
-                    verified=True,
-                    source_commit=source_commit,
-                    evk_periphery_commit=evk_ref,
-                    matching_files=matching,
-                    total_files=total,
-                    diff_vs_master=diff_vs_master,
-                    source_paths=src_paths,
-                )
+                return _build_success_result(contract_name, address, evk_commit, network_name, sources, matching, total, "Found")
     
-    # Try fallback with nested submodule overrides
+    # Phase 3: Try standalone repos with nested submodule overrides
     fallback = try_standalone_fallback(contract_name, sources, network_name)
     if fallback:
         fallback.address = address
         return fallback
 
-    # No exact match - return best effort at master
+    # No match found — return diff against master for debugging
     print(f"    No exact match, showing diff vs master", flush=True)
     checkout_repo(repo_path, "master")
     comparator = SourceComparator(repo_path, submodules)
@@ -430,7 +415,6 @@ def verify_contract(
 def verify_network(
     config: NetworkConfig,
     exhaustive: bool = False,
-    use_cache: bool = True,
 ) -> List[VerificationResult]:
     """Verify all contracts for a network."""
     print("=" * 60, flush=True)
@@ -439,31 +423,19 @@ def verify_network(
     if exhaustive:
         print("Mode: EXHAUSTIVE (searching all commits)", flush=True)
     print("=" * 60, flush=True)
-    
-    # Load contracts
+
     contracts = load_contracts(config.chain_id)
     if not contracts:
         print(f"No contracts found for chain {config.chain_id}", flush=True)
         return []
-    
+
     print(f"Found {len(contracts)} contracts to verify", flush=True)
-    
-    # Create fetcher
+
     fetcher = create_fetcher(config)
-    
-    # Create cache
-    cache = CommitMatchCache()
-    
-    # Get network name for hints (uses key from networks.json)
     network_name = config.key
-    
+
     results = []
     for contract_name, address in contracts.items():
-        # NOTE: Cache disabled for now - it doesn't preserve all required data
-        # (source_commit, evk_periphery_commit, file counts, diffs)
-        # TODO: Enhance cache to store full VerificationResult data
-        
-        # Verify contract
         result = verify_contract(
             contract_name,
             address,
@@ -472,7 +444,7 @@ def verify_network(
             exhaustive,
         )
         results.append(result)
-    
+
     return results
 
 
@@ -519,11 +491,6 @@ Examples:
         "--exhaustive",
         action="store_true",
         help="Enable exhaustive commit search (slower but more thorough)",
-    )
-    parser.add_argument(
-        "--skip-cache",
-        action="store_true",
-        help="Skip cache and re-verify all contracts",
     )
     parser.add_argument(
         "--list",
@@ -599,7 +566,6 @@ Examples:
         results = verify_network(
             config,
             exhaustive=args.exhaustive,
-            use_cache=not args.skip_cache,
         )
         
         if results:

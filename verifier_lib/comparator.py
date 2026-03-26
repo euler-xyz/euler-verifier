@@ -1,5 +1,9 @@
 """
-Source code comparison with Foundry remapping support.
+Source code comparison between block explorer and local repository.
+
+Handles Foundry remappings, submodule path resolution, and import path
+normalization to produce accurate file-by-file comparisons despite
+different path conventions across explorers and local builds.
 """
 
 import re
@@ -52,62 +56,30 @@ class SourceComparator:
                 remapped_path = replacement + explorer_path[len(prefix):]
                 break
 
-        # Check if this is a nested library path that might have different versions
-        # in submodules vs repo root. Submodules often pin their own versions of common libs.
-        is_nested_lib = explorer_path.startswith("lib/") and any(
-            explorer_path.startswith(f"lib/{lib}/")
-            for lib in [
-                "openzeppelin-contracts", "openzeppelin-contracts-upgradeable",
-                "forge-std", "ds-test",
-                "ethereum-vault-connector",  # reward-streams has its own EVC
-            ]
-        )
-
         for path_to_try in [remapped_path, explorer_path]:
-            if is_nested_lib and self.submodule_paths:
-                # For nested libs (OZ, EVC, forge-std), always try repo root first.
-                # The root lib is the canonical version for the deployment repo.
-                # Only fall back to submodule nested libs if root doesn't have it.
-                local_path = self.repo_path / path_to_try
-                if local_path.exists():
-                    return local_path
-                for submod_path in self.submodule_paths:
-                    local_path = self.repo_path / submod_path / path_to_try
-                    if local_path.exists():
-                        return local_path
-            else:
-                # For other paths, try repo root first (original behavior)
-                local_path = self.repo_path / path_to_try
-                if local_path.exists():
-                    return local_path
-                # Then submodules
-                for submod_path in self.submodule_paths:
-                    local_path = self.repo_path / submod_path / path_to_try
-                    if local_path.exists():
-                        return local_path
+            found = self._try_path(path_to_try)
+            if found:
+                return found
 
         # Try partial path matching (strip leading directories)
         parts = explorer_path.split("/")
         for i in range(len(parts)):
             subpath = "/".join(parts[i:])
+            found = self._try_path(subpath)
+            if found:
+                return found
 
-            if is_nested_lib and self.submodule_paths:
-                local_path = self.repo_path / subpath
-                if local_path.exists():
-                    return local_path
-                for submod_path in self.submodule_paths:
-                    local_path = self.repo_path / submod_path / subpath
-                    if local_path.exists():
-                        return local_path
-            else:
-                local_path = self.repo_path / subpath
-                if local_path.exists():
-                    return local_path
-                for submod_path in self.submodule_paths:
-                    local_path = self.repo_path / submod_path / subpath
-                    if local_path.exists():
-                        return local_path
+        return None
 
+    def _try_path(self, path: str) -> Optional[Path]:
+        """Look for a file at the given relative path, checking repo root first, then each submodule."""
+        local_path = self.repo_path / path
+        if local_path.exists():
+            return local_path
+        for submod_path in self.submodule_paths:
+            local_path = self.repo_path / submod_path / path
+            if local_path.exists():
+                return local_path
         return None
 
     def normalize_source(self, content: str) -> str:
@@ -125,28 +97,15 @@ class SourceComparator:
         # Normalize line endings
         normalized = normalized.replace('\r\n', '\n')
 
-        # Normalize import paths (Foundry remappings)
-        # Standard lib paths - remove the lib prefix
-        normalized = re.sub(r'lib/ethereum-vault-connector/src/', '', normalized)
-        normalized = re.sub(r'lib/euler-vault-kit/src/', '', normalized)
-        normalized = re.sub(r'lib/reward-streams/src/', '', normalized)
-        normalized = re.sub(r'lib/fee-flow/src/', '', normalized)
-        normalized = re.sub(r'lib/euler-earn/src/', '', normalized)
-        normalized = re.sub(r'lib/euler-swap/src/', '', normalized)
+        # Normalize import paths — strip all lib prefixes and path components
+        # so different remapping styles (lib/euler-vault-kit/src/X, evk/X, ../lib/X) all match
+        normalized = re.sub(
+            r'(?:\.\./)?' r'lib/(?:ethereum-vault-connector|euler-vault-kit|reward-streams'
+            r'|fee-flow|euler-earn|euler-swap)/src/', '', normalized)
         normalized = re.sub(r'lib/openzeppelin-contracts/contracts/', '', normalized)
-
-        # evk/ is a common remapping to lib/euler-vault-kit/src/
-        normalized = re.sub(r'evk/', '', normalized)
-
-        # solmate path variations (solmate/src/... vs solmate/...)
-        normalized = re.sub(r'solmate/src/', 'solmate/', normalized)
-
-        # Relative lib paths (from src/ directory): ../lib/...
-        normalized = re.sub(r'\.\./lib/openzeppelin-contracts/contracts/', '', normalized)
-        normalized = re.sub(r'\.\./lib/ethereum-vault-connector/src/', '', normalized)
-
-        # @openzeppelin/contracts/ -> normalized away
         normalized = re.sub(r'@openzeppelin/contracts/', '', normalized)
+        normalized = re.sub(r'evk/', '', normalized)
+        normalized = re.sub(r'solmate/src/', 'solmate/', normalized)
 
         # Normalize import paths to filename only (handles flattened deployments
         # where e.g. "openzeppelin-contracts/access/Ownable.sol" becomes "../access/Ownable.sol")

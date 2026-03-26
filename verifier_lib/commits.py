@@ -117,6 +117,22 @@ NETWORK_HINTS: Dict[str, Dict[str, str]] = {
 # Maps contract_name -> (repo_dir_name, commits_to_try, nested_submodule_overrides)
 # nested_submodule_overrides: list of (submodule_path, versions_to_try)
 # When multiple overrides are specified, all combinations are tried.
+_SWAP_V2_FALLBACK = (
+    "euler-swap-standalone",
+    ["master", "81cf6dc", "b948f40"],
+    [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"])],
+)
+_SWAP_V1_FALLBACK = (
+    "euler-swap-standalone",
+    ["5d270c7", "b948f40", "master", "81cf6dc"],
+    [("lib/openzeppelin-contracts", ["v5.2.0", "v5.1.0"])],
+)
+_EARN_FALLBACK = (
+    "euler-earn-standalone",
+    ["master"],
+    [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1"])],
+)
+
 STANDALONE_FALLBACKS: Dict[str, Tuple[str, List[str], List[Tuple[str, List[str]]]]] = {
     "feeFlowController": (
         "fee-flow-standalone",
@@ -131,36 +147,12 @@ STANDALONE_FALLBACKS: Dict[str, Tuple[str, List[str], List[Tuple[str, List[str]]
             ("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"]),
         ],
     ),
-    "eulerSwapV2Factory": (
-        "euler-swap-standalone",
-        ["master", "81cf6dc", "b948f40"],
-        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"])],
-    ),
-    "eulerSwapV2Implementation": (
-        "euler-swap-standalone",
-        ["master", "81cf6dc", "b948f40"],
-        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"])],
-    ),
-    "eulerSwapV2Periphery": (
-        "euler-swap-standalone",
-        ["master", "81cf6dc", "b948f40"],
-        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"])],
-    ),
-    "eulerSwapV2Registry": (
-        "euler-swap-standalone",
-        ["master", "81cf6dc", "b948f40"],
-        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1", "v5.0.0"])],
-    ),
-    "eulerEarnFactory": (
-        "euler-earn-standalone",
-        ["master"],
-        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1"])],
-    ),
-    "eulerEarnPublicAllocator": (
-        "euler-earn-standalone",
-        ["master"],
-        [("lib/openzeppelin-contracts", ["v5.1.0", "v5.0.2", "v5.0.1"])],
-    ),
+    "eulerSwapV2Factory": _SWAP_V2_FALLBACK,
+    "eulerSwapV2Implementation": _SWAP_V2_FALLBACK,
+    "eulerSwapV2Periphery": _SWAP_V2_FALLBACK,
+    "eulerSwapV2Registry": _SWAP_V2_FALLBACK,
+    "eulerEarnFactory": _EARN_FALLBACK,
+    "eulerEarnPublicAllocator": _EARN_FALLBACK,
     "oracleRouterFactory": (
         "evk-periphery",
         ["master"],
@@ -170,16 +162,8 @@ STANDALONE_FALLBACKS: Dict[str, Tuple[str, List[str], List[Tuple[str, List[str]]
         ],
     ),
     # EulerSwap V1 on newer networks uses euler-swap standalone (not eulerswap-1.0 tag)
-    "eulerSwapV1Factory": (
-        "euler-swap-standalone",
-        ["5d270c7", "b948f40", "master", "81cf6dc"],
-        [("lib/openzeppelin-contracts", ["v5.2.0", "v5.1.0"])],
-    ),
-    "eulerSwapV1Implementation": (
-        "euler-swap-standalone",
-        ["5d270c7", "b948f40", "master", "81cf6dc"],
-        [("lib/openzeppelin-contracts", ["v5.2.0", "v5.1.0"])],
-    ),
+    "eulerSwapV1Factory": _SWAP_V1_FALLBACK,
+    "eulerSwapV1Implementation": _SWAP_V1_FALLBACK,
     "eulerSwapV1Periphery": (
         "euler-swap-standalone",
         ["98c05c5", "5d270c7", "b948f40", "master", "81cf6dc"],

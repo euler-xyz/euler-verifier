@@ -6,7 +6,6 @@ Unified verification system for Euler protocol contracts across multiple network
 
 from .config import NetworkConfig, load_networks
 from .addresses import load_contracts, VERIFIABLE_CONTRACTS
-from .cache import CommitMatchCache
 from .comparator import SourceComparator
 from .commits import (
     GLOBAL_COMMITS,
@@ -31,8 +30,6 @@ __all__ = [
     # Addresses
     "load_contracts",
     "VERIFIABLE_CONTRACTS",
-    # Cache
-    "CommitMatchCache",
     # Comparator
     "SourceComparator",
     # Commits
