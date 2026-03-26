@@ -96,82 +96,45 @@ GOLD_STANDARD_ORDER = [
 ]
 
 
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+
+# Maps each address JSON file to the set of contract names we can verify from it
+_ADDRESS_FILES = [
+    ("CoreAddresses.json", VERIFIABLE_CORE),
+    ("PeripheryAddresses.json", VERIFIABLE_PERIPHERY),
+    ("EulerSwapAddresses.json", VERIFIABLE_SWAP),
+    ("TokenAddresses.json", VERIFIABLE_TOKEN),
+    ("BridgeAddresses.json", VERIFIABLE_BRIDGE),
+]
+
+
 def load_contracts(chain_id: int) -> Dict[str, str]:
-    """
-    Load verifiable contracts from euler-interfaces/addresses/{chain_id}/.
-    
+    """Load verifiable contracts from euler-interfaces/addresses/{chain_id}/.
+
     Returns a dict of contract_name -> address, ordered by gold standard.
-    Only includes contracts that exist for this chain.
+    Only includes contracts that exist for this chain and have non-zero addresses.
     """
     base = ROOT_DIR / "euler-interfaces" / "addresses" / str(chain_id)
     contracts: Dict[str, str] = {}
-    
-    # Load core addresses
-    core_file = base / "CoreAddresses.json"
-    if core_file.exists():
+
+    for filename, verifiable_set in _ADDRESS_FILES:
+        addr_file = base / filename
+        if not addr_file.exists():
+            continue
         try:
-            core = json.loads(core_file.read_text())
-            for name, address in core.items():
-                if name in VERIFIABLE_CORE and address and address != "0x0000000000000000000000000000000000000000":
+            data = json.loads(addr_file.read_text())
+            for name, address in data.items():
+                if name in verifiable_set and address and address != ZERO_ADDRESS:
                     contracts[name] = address
         except (json.JSONDecodeError, IOError):
             pass
-    
-    # Load periphery addresses
-    periphery_file = base / "PeripheryAddresses.json"
-    if periphery_file.exists():
-        try:
-            periphery = json.loads(periphery_file.read_text())
-            for name, address in periphery.items():
-                if name in VERIFIABLE_PERIPHERY and address and address != "0x0000000000000000000000000000000000000000":
-                    contracts[name] = address
-        except (json.JSONDecodeError, IOError):
-            pass
-    
-    # Load EulerSwap addresses
-    swap_file = base / "EulerSwapAddresses.json"
-    if swap_file.exists():
-        try:
-            swap = json.loads(swap_file.read_text())
-            for name, address in swap.items():
-                if name in VERIFIABLE_SWAP and address and address != "0x0000000000000000000000000000000000000000":
-                    contracts[name] = address
-        except (json.JSONDecodeError, IOError):
-            pass
-    
-    # Load Token addresses (rEUL)
-    token_file = base / "TokenAddresses.json"
-    if token_file.exists():
-        try:
-            tokens = json.loads(token_file.read_text())
-            for name, address in tokens.items():
-                if name in VERIFIABLE_TOKEN and address and address != "0x0000000000000000000000000000000000000000":
-                    contracts[name] = address
-        except (json.JSONDecodeError, IOError):
-            pass
-    
-    # Load Bridge addresses (eulOFTAdapter)
-    bridge_file = base / "BridgeAddresses.json"
-    if bridge_file.exists():
-        try:
-            bridge = json.loads(bridge_file.read_text())
-            for name, address in bridge.items():
-                if name in VERIFIABLE_BRIDGE and address and address != "0x0000000000000000000000000000000000000000":
-                    contracts[name] = address
-        except (json.JSONDecodeError, IOError):
-            pass
-    
-    # Return in gold standard order
-    ordered = {}
-    for name in GOLD_STANDARD_ORDER:
-        if name in contracts:
-            ordered[name] = contracts[name]
-    
-    # Add any remaining contracts not in gold standard
+
+    # Return in gold standard order, then any extras
+    ordered = {name: contracts[name] for name in GOLD_STANDARD_ORDER if name in contracts}
     for name, address in contracts.items():
         if name not in ordered:
             ordered[name] = address
-    
+
     return ordered
 
 

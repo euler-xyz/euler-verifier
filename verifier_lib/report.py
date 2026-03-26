@@ -1,28 +1,44 @@
 """
-Report generation for verification results.
+Report generation for contract verification results.
+
+Produces markdown reports with:
+- Summary table of all contracts and their verification status
+- Deployment commit links to GitHub
+- "Changes Since Deployment" diffs scoped to each contract's source files
 """
 
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
-import re
-
 from .config import NetworkConfig, ROOT_DIR
 from .commits import get_repo_for_contract, get_github_url, EULERSWAP_V1_CONTRACTS, EULERSWAP_V1_TAG
 
-_HEX_RE = re.compile(r'^[0-9a-fA-F]+$')
+EVK_PERIPHERY_URL = "https://github.com/euler-xyz/evk-periphery"
+
+# Matches 40-char (full) or 7+ char (short) hex SHA hashes
+_SHA_HASH_RE = re.compile(r'^[0-9a-fA-F]+$')
+
+# Network keys that need special title casing in reports
+_TITLE_OVERRIDES = {
+    "mainnet": "Mainnet",
+    "bsc": "BSC",
+    "bob": "BOB",
+    "tac": "TAC",
+}
+
 
 def short_ref(ref: str) -> str:
-    """Shorten a git ref for display: truncate SHA hashes to 8 chars, keep tag/branch names intact."""
-    if len(ref) > 8 and _HEX_RE.match(ref):
+    """Shorten a git SHA hash to 8 chars for display. Keeps tag/branch names intact."""
+    if len(ref) > 8 and _SHA_HASH_RE.match(ref):
         return ref[:8]
     return ref
 
 
 def clean_ref(ref: str) -> str:
-    """Strip origin/ prefix from git refs for use in GitHub URLs."""
+    """Strip 'origin/' prefix from git refs so they work as GitHub URL paths."""
     if ref.startswith("origin/"):
         return ref[7:]
     return ref
@@ -30,53 +46,51 @@ def clean_ref(ref: str) -> str:
 
 @dataclass
 class VerificationResult:
-    """Result of verifying a single contract."""
+    """Result of verifying a single deployed contract against its source repository."""
+
     contract_name: str
     address: str
     verified: bool
-    source_commit: Optional[str] = None  # Actual commit in source repo (e.g., euler-vault-kit)
-    evk_periphery_commit: Optional[str] = None  # The evk-periphery commit (for reference)
+
+    # The commit in the contract's source repo (e.g., euler-vault-kit, euler-earn)
+    # where the deployed bytecode was found to match
+    source_commit: Optional[str] = None
+
+    # The evk-periphery commit that pins this submodule version.
+    # Only set for submodule-based contracts (EVK, EVC, reward-streams, etc.),
+    # not for standalone repos (euler-earn, euler-swap) or native evk-periphery contracts.
+    evk_periphery_commit: Optional[str] = None
+
     matching_files: int = 0
     total_files: int = 0
+
+    # Diff lines between explorer source and local (for unverified contracts)
     diff_lines: List[str] = field(default_factory=list)
-    diff_vs_master: Optional[str] = None  # Diff between deployment commit and master
-    source_paths: List[str] = field(default_factory=list)  # src/ file paths from explorer
+
+    # Diff between deployment commit and current master (for "Changes Since Deployment")
+    diff_vs_master: Optional[str] = None
+
+    # Source file paths from the block explorer (e.g., src/Swaps/SwapVerifier.sol).
+    # Used to scope diffs to only the contract's actual compilation files.
+    source_paths: List[str] = field(default_factory=list)
+
     error: Optional[str] = None
-    
-    @property
-    def status_emoji(self) -> str:
-        if self.error:
-            return "❌"
-        if self.verified:
-            return "✅"
-        return "⚠️"
-    
+
     @property
     def repo_name(self) -> str:
+        """Source repository name (e.g., 'euler-vault-kit', 'evk-periphery')."""
         name, _, _ = get_repo_for_contract(self.contract_name)
         return name
-    
+
     @property
     def github_path(self) -> str:
+        """GitHub org/repo path (e.g., 'euler-xyz/euler-vault-kit')."""
         _, path, _ = get_repo_for_contract(self.contract_name)
         return path
-    
+
     @property
     def source_repo_url(self) -> str:
         return f"https://github.com/{self.github_path}"
-    
-    @property
-    def source_commit_url(self) -> Optional[str]:
-        if self.source_commit:
-            return f"{self.source_repo_url}/tree/{self.source_commit}"
-        return None
-    
-    @property
-    def compare_url(self) -> Optional[str]:
-        """URL to compare deployment commit to master."""
-        if self.source_commit and self.source_commit != "master":
-            return f"{self.source_repo_url}/compare/{self.source_commit}...master"
-        return None
 
 
 def generate_report(config: NetworkConfig, results: List[VerificationResult], suffix: str = "") -> Path:
@@ -99,20 +113,12 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
     
     report_path = results_dir / f"{network_name}{suffix}.md"
     
-    # Count stats
     verified_count = sum(1 for r in results if r.verified)
     error_count = sum(1 for r in results if r.error)
-    partial_count = sum(1 for r in results if not r.verified and not r.error)
+    unmatched_count = sum(1 for r in results if not r.verified and not r.error)
     total_count = len(results)
-    
-    # Use short network name for title (match legacy format)
-    title_name = network_name.capitalize()
-    if network_name == "mainnet":
-        title_name = "Mainnet"
-    elif network_name == "bsc":
-        title_name = "BSC"
-    elif network_name == "bob":
-        title_name = "BOB"
+
+    title_name = _TITLE_OVERRIDES.get(network_name, network_name.capitalize())
     
     lines = [
         f"# {title_name} Contract Verification Report",
@@ -122,7 +128,7 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
         "| Status | Count |",
         "|--------|-------|",
         f"| ✓ Verified (exact match) | {verified_count} |",
-        f"| ✗ No exact commit found | {partial_count} |",
+        f"| ✗ No exact commit found | {unmatched_count} |",
         f"| ~ Standalone with diff | 0 |",
         f"| - Error | {error_count} |",
         f"| **Total** | **{total_count}** |",
@@ -135,9 +141,7 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
     
     # Sort results alphabetically by contract name (match legacy format)
     results = sorted(results, key=lambda r: r.contract_name.lower())
-    
-    EVK_PERIPHERY_URL = "https://github.com/euler-xyz/evk-periphery"
-    
+
     # Add result rows
     for r in results:
         addr_short = f"`{r.address[:10]}...`"
@@ -215,9 +219,7 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
         and r.source_commit != EULERSWAP_V1_TAG
         and r.contract_name not in EULERSWAP_V1_CONTRACTS
     ]
-    
-    EVK_PERIPHERY_URL = "https://github.com/euler-xyz/evk-periphery"
-    
+
     if contracts_with_changes:
         lines.extend([
             "",
