@@ -293,6 +293,181 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
     return report_path
 
 
+def _parse_report_summary(report_path: Path, networks: dict):
+    """Extract network key and contract counts from a report file.
+
+    Args:
+        report_path: Path to a network report markdown file.
+        networks: Dict of network configs from networks.json, keyed by name.
+
+    Returns (key, chain_id, verified, total) or None if the file can't be parsed.
+    """
+    key = report_path.stem  # e.g., "mainnet" from "mainnet.md"
+
+    # Look up chain ID from networks.json
+    config = networks.get(key)
+    chain_id = config.chain_id if config else 0
+
+    try:
+        content = report_path.read_text()
+    except IOError:
+        return None
+
+    # Count verified/total from contract table rows (contain address links)
+    verified = sum(1 for line in content.split("\n") if line.startswith("| ✓ ") and "[`0x" in line)
+    unmatched = sum(1 for line in content.split("\n") if line.startswith("| ✗ ") and "[`0x" in line)
+    total = verified + unmatched
+
+    if total == 0:
+        return None
+
+    return key, chain_id, verified, total
+
+
+def generate_results_readme() -> Path:
+    """Generate results/README.md by scanning existing report files.
+
+    Builds the network table from whatever *.md reports exist in results/.
+    Preserves the manual "Notes" section from the existing README.
+    Works after any run (--all, single network, or CI).
+    """
+    results_dir = ROOT_DIR / "results"
+    readme_path = results_dir / "README.md"
+
+    # Preserve existing Notes section (manually written context like "24KB optimizations")
+    notes_section = ""
+    if readme_path.exists():
+        content = readme_path.read_text()
+        notes_marker = "\n## Notes\n"
+        if notes_marker in content:
+            notes_section = notes_marker + content.split(notes_marker, 1)[1]
+
+    # Scan all report files
+    from .config import load_networks
+    networks = load_networks()
+
+    entries = []
+    for report_file in sorted(results_dir.glob("*.md")):
+        if report_file.name == "README.md":
+            continue
+        parsed = _parse_report_summary(report_file, networks)
+        if parsed:
+            entries.append(parsed)
+
+    # Sort by chain ID
+    entries.sort(key=lambda x: x[1])
+
+    # Build table rows
+    rows = []
+    for key, chain_id, verified, total in entries:
+        pct = round(verified / total * 100) if total > 0 else 0
+        status = "✅" if verified == total else "⚠️"
+        title = _TITLE_OVERRIDES.get(key, key.capitalize())
+        rows.append(
+            f"| [{title}]({key}.md) | {chain_id} | {status} {pct}% | {verified}/{total} |"
+        )
+
+    table = "\n".join(rows)
+
+    readme = f"""# Euler Contract Verification Reports
+
+## Networks
+
+| Network | Chain ID | Status | Contracts |
+|---------|----------|--------|-----------|
+{table}
+
+## Report Structure
+
+Each report contains:
+
+1. **Summary table** — all contracts with address, source repo, deployment commit, evk-periphery ref, and file match count
+2. **Changes Since Deployment** — diffs between the deployment commit and current `master`, scoped to only the files that are part of each deployed contract
+
+## Running Verification
+
+```bash
+# Verify a single network
+uv run python verify.py mainnet
+
+# Verify all production networks
+uv run python verify.py --all
+
+# Deep search through git history
+uv run python verify.py mainnet --exhaustive
+
+# List available networks
+uv run python verify.py --list
+```
+"""
+
+    if notes_section:
+        readme += notes_section
+    else:
+        readme += "\n"
+
+    readme_path.write_text(readme)
+    return readme_path
+
+
+def update_root_readme(all_results: dict) -> None:
+    """Update the network table in the root README.md.
+
+    Replaces the table between '### Production Networks' and the next '## ' heading,
+    preserving all other content. No-op if the README doesn't have the expected markers.
+    """
+    readme_path = ROOT_DIR / "README.md"
+    if not readme_path.exists():
+        return
+
+    content = readme_path.read_text()
+
+    start_marker = "### Production Networks\n"
+    if start_marker not in content:
+        return
+
+    # Find the table section
+    before, rest = content.split(start_marker, 1)
+
+    # Find the next ## heading after the table
+    lines = rest.split("\n")
+    end_idx = None
+    for i, line in enumerate(lines):
+        if line.startswith("## ") and i > 0:
+            end_idx = i
+            break
+
+    if end_idx is None:
+        return
+
+    after = "\n".join(lines[end_idx:])
+
+    # Build new table rows sorted by chain ID
+    rows = []
+    for network_name, (config, results) in sorted(
+        all_results.items(), key=lambda x: x[1][0].chain_id
+    ):
+        verified = sum(1 for r in results if r.verified)
+        total = len(results)
+        status = "✅" if verified == total else "⚠️"
+        title = _TITLE_OVERRIDES.get(config.key, config.key.capitalize())
+        rows.append(
+            f"| {title} | {config.chain_id} | {status} {verified}/{total}"
+            f" | [{config.key}.md](results/{config.key}.md) |"
+        )
+
+    table = "\n".join([
+        "",
+        "| Network | Chain ID | Status | Report |",
+        "|---------|----------|--------|--------|",
+        *rows,
+        "",
+        "",
+    ])
+
+    readme_path.write_text(before + start_marker + table + after)
+
+
 def print_summary(config: NetworkConfig, results: List[VerificationResult]):
     """Print verification summary to console."""
     verified_count = sum(1 for r in results if r.verified)

@@ -1,4 +1,4 @@
-# Tac Contract Verification Report
+# TAC Contract Verification Report
 
 ## Summary
 
