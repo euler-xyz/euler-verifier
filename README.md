@@ -30,19 +30,19 @@ Reports are generated in `results/`. Each report shows which commit was used to 
 | Network | Chain ID | Status | Report |
 |---------|----------|--------|--------|
 | Mainnet | 1 | ✅ 26/26 | [mainnet.md](results/mainnet.md) |
-| Arbitrum | 42161 | ✅ 26/26 | [arbitrum.md](results/arbitrum.md) |
-| Base | 8453 | ✅ 26/26 | [base.md](results/base.md) |
 | BSC | 56 | ✅ 26/26 | [bsc.md](results/bsc.md) |
-| Avalanche | 43114 | ✅ 26/26 | [avalanche.md](results/avalanche.md) |
-| Linea | 59144 | ⚠️ 25/26 | [linea.md](results/linea.md) |
-| Swell | 1923 | ✅ 26/26 | [swell.md](results/swell.md) |
-| Sonic | 146 | ✅ 26/26 | [sonic.md](results/sonic.md) |
-| Bob | 60808 | ✅ 26/26 | [bob.md](results/bob.md) |
-| Berachain | 80094 | ✅ 26/26 | [berachain.md](results/berachain.md) |
 | Unichain | 130 | ✅ 26/26 | [unichain.md](results/unichain.md) |
 | Monad | 143 | ✅ 21/21 | [monad.md](results/monad.md) |
+| Sonic | 146 | ✅ 26/26 | [sonic.md](results/sonic.md) |
 | TAC | 239 | ✅ 26/26 | [tac.md](results/tac.md) |
+| Swell | 1923 | ✅ 26/26 | [swell.md](results/swell.md) |
+| Base | 8453 | ✅ 26/26 | [base.md](results/base.md) |
 | Plasma | 9745 | ⚠️ 7/26 | [plasma.md](results/plasma.md) |
+| Arbitrum | 42161 | ✅ 26/26 | [arbitrum.md](results/arbitrum.md) |
+| Avalanche | 43114 | ✅ 26/26 | [avalanche.md](results/avalanche.md) |
+| Linea | 59144 | ⚠️ 25/26 | [linea.md](results/linea.md) |
+| BOB | 60808 | ✅ 26/26 | [bob.md](results/bob.md) |
+| Berachain | 80094 | ✅ 26/26 | [berachain.md](results/berachain.md) |
 
 ## CLI Options
 
@@ -50,7 +50,6 @@ Reports are generated in `results/`. Each report shows which commit was used to 
 uv run python verify.py <network>     # Verify single network
 uv run python verify.py --all         # Verify all production networks
 uv run python verify.py --exhaustive  # Deep search through git history
-uv run python verify.py --skip-cache  # Force re-verification
 uv run python verify.py --list        # List available networks
 ```
 

@@ -38,7 +38,7 @@ from verifier_lib import (
 from verifier_lib.config import get_network, list_networks, ROOT_DIR
 from verifier_lib.discovery import discover_network, discover_unknown_chains
 from verifier_lib.commits import EVK_PERIPHERY_DIR, EULER_EARN_DIR, EULER_SWAP_DIR
-from verifier_lib.report import generate_report, print_summary
+from verifier_lib.report import generate_report, generate_results_readme, update_root_readme, print_summary
 
 
 def checkout_repo(repo_dir: Path, commit: str, recursive: bool = False) -> bool:
@@ -507,6 +507,11 @@ Examples:
         action="store_true",
         help="Auto-detect and verify chains found in euler-interfaces but not in networks.json",
     )
+    parser.add_argument(
+        "--update-readme",
+        action="store_true",
+        help="Update root README.md network table (use with --all)",
+    )
     
     args = parser.parse_args()
     
@@ -567,33 +572,39 @@ Examples:
             config,
             exhaustive=args.exhaustive,
         )
-        
+
         if results:
-            # Generate report
             suffix = "_test" if args.test else ""
             report_path = generate_report(config, results, suffix=suffix)
             print(f"\nReport: {report_path}", flush=True)
-            
-            # Print summary
             print_summary(config, results)
-            
-            all_results[config.name] = results
-    
+            all_results[config.name] = (config, results)
+
+    # Update results/README.md from existing report files (works after any run)
+    if all_results and not args.test:
+        readme_path = generate_results_readme()
+        print(f"\nIndex: {readme_path}", flush=True)
+
+    # Update root README.md only when explicitly requested
+    if args.update_readme and all_results:
+        update_root_readme(all_results)
+        print("Updated README.md", flush=True)
+
     # Final summary for --all
     if args.all and len(all_results) > 1:
         print("\n" + "=" * 60)
         print("OVERALL SUMMARY")
         print("=" * 60)
-        
+
         total_verified = 0
         total_contracts = 0
-        
-        for network_name, results in all_results.items():
+
+        for network_name, (config, results) in all_results.items():
             verified = sum(1 for r in results if r.verified)
             total = len(results)
             total_verified += verified
             total_contracts += total
-            
+
             status = "✅" if verified == total else "⚠️"
             print(f"  {status} {network_name}: {verified}/{total}")
         
