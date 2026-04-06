@@ -6,7 +6,7 @@
 |---------|----------|--------|-----------|
 | [Mainnet](mainnet.md) | 1 | ✅ 100% | 26/26 |
 | [Optimism](optimism.md) | 10 | ✅ 100% | 17/17 |
-| [BSC](bsc.md) | 56 | ✅ 100% | 26/26 |
+| [BSC](bsc.md) | 56 | ⚠️ 96% | 25/26 |
 | [Gnosis](gnosis.md) | 100 | ✅ 100% | 14/14 |
 | [Unichain](unichain.md) | 130 | ✅ 100% | 26/26 |
 | [Polygon](polygon.md) | 137 | ✅ 100% | 14/14 |
@@ -14,7 +14,7 @@
 | [Sonic](sonic.md) | 146 | ✅ 100% | 26/26 |
 | [TAC](tac.md) | 239 | ✅ 100% | 26/26 |
 | [Swell](swell.md) | 1923 | ✅ 100% | 26/26 |
-| [Base](base.md) | 8453 | ✅ 100% | 26/26 |
+| [Base](base.md) | 8453 | ⚠️ 96% | 25/26 |
 | [Plasma](plasma.md) | 9745 | ⚠️ 27% | 7/26 |
 | [Arbitrum](arbitrum.md) | 42161 | ✅ 100% | 26/26 |
 | [Avalanche](avalanche.md) | 43114 | ✅ 100% | 26/26 |

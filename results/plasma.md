@@ -39,7 +39,7 @@
 | ✗ protocolConfig | [`0x593Ab8A0...`](https://plasmascan.to/address/0x593Ab8A0182f752c6f1af52CA2A0E8B9F868f64A) | - | Error: Not verified on explorer | - | - |
 | ✗ rEUL | [`0xe2011F2b...`](https://plasmascan.to/address/0xe2011F2bF6556863c3bacE991Efc8DaC26CD84c2) | - | Error: Not verified on explorer | - | - |
 | ✗ sequenceRegistry | [`0x3cf6e4c1...`](https://plasmascan.to/address/0x3cf6e4c11333b30f0D0CEAe6B78f53a660df357c) | - | Error: Not verified on explorer | - | - |
-| ✗ swapVerifier | [`0xB695C0aC...`](https://plasmascan.to/address/0xB695C0aC484F46dD8f279452209b8C53674974bD) | - | Error: Not verified on explorer | - | - |
+| ✗ swapVerifier | [`0xcB80Af48...`](https://plasmascan.to/address/0xcB80Af483ecA49e5ca7d4DBa2F24D01E9f0be289) | - | Error: Not verified on explorer | - | - |
 
 
 ## Changes Since Deployment

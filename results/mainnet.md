@@ -39,7 +39,7 @@
 | ✓ protocolConfig | [`0x4cD6BF1D...`](https://etherscan.io/address/0x4cD6BF1D183264c02Be7748Cb5cd3A47d013351b) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e051f5d769f7c6edb9be30198a55117d4) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
 | ✓ rEUL | [`0xf3e62139...`](https://etherscan.io/address/0xf3e621395fc714B90dA337AA9108771597b4E696) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`f61809fd`](https://github.com/euler-xyz/evk-periphery/tree/f61809fd) | [`f61809fd`](https://github.com/euler-xyz/evk-periphery/tree/f61809fd) | 21/21 |
 | ✓ sequenceRegistry | [`0xEADDD216...`](https://etherscan.io/address/0xEADDD21618ad5Deb412D3fD23580FD461c106B54) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e051f5d769f7c6edb9be30198a55117d4) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
-| ✓ swapVerifier | [`0xae26485A...`](https://etherscan.io/address/0xae26485ACDDeFd486Fe9ad7C2b34169d360737c7) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
+| ✓ swapVerifier | [`0x786c900d...`](https://etherscan.io/address/0x786c900d7D348662703C38B46f24c1cda2C582AB) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`development`](https://github.com/euler-xyz/evk-periphery/tree/development) | [`development`](https://github.com/euler-xyz/evk-periphery/tree/origin/development) | 21/21 |
 
 
 ## Changes Since Deployment
@@ -140,7 +140,7 @@ index 5c728ed..08c5c96 100644
 
 ### evk-periphery @ `2b087370`
 
-**Contracts:** kinkIRMFactory, swapVerifier
+**Contracts:** kinkIRMFactory
 
 - **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 - **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
@@ -178,77 +178,7 @@ index 2b651a40..1d7b8fbf 100644
          IRMLinearKink irm = new IRMLinearKink(baseRate, slope1, slope2, kink);
  
          // verify if the IRM is functional
-diff --git a/src/Swaps/SwapVerifier.sol b/src/Swaps/SwapVerifier.sol
-index e4972629..4688cda3 100644
---- a/src/Swaps/SwapVerifier.sol
-+++ b/src/Swaps/SwapVerifier.sol
-@@ -2,18 +2,27 @@
- 
- pragma solidity ^0.8.0;
- 
--import {IEVault, IERC20} from "evk/EVault/IEVault.sol";
-+import {IEVault} from "evk/EVault/IEVault.sol";
-+import {TransferFromSender} from "./TransferFromSender.sol";
-+import {IEVault, IERC4626} from "evk/EVault/IEVault.sol";
-+import {SafeERC20, IERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
- 
- /// @title SwapVerifier
- /// @custom:security-contact security@euler.xyz
- /// @author Euler Labs (https://www.eulerlabs.com/)
--/// @notice Simple contract used to verify post swap conditions
-+/// @notice Simple contract used to verify post swap conditions. Includes TransferFromSender helper for gas savings.
- /// @dev This contract is the only trusted code in the EVK swap periphery
--contract SwapVerifier {
-+contract SwapVerifier is TransferFromSender {
-     error SwapVerifier_skimMin();
-+    error SwapVerifier_depositMin();
-     error SwapVerifier_debtMax();
-     error SwapVerifier_pastDeadline();
- 
-+    /// @notice Contract constructor
-+    /// @param evc Address of the EthereumVaultConnector contract
-+    /// @param permit2 Address of the Permit2 contract
-+    constructor(address evc, address permit2) TransferFromSender(evc, permit2) {}
-+
-     /// @notice Verify results of a regular swap, when bought tokens are sent to the vault and skim for the buyer
-     /// @param vault The EVault to query
-     /// @param receiver Account to skim to
-@@ -23,7 +32,6 @@ contract SwapVerifier {
-     /// @dev Calling this function is then necessary to perform slippage check and claim the output for the buyer
-     function verifyAmountMinAndSkim(address vault, address receiver, uint256 amountMin, uint256 deadline) external {
-         if (deadline < block.timestamp) revert SwapVerifier_pastDeadline();
--        if (amountMin == 0) return;
- 
-         uint256 cash = IEVault(vault).cash();
-         uint256 balance = IERC20(IEVault(vault).asset()).balanceOf(vault);
-@@ -35,6 +43,25 @@ contract SwapVerifier {
-         IEVault(vault).skim(type(uint256).max, receiver);
-     }
- 
-+    /// @notice Verify results of a regular swap, when bought tokens are sent to the verifier, and deposit for the buyer
-+    /// @param vault The ERC4626 vault to deposit to
-+    /// @param receiver Account to deposit for
-+    /// @param amountMin Minimum amount of assets that should be available for deposit
-+    /// @param deadline Timestamp after which the swap transaction is outdated
-+    /// @dev Swapper contract will send bought assets to the verifier in certain situations.
-+    /// @dev Calling this function is then necessary to perform slippage check and claim the output for the buyer
-+    function verifyAmountMinAndDeposit(address vault, address receiver, uint256 amountMin, uint256 deadline) external {
-+        if (deadline < block.timestamp) revert SwapVerifier_pastDeadline();
-+
-+        IERC20 asset = IERC20(IERC4626(vault).asset());
-+        uint256 balance = asset.balanceOf(address(this));
-+
-+        if (balance < amountMin) revert SwapVerifier_depositMin();
-+
-+        SafeERC20.forceApprove(asset, vault, balance);
-+        IERC4626(vault).deposit(balance, receiver);
-+    }
-+
-     /// @notice Verify results of a swap and repay operation, when debt is repaid down to a requested target
-     /// @param vault The EVault to query
 ```
-
-_Showing first 100 of 101 lines. [View full diff on GitHub](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)_
 
 ### evk-periphery @ `f61809fd`
 
@@ -256,6 +186,15 @@ _Showing first 100 of 101 lines. [View full diff on GitHub](https://github.com/e
 
 - **Deployed from:** [`f61809fd`](https://github.com/euler-xyz/evk-periphery/tree/f61809fd)
 - **Compare to master:** [`f61809fd...master`](https://github.com/euler-xyz/evk-periphery/compare/f61809fd...master)
+
+_No diff available - see GitHub compare link above._
+
+### evk-periphery @ `development`
+
+**Contracts:** swapVerifier
+
+- **Deployed from:** [`development`](https://github.com/euler-xyz/evk-periphery/tree/development)
+- **Compare to master:** [`development...master`](https://github.com/euler-xyz/evk-periphery/compare/development...master)
 
 _No diff available - see GitHub compare link above._
 

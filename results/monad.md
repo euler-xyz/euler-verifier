@@ -18,9 +18,9 @@
 | ✓ balanceTracker | [`0xa231DccE...`](https://monadvision.com/address/0xa231DccE58EA5A43E69EF351D89ea4212Ec0f30b) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 17/17 |
 | ✓ eulerEarnFactory | [`0xF463d4Ac...`](https://monadvision.com/address/0xF463d4Acb650cc6C4E1D6cD4D0d1b0cb224094cF) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 37/37 |
 | ✓ eulerEarnPublicAllocator | [`0x65A66F24...`](https://monadvision.com/address/0x65A66F24a25E8CF651C9e31D296623298C80F742) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 14/14 |
-| ✓ eulerSwapV1Factory | [`0x34f8f028...`](https://monadvision.com/address/0x34f8f028c6a446a464c10a135f44fc6fb2cee1a9) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`5d270c7`](https://github.com/euler-xyz/euler-swap/tree/5d270c7) | - | 55/55 |
-| ✓ eulerSwapV1Implementation | [`0xbfd5c7bb...`](https://monadvision.com/address/0xbfd5c7bb1c208fec761284af7db6ff1f4314372c) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`5d270c7`](https://github.com/euler-xyz/euler-swap/tree/5d270c7) | - | 46/46 |
-| ✓ eulerSwapV1Periphery | [`0xd1f69cf9...`](https://monadvision.com/address/0xd1f69cf959c1a3aae7bee5ec677222d259585b27) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`98c05c5`](https://github.com/euler-xyz/euler-swap/tree/98c05c5) | - | 9/9 |
+| ✓ eulerSwapV1Factory | [`0x34f8F028...`](https://monadvision.com/address/0x34f8F028C6a446A464c10a135F44Fc6fB2CEe1A9) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`5d270c7`](https://github.com/euler-xyz/euler-swap/tree/5d270c7) | - | 55/55 |
+| ✓ eulerSwapV1Implementation | [`0xBFD5C7bb...`](https://monadvision.com/address/0xBFD5C7bb1C208FEc761284Af7dB6fF1F4314372c) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`5d270c7`](https://github.com/euler-xyz/euler-swap/tree/5d270c7) | - | 46/46 |
+| ✓ eulerSwapV1Periphery | [`0xd1F69cf9...`](https://monadvision.com/address/0xd1F69cf959c1a3AAe7BEE5ec677222d259585B27) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`98c05c5`](https://github.com/euler-xyz/euler-swap/tree/98c05c5) | - | 9/9 |
 | ✓ eulOFTAdapter | [`0x831257BF...`](https://monadvision.com/address/0x831257BFa5478111d2327e08c4068ec37Ac14B81) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 63/63 |
 | ✓ eVaultFactory | [`0xba4Dd672...`](https://monadvision.com/address/0xba4Dd672062dE8FeeDb665DD4410658864483f1E) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 3/3 |
 | ✓ eVaultImplementation | [`0xef17750D...`](https://monadvision.com/address/0xef17750D3a162E28a302E266c474ff8989d60ECD) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 52/52 |
@@ -34,7 +34,7 @@
 | ✓ protocolConfig | [`0x94A2d1d1...`](https://monadvision.com/address/0x94A2d1d175F1d828935a374091e2009CF1cED858) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
 | ✓ rEUL | [`0xff074349...`](https://monadvision.com/address/0xff074349C8b89bB7362bD25c58742896D817A862) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | [`master`](https://github.com/euler-xyz/evk-periphery) | 21/21 |
 | ✓ sequenceRegistry | [`0x39F81037...`](https://monadvision.com/address/0x39F81037f20AC6068CbCd30f748094c58bfE7d7b) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`master`](https://github.com/euler-xyz/evk-periphery/tree/master) | 2/2 |
-| ✓ swapVerifier | [`0x65bF068c...`](https://monadvision.com/address/0x65bF068c88e0f006f76b871396B4DB1150dd9EAD) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
+| ✓ swapVerifier | [`0x39281202...`](https://monadvision.com/address/0x392812023A2Ef4F20DE5AA9f7b7e2F02E9692Ba7) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`development`](https://github.com/euler-xyz/evk-periphery/tree/development) | [`development`](https://github.com/euler-xyz/evk-periphery/tree/origin/development) | 21/21 |
 
 
 ## Changes Since Deployment
@@ -72,85 +72,6 @@ _No diff available - see GitHub compare link above._
 
 _No diff available - see GitHub compare link above._
 
-### evk-periphery @ `2b087370`
-
-**Contracts:** swapVerifier
-
-- **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
-- **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
-
-```diff
-diff --git a/src/Swaps/SwapVerifier.sol b/src/Swaps/SwapVerifier.sol
-index e4972629..4688cda3 100644
---- a/src/Swaps/SwapVerifier.sol
-+++ b/src/Swaps/SwapVerifier.sol
-@@ -2,18 +2,27 @@
- 
- pragma solidity ^0.8.0;
- 
--import {IEVault, IERC20} from "evk/EVault/IEVault.sol";
-+import {IEVault} from "evk/EVault/IEVault.sol";
-+import {TransferFromSender} from "./TransferFromSender.sol";
-+import {IEVault, IERC4626} from "evk/EVault/IEVault.sol";
-+import {SafeERC20, IERC20} from "openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
- 
- /// @title SwapVerifier
- /// @custom:security-contact security@euler.xyz
- /// @author Euler Labs (https://www.eulerlabs.com/)
--/// @notice Simple contract used to verify post swap conditions
-+/// @notice Simple contract used to verify post swap conditions. Includes TransferFromSender helper for gas savings.
- /// @dev This contract is the only trusted code in the EVK swap periphery
--contract SwapVerifier {
-+contract SwapVerifier is TransferFromSender {
-     error SwapVerifier_skimMin();
-+    error SwapVerifier_depositMin();
-     error SwapVerifier_debtMax();
-     error SwapVerifier_pastDeadline();
- 
-+    /// @notice Contract constructor
-+    /// @param evc Address of the EthereumVaultConnector contract
-+    /// @param permit2 Address of the Permit2 contract
-+    constructor(address evc, address permit2) TransferFromSender(evc, permit2) {}
-+
-     /// @notice Verify results of a regular swap, when bought tokens are sent to the vault and skim for the buyer
-     /// @param vault The EVault to query
-     /// @param receiver Account to skim to
-@@ -23,7 +32,6 @@ contract SwapVerifier {
-     /// @dev Calling this function is then necessary to perform slippage check and claim the output for the buyer
-     function verifyAmountMinAndSkim(address vault, address receiver, uint256 amountMin, uint256 deadline) external {
-         if (deadline < block.timestamp) revert SwapVerifier_pastDeadline();
--        if (amountMin == 0) return;
- 
-         uint256 cash = IEVault(vault).cash();
-         uint256 balance = IERC20(IEVault(vault).asset()).balanceOf(vault);
-@@ -35,6 +43,25 @@ contract SwapVerifier {
-         IEVault(vault).skim(type(uint256).max, receiver);
-     }
- 
-+    /// @notice Verify results of a regular swap, when bought tokens are sent to the verifier, and deposit for the buyer
-+    /// @param vault The ERC4626 vault to deposit to
-+    /// @param receiver Account to deposit for
-+    /// @param amountMin Minimum amount of assets that should be available for deposit
-+    /// @param deadline Timestamp after which the swap transaction is outdated
-+    /// @dev Swapper contract will send bought assets to the verifier in certain situations.
-+    /// @dev Calling this function is then necessary to perform slippage check and claim the output for the buyer
-+    function verifyAmountMinAndDeposit(address vault, address receiver, uint256 amountMin, uint256 deadline) external {
-+        if (deadline < block.timestamp) revert SwapVerifier_pastDeadline();
-+
-+        IERC20 asset = IERC20(IERC4626(vault).asset());
-+        uint256 balance = asset.balanceOf(address(this));
-+
-+        if (balance < amountMin) revert SwapVerifier_depositMin();
-+
-+        SafeERC20.forceApprove(asset, vault, balance);
-+        IERC4626(vault).deposit(balance, receiver);
-+    }
-+
-     /// @notice Verify results of a swap and repay operation, when debt is repaid down to a requested target
-     /// @param vault The EVault to query
-     /// @param account User account to query
-```
-
 ### evk-periphery @ `392c7bd0`
 
 **Contracts:** eulOFTAdapter
@@ -172,6 +93,15 @@ index 82413624..19bb8e81 100644
          _mint(_account, _amount);
      }
 ```
+
+### evk-periphery @ `development`
+
+**Contracts:** swapVerifier
+
+- **Deployed from:** [`development`](https://github.com/euler-xyz/evk-periphery/tree/development)
+- **Compare to master:** [`development...master`](https://github.com/euler-xyz/evk-periphery/compare/development...master)
+
+_No diff available - see GitHub compare link above._
 
 ### fee-flow @ `4a419c94`
 
