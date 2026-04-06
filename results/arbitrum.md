@@ -4,21 +4,21 @@
 
 | Status | Count |
 |--------|-------|
-| ✓ Verified (exact match) | 26 |
+| ✓ Verified (exact match) | 21 |
 | ✗ No exact commit found | 0 |
 | ~ Standalone with diff | 0 |
-| - Error | 0 |
+| - Error | 5 |
 | **Total** | **26** |
 
 ## Verified Contracts
 
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
-| ✓ adaptiveCurveIRMFactory | [`0x148B1DC3...`](https://arbiscan.io/address/0x148B1DC3168C73907D9F00165Ceab62Fd81f3E9D) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
+| ✗ adaptiveCurveIRMFactory | [`0x148B1DC3...`](https://arbiscan.io/address/0x148B1DC3168C73907D9F00165Ceab62Fd81f3E9D) | - | Error: Not verified on explorer | - | - |
 | ✓ balanceTracker | [`0xbCD29c1B...`](https://arbiscan.io/address/0xbCD29c1B596d9fFAfaa6F90780956b4D3d47832f) | [reward-streams](https://github.com/euler-xyz/reward-streams) | [`9eb7b8a7`](https://github.com/euler-xyz/reward-streams/tree/9eb7b8a7fa31c275d688063c4abd07165b50b89f) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 17/17 |
 | ✓ eulerEarnFactory | [`0xB9B5d62B...`](https://arbiscan.io/address/0xB9B5d62B9fE9E1B505466e75817aB178A1D2ec9d) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 35/35 |
 | ✓ eulerEarnPublicAllocator | [`0x0161FE2C...`](https://arbiscan.io/address/0x0161FE2CA6ED39b5D0811a94b87AC628677Ae020) | [euler-earn](https://github.com/euler-xyz/euler-earn) | [`master`](https://github.com/euler-xyz/euler-earn/tree/master) | - | 14/14 |
-| ✓ eulerSwapV1Factory | [`0x7949bE8B...`](https://arbiscan.io/address/0x7949bE8B154D7B5ce6E75cBfc646AeF3a25970E2) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 55/55 |
+| ✗ eulerSwapV1Factory | [`0x7949bE8B...`](https://arbiscan.io/address/0x7949bE8B154D7B5ce6E75cBfc646AeF3a25970E2) | - | Error: Not verified on explorer | - | - |
 | ✓ eulerSwapV1Implementation | [`0x04671F89...`](https://arbiscan.io/address/0x04671F895c7d9EAbF33FF1dfF41269E6Fea835D1) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 46/46 |
 | ✓ eulerSwapV1Periphery | [`0x804485f5...`](https://arbiscan.io/address/0x804485f5B6c293f8d63f697E9662CD4a8765858A) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`eulerswap-1.0`](https://github.com/euler-xyz/euler-swap/tree/eulerswap-1.0) | - | 9/9 |
 | ✓ eulerSwapV2Factory | [`0x138AB9B3...`](https://arbiscan.io/address/0x138AB9B33741B25bb7BcDa466175c8B2E2b96dc4) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a) | 57/57 |
@@ -33,10 +33,10 @@
 | ✓ feeFlowController | [`0xA1585dc7...`](https://arbiscan.io/address/0xA1585dc7Cd4EF33f7a855fDE39771b37838B0bFE) | [fee-flow](https://github.com/euler-xyz/fee-flow) | [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94e9cd68f65e11f07da9a69f726177cb9c) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
 | ✓ fixedCyclicalBinaryIRMFactory | [`0xe9625953...`](https://arbiscan.io/address/0xe962595391F481c4EB2cB8Adef7a064B1F76C36f) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
 | ✓ governorAccessControlEmergencyFactory | [`0x27369477...`](https://arbiscan.io/address/0x27369477130C8bC49CeeAe8ACb9cE50a2a7De616) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 48/48 |
-| ✓ kinkIRMFactory | [`0xE055ea12...`](https://arbiscan.io/address/0xE055ea126c7704fFCf3Bd8a8F46aC93A6965560E) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 5/5 |
-| ✓ kinkyIRMFactory | [`0x1abB566e...`](https://arbiscan.io/address/0x1abB566e1cc1efd19594fF2dCF1219F71e06558A) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
+| ✗ kinkIRMFactory | [`0xE055ea12...`](https://arbiscan.io/address/0xE055ea126c7704fFCf3Bd8a8F46aC93A6965560E) | - | Error: Not verified on explorer | - | - |
+| ✗ kinkyIRMFactory | [`0x1abB566e...`](https://arbiscan.io/address/0x1abB566e1cc1efd19594fF2dCF1219F71e06558A) | - | Error: Not verified on explorer | - | - |
 | ✓ oracleRouterFactory | [`0x22d51Db4...`](https://arbiscan.io/address/0x22d51Db42A59862D4F8c135C4406AEf9854ABFF3) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | [`deeffa7b`](https://github.com/euler-xyz/euler-price-oracle/tree/deeffa7b518618202802f37865ed654070a7175f) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 13/13 |
-| ✓ protocolConfig | [`0x06c1Ab0A...`](https://arbiscan.io/address/0x06c1Ab0A1672E8FC7F7D10BD7B869B4116D18a2c) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e051f5d769f7c6edb9be30198a55117d4) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
+| ✗ protocolConfig | [`0x06c1Ab0A...`](https://arbiscan.io/address/0x06c1Ab0A1672E8FC7F7D10BD7B869B4116D18a2c) | - | Error: Not verified on explorer | - | - |
 | ✓ rEUL | [`0xFA31599a...`](https://arbiscan.io/address/0xFA31599a4928c2d57C0dd77DFCA5DA1E94E6D2D2) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 21/21 |
 | ✓ sequenceRegistry | [`0x924C73ab...`](https://arbiscan.io/address/0x924C73abAa350800fc22c11ffdFB09641106E3ce) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e051f5d769f7c6edb9be30198a55117d4) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 2/2 |
 | ✓ swapVerifier | [`0x7b16DAaF...`](https://arbiscan.io/address/0x7b16DAaFa76CfeC8C08D7a68aF31949B37ebfdF5) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
@@ -89,7 +89,7 @@ _No diff available - see GitHub compare link above._
 
 ### euler-vault-kit @ `9e3c760e`
 
-**Contracts:** eVaultFactory, protocolConfig, sequenceRegistry
+**Contracts:** eVaultFactory, sequenceRegistry
 
 - **Deployed from:** [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e)
 - **Compare to master:** [`9e3c760e...master`](https://github.com/euler-xyz/euler-vault-kit/compare/9e3c760e...master)
@@ -99,7 +99,7 @@ _No diff available - see GitHub compare link above._
 
 ### evk-periphery @ `2b087370`
 
-**Contracts:** kinkIRMFactory, swapVerifier
+**Contracts:** swapVerifier
 
 - **Deployed from:** [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370)
 - **Compare to master:** [`2b087370...master`](https://github.com/euler-xyz/evk-periphery/compare/2b087370...master)
@@ -108,7 +108,7 @@ _No diff available - see GitHub compare link above._
 
 ### evk-periphery @ `392c7bd0`
 
-**Contracts:** adaptiveCurveIRMFactory, eulOFTAdapter, fixedCyclicalBinaryIRMFactory, governorAccessControlEmergencyFactory, kinkyIRMFactory, rEUL
+**Contracts:** eulOFTAdapter, fixedCyclicalBinaryIRMFactory, governorAccessControlEmergencyFactory, rEUL
 
 - **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
 - **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)

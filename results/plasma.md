@@ -4,10 +4,10 @@
 
 | Status | Count |
 |--------|-------|
-| ✓ Verified (exact match) | 5 |
+| ✓ Verified (exact match) | 6 |
 | ✗ No exact commit found | 0 |
 | ~ Standalone with diff | 0 |
-| - Error | 21 |
+| - Error | 20 |
 | **Total** | **26** |
 
 ## Verified Contracts
@@ -35,7 +35,7 @@
 | ✗ governorAccessControlEmergencyFactory | [`0xDb4bD546...`](https://plasmascan.to/address/0xDb4bD54647169b0d2b0414EfE943A92b6B8E9886) | - | Error: Not verified on explorer | - | - |
 | ✓ kinkIRMFactory | [`0xACd19b80...`](https://plasmascan.to/address/0xACd19b80db7AF45BDdd5fD58dbc5dFe194137dB6) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
 | ✗ kinkyIRMFactory | [`0x6C72E825...`](https://plasmascan.to/address/0x6C72E825D37323F711bAc4aDaaE275ba5e3AEaF1) | - | Error: Not verified on explorer | - | - |
-| ✗ oracleRouterFactory | [`0x7e539159...`](https://plasmascan.to/address/0x7e539159a06CFe0A9f855d22dD82aD95eDf8C2F1) | - | Error: Not verified on explorer | - | - |
+| ✓ oracleRouterFactory | [`0x7e539159...`](https://plasmascan.to/address/0x7e539159a06CFe0A9f855d22dD82aD95eDf8C2F1) | [euler-price-oracle](https://github.com/euler-xyz/euler-price-oracle) | [`deeffa7b`](https://github.com/euler-xyz/euler-price-oracle/tree/deeffa7b518618202802f37865ed654070a7175f) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 13/13 |
 | ✗ protocolConfig | [`0x593Ab8A0...`](https://plasmascan.to/address/0x593Ab8A0182f752c6f1af52CA2A0E8B9F868f64A) | - | Error: Not verified on explorer | - | - |
 | ✗ rEUL | [`0xe2011F2b...`](https://plasmascan.to/address/0xe2011F2bF6556863c3bacE991Efc8DaC26CD84c2) | - | Error: Not verified on explorer | - | - |
 | ✗ sequenceRegistry | [`0x3cf6e4c1...`](https://plasmascan.to/address/0x3cf6e4c11333b30f0D0CEAe6B78f53a660df357c) | - | Error: Not verified on explorer | - | - |
@@ -53,6 +53,16 @@ These diffs help identify any changes made to the codebase after deployment.
 
 - **Deployed from:** [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29e)
 - **Compare to master:** [`a7d3c29e...master`](https://github.com/euler-xyz/ethereum-vault-connector/compare/a7d3c29e...master)
+- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
+
+_No diff available - see GitHub compare link above._
+
+### euler-price-oracle @ `deeffa7b`
+
+**Contracts:** oracleRouterFactory
+
+- **Deployed from:** [`deeffa7b`](https://github.com/euler-xyz/euler-price-oracle/tree/deeffa7b)
+- **Compare to master:** [`deeffa7b...master`](https://github.com/euler-xyz/euler-price-oracle/compare/deeffa7b...master)
 - **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
 
 _No diff available - see GitHub compare link above._
