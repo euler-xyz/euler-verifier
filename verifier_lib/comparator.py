@@ -150,6 +150,14 @@ class SourceComparator:
                 if lib_equiv in lib_paths:
                     continue  # Skip duplicate, lib/ version will be checked
 
+            # Skip bare openzeppelin-contracts/ duplicates (missing lib/ prefix)
+            if filepath.startswith('openzeppelin-contracts/'):
+                lib_equiv = 'lib/' + filepath
+                if not lib_equiv.startswith('lib/openzeppelin-contracts/contracts/'):
+                    lib_equiv = 'lib/openzeppelin-contracts/contracts/' + filepath[len('openzeppelin-contracts/'):]
+                if lib_equiv in lib_paths:
+                    continue
+
             total += 1
             explorer_content = source_info.get("content", "")
             local_file = self.find_local_file(filepath)

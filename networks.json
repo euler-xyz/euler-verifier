@@ -135,6 +135,14 @@
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2"
   },
+  "morph": {
+    "chain_id": 2818,
+    "name": "Morph",
+    "status": "production",
+    "explorer_url": "https://explorer.morph.network",
+    "explorer_api": "https://explorer-api.morph.network/api",
+    "api_type": "blockscout_v2"
+  },
   "katana": {
     "chain_id": 747474,
     "name": "Katana",

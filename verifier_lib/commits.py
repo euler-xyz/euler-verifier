@@ -104,6 +104,9 @@ NETWORK_HINTS: Dict[str, Dict[str, str]] = {
         "eulerEarnFactory": "773453b",
         "balanceTracker": "deploy-swell",
     },
+    "morph": {
+        "evc": "origin/deployment-morph",
+    },
     "monad": {},
     "katana": {},
 }
@@ -134,6 +137,11 @@ _EARN_FALLBACK = (
 )
 
 STANDALONE_FALLBACKS: Dict[str, Tuple[str, List[str], List[Tuple[str, List[str]]]]] = {
+    "evc": (
+        "evk-periphery",
+        ["origin/deployment-morph", "master"],
+        [("lib/ethereum-vault-connector", ["7b2f05f", "a7d3c29"])],
+    ),
     "feeFlowController": (
         "fee-flow-standalone",
         ["5e5f6bd", "9cfbd05", "3bee858", "master", "4a419c9"],
