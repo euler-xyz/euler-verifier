@@ -44,6 +44,24 @@ def clean_ref(ref: str) -> str:
     return ref
 
 
+def _is_import_only_diff(diff: str) -> bool:
+    """Check if a unified diff contains only import path changes (no logic changes).
+
+    Looks at added/removed lines (excluding +++ and --- file headers).
+    Returns True if every changed line is a Solidity import statement.
+    """
+    for line in diff.split('\n'):
+        if line.startswith('+++') or line.startswith('---'):
+            continue
+        if line.startswith('+') or line.startswith('-'):
+            content = line[1:].strip()
+            if not content:
+                continue
+            if not (content.startswith('import ') or content.startswith('} from ')):
+                return False
+    return True
+
+
 @dataclass
 class VerificationResult:
     """Result of verifying a single deployed contract against its source repository."""
@@ -268,19 +286,22 @@ def generate_report(config: NetworkConfig, results: List[VerificationResult], su
                     combined_diff_parts.append(r.diff_vs_master)
             diff = "\n".join(combined_diff_parts) if combined_diff_parts else None
             if diff:
-                diff_lines_list = diff.split('\n')
-                if len(diff_lines_list) > 100:
-                    lines.append("```diff")
-                    lines.extend(diff_lines_list[:100])
-                    lines.append("```")
-                    lines.append("")
-                    lines.append(f"_Showing first 100 of {len(diff_lines_list)} lines. [View full diff on GitHub]({compare_url})_")
-                elif diff_lines_list and any(line.strip() for line in diff_lines_list):
-                    lines.append("```diff")
-                    lines.extend(diff_lines_list)
-                    lines.append("```")
+                if _is_import_only_diff(diff):
+                    lines.append("_Import paths only — see GitHub compare link above for details._")
                 else:
-                    lines.append("_No diff available - see GitHub compare link above._")
+                    diff_lines_list = diff.split('\n')
+                    if len(diff_lines_list) > 100:
+                        lines.append("```diff")
+                        lines.extend(diff_lines_list[:100])
+                        lines.append("```")
+                        lines.append("")
+                        lines.append(f"_Showing first 100 of {len(diff_lines_list)} lines. [View full diff on GitHub]({compare_url})_")
+                    elif diff_lines_list and any(line.strip() for line in diff_lines_list):
+                        lines.append("```diff")
+                        lines.extend(diff_lines_list)
+                        lines.append("```")
+                    else:
+                        lines.append("_No diff available - see GitHub compare link above._")
             else:
                 lines.append("_No diff available - see GitHub compare link above._")
 
