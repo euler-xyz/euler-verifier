@@ -30,13 +30,16 @@ Reports are generated in `results/`. Each report shows which commit was used to 
 | Network | Chain ID | Status | Report |
 |---------|----------|--------|--------|
 | Mainnet | 1 | ✅ 26/26 | [mainnet.md](results/mainnet.md) |
-| BSC | 56 | ✅ 26/26 | [bsc.md](results/bsc.md) |
+| Optimism | 10 | ✅ 17/17 | [optimism.md](results/optimism.md) |
+| BSC | 56 | ⚠️ 25/26 | [bsc.md](results/bsc.md) |
+| Gnosis | 100 | ✅ 14/14 | [gnosis.md](results/gnosis.md) |
 | Unichain | 130 | ✅ 26/26 | [unichain.md](results/unichain.md) |
+| Polygon | 137 | ✅ 14/14 | [polygon.md](results/polygon.md) |
 | Monad | 143 | ✅ 21/21 | [monad.md](results/monad.md) |
 | Sonic | 146 | ✅ 26/26 | [sonic.md](results/sonic.md) |
 | TAC | 239 | ✅ 26/26 | [tac.md](results/tac.md) |
 | Swell | 1923 | ✅ 26/26 | [swell.md](results/swell.md) |
-| Base | 8453 | ✅ 26/26 | [base.md](results/base.md) |
+| Base | 8453 | ⚠️ 25/26 | [base.md](results/base.md) |
 | Plasma | 9745 | ⚠️ 7/26 | [plasma.md](results/plasma.md) |
 | Arbitrum | 42161 | ✅ 26/26 | [arbitrum.md](results/arbitrum.md) |
 | Avalanche | 43114 | ✅ 26/26 | [avalanche.md](results/avalanche.md) |
