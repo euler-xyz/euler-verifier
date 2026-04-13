@@ -14,6 +14,7 @@
 | [Sonic](sonic.md) | 146 | ✅ 100% | 26/26 |
 | [TAC](tac.md) | 239 | ✅ 100% | 26/26 |
 | [Swell](swell.md) | 1923 | ✅ 100% | 26/26 |
+| [Morph](morph.md) | 2818 | ✅ 100% | 21/21 |
 | [Base](base.md) | 8453 | ⚠️ 96% | 25/26 |
 | [Plasma](plasma.md) | 9745 | ⚠️ 19% | 5/26 |
 | [Arbitrum](arbitrum.md) | 42161 | ✅ 100% | 26/26 |
