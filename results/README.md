@@ -15,7 +15,7 @@
 | [TAC](tac.md) | 239 | ✅ 100% | 26/26 |
 | [Swell](swell.md) | 1923 | ✅ 100% | 26/26 |
 | [Base](base.md) | 8453 | ⚠️ 96% | 25/26 |
-| [Plasma](plasma.md) | 9745 | ⚠️ 27% | 7/26 |
+| [Plasma](plasma.md) | 9745 | ⚠️ 19% | 5/26 |
 | [Arbitrum](arbitrum.md) | 42161 | ✅ 100% | 26/26 |
 | [Avalanche](avalanche.md) | 43114 | ✅ 100% | 26/26 |
 | [Linea](linea.md) | 59144 | ⚠️ 96% | 25/26 |
