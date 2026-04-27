@@ -4,10 +4,10 @@
 
 | Status | Count |
 |--------|-------|
-| ✓ Verified (exact match) | 25 |
+| ✓ Verified (exact match) | 26 |
 | ✗ No exact commit found | 0 |
 | ~ Standalone with diff | 0 |
-| - Error | 1 |
+| - Error | 0 |
 | **Total** | **26** |
 
 ## Verified Contracts
@@ -28,7 +28,7 @@
 | ✓ eulerSwapV2Registry | [`0xF9f2dF8A...`](https://snowtrace.io/address/0xF9f2dF8A5Cc71a0424dfA9EbdfdfF8A082C19184) | [euler-swap](https://github.com/euler-xyz/euler-swap) | [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc988468fd56f690e6bc0e338a5be02d034) | [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a) | 35/35 |
 | ✓ eulOFTAdapter | [`0xF1A5F97A...`](https://snowtrace.io/address/0xF1A5F97AB84158Cf6d8ba8dEF68780Fc2Fd64310) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 63/63 |
 | ✓ eVaultFactory | [`0xaf4B4c18...`](https://snowtrace.io/address/0xaf4B4c18B17F6a2B32F6c398a3910bdCD7f26181) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`9e3c760e`](https://github.com/euler-xyz/euler-vault-kit/tree/9e3c760e051f5d769f7c6edb9be30198a55117d4) | [`2b087370`](https://github.com/euler-xyz/evk-periphery/tree/2b087370) | 3/3 |
-| ✗ eVaultImplementation | [`0x29E9b639...`](https://snowtrace.io/address/0x29E9b639e165d919FEcf02521F8A9dA0492D4f21) | - | Error: Not verified on explorer | - | - |
+| ✓ eVaultImplementation | [`0x29E9b639...`](https://snowtrace.io/address/0x29E9b639e165d919FEcf02521F8A9dA0492D4f21) | [euler-vault-kit](https://github.com/euler-xyz/euler-vault-kit) | [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf2447047d32aa9f4e5bab4be16ab3ea67ec2) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 52/52 |
 | ✓ evc | [`0xddcbe30A...`](https://snowtrace.io/address/0xddcbe30A761Edd2e19bba930A977475265F36Fa1) | [ethereum-vault-connector](https://github.com/euler-xyz/ethereum-vault-connector) | [`a7d3c29e`](https://github.com/euler-xyz/ethereum-vault-connector/tree/a7d3c29ef7e4964736e47675e0588630d6afbfd7) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 9/9 |
 | ✓ feeFlowController | [`0x95F21cD9...`](https://snowtrace.io/address/0x95F21cD90057BBdC6fAc3f9b94D06b53C24B278c) | [fee-flow](https://github.com/euler-xyz/fee-flow) | [`4a419c94`](https://github.com/euler-xyz/fee-flow/tree/4a419c94e9cd68f65e11f07da9a69f726177cb9c) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
 | ✓ fixedCyclicalBinaryIRMFactory | [`0x53A37B5d...`](https://snowtrace.io/address/0x53A37B5d8a30a49bCB463eF33d610d5E5040C64A) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
@@ -74,6 +74,16 @@ _No diff available - see GitHub compare link above._
 - **Deployed from:** [`81cf6dc9`](https://github.com/euler-xyz/euler-swap/tree/81cf6dc9)
 - **Compare to master:** [`81cf6dc9...master`](https://github.com/euler-xyz/euler-swap/compare/81cf6dc9...master)
 - **evk-periphery:** [`dec63c2a`](https://github.com/euler-xyz/evk-periphery/tree/dec63c2a)
+
+_No diff available - see GitHub compare link above._
+
+### euler-vault-kit @ `422bf244`
+
+**Contracts:** eVaultImplementation
+
+- **Deployed from:** [`422bf244`](https://github.com/euler-xyz/euler-vault-kit/tree/422bf244)
+- **Compare to master:** [`422bf244...master`](https://github.com/euler-xyz/euler-vault-kit/compare/422bf244...master)
+- **evk-periphery:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
 
 _No diff available - see GitHub compare link above._
 

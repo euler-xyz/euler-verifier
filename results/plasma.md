@@ -4,17 +4,17 @@
 
 | Status | Count |
 |--------|-------|
-| ✓ Verified (exact match) | 4 |
+| ✓ Verified (exact match) | 5 |
 | ✗ No exact commit found | 0 |
 | ~ Standalone with diff | 0 |
-| - Error | 22 |
+| - Error | 21 |
 | **Total** | **26** |
 
 ## Verified Contracts
 
 | Contract | Address | Source Repo | Source Commit | evk-periphery | Files |
 |----------|---------|-------------|---------------|---------------|-------|
-| ✗ adaptiveCurveIRMFactory | [`0xcC8169ED...`](https://plasmascan.to/address/0xcC8169EDFfe94726823fA71e0E7C64F130208c7e) | - | Error: Not verified on explorer | - | - |
+| ✓ adaptiveCurveIRMFactory | [`0xcC8169ED...`](https://plasmascan.to/address/0xcC8169EDFfe94726823fA71e0E7C64F130208c7e) | [evk-periphery](https://github.com/euler-xyz/evk-periphery) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0) | 6/6 |
 | ✗ balanceTracker | [`0x6e6e1e4F...`](https://plasmascan.to/address/0x6e6e1e4FB3Ee6C074f10d3f80E0d3541accf7c2b) | - | Error: Not verified on explorer | - | - |
 | ✗ eulerEarnFactory | [`0xA3843A73...`](https://plasmascan.to/address/0xA3843A73e6a9F81309B931237Ca4759B3B02ff0E) | - | Error: Not verified on explorer | - | - |
 | ✗ eulerEarnPublicAllocator | [`0x667aD135...`](https://plasmascan.to/address/0x667aD135188d95a32A4E743Aebe5a5b503cb9038) | - | Error: Not verified on explorer | - | - |
@@ -79,7 +79,7 @@ _No diff available - see GitHub compare link above._
 
 ### evk-periphery @ `392c7bd0`
 
-**Contracts:** kinkIRMFactory
+**Contracts:** adaptiveCurveIRMFactory, kinkIRMFactory
 
 - **Deployed from:** [`392c7bd0`](https://github.com/euler-xyz/evk-periphery/tree/392c7bd0)
 - **Compare to master:** [`392c7bd0...master`](https://github.com/euler-xyz/evk-periphery/compare/392c7bd0...master)
