@@ -1,0 +1,26 @@
+{
+  "name": "@euler-xyz/euler-verifier",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bytecode-level verification of deployed Euler contracts against commit-pinned source builds",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --exclude 'test/integration/**'",
+    "test:integration": "RUN_INTEGRATION=1 vitest run test/integration",
+    "verify": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
