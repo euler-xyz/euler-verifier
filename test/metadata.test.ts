@@ -12,12 +12,12 @@ function synthetic(runtime: number[], cbor: number[]): Uint8Array {
 }
 
 describe('splitMetadata', () => {
-  it('splits a synthetic runtime + CBOR trailer', () => {
-    const code = synthetic([0xde, 0xad, 0xbe, 0xef], [0xa1, 0x64, 0x74, 0x65, 0x73, 0x74, 0x40])
+  it('splits a synthetic runtime + valid solc CBOR trailer', () => {
+    const code = synthetic([0xde, 0xad, 0xbe, 0xef], [0xa1, 0x64, 0x73, 0x6f, 0x6c, 0x63, 0x43, 0x00, 0x08, 0x18])
     const { runtime, cbor } = splitMetadata(code)
     expect(toHex(runtime)).toBe('deadbeef')
     expect(cbor).not.toBeNull()
-    expect(cbor!.length).toBe(7)
+    expect(cbor!.length).toBe(10)
   })
 
   it('returns whole input when the trailer length is implausible', () => {

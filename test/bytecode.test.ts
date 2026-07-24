@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { collectImmutableRanges, compareRuntime, maskRanges, sha256Hex } from '../src/bytecode.js'
+import { collectImmutableRanges, compareRuntime, maskEmbeddedMetadataDigests, maskRanges, sha256Hex } from '../src/bytecode.js'
 
-function withTrailer(runtime: number[], cborByte: number): Uint8Array {
-  // 3-byte fake CBOR blob + 2-byte length.
-  return Uint8Array.from([...runtime, cborByte, cborByte, cborByte, 0x00, 0x03])
+function withTrailer(runtime: number[], versionByte: number): Uint8Array {
+  // Valid solidity-shaped trailer: map1{ "solc": bytes3(v,v,v) } + 2-byte length.
+  const cbor = [0xa1, 0x64, 0x73, 0x6f, 0x6c, 0x63, 0x43, versionByte, versionByte, versionByte]
+  return Uint8Array.from([...runtime, ...cbor, 0x00, cbor.length])
 }
 
 describe('maskRanges', () => {
@@ -74,6 +75,30 @@ describe('compareRuntime', () => {
     expect(match).toBe(false)
     expect(evidence.firstDivergence).toBeNull()
     expect(evidence.chainCodeSize).not.toBe(evidence.artifactCodeSize)
+  })
+})
+
+describe('maskEmbeddedMetadataDigests (factories embedding child creation code)', () => {
+  const IPFS_MARKER = [0x64, 0x69, 0x70, 0x66, 0x73, 0x58, 0x22, 0x12, 0x20]
+
+  function embedded(digestByte: number): number[] {
+    return [...IPFS_MARKER, ...Array.from({ length: 32 }, () => digestByte)]
+  }
+
+  it('two codes differing only in an embedded child metadata digest MATCH', () => {
+    const prefix = [0x60, 0x80, 0x60, 0x40]
+    const suffix = [0x00, 0x33]
+    const a = withTrailer([...prefix, ...embedded(0xaa), ...suffix], 0x11)
+    const b = withTrailer([...prefix, ...embedded(0xbb), ...suffix], 0x11)
+    const { match, evidence } = compareRuntime(a, b, {})
+    expect(match).toBe(true)
+    expect(evidence.embeddedDigestsMasked).toEqual([1, 1])
+  })
+
+  it('a semantic difference in the embedded child code still MISMATCHes', () => {
+    const a = withTrailer([0x01, ...embedded(0xaa), 0x02], 0x11)
+    const b = withTrailer([0x01, ...embedded(0xaa), 0x03], 0x11)
+    expect(compareRuntime(a, b, {}).match).toBe(false)
   })
 })
 
