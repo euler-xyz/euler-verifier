@@ -53,6 +53,8 @@ export interface CompareEvidence {
   strippedArtifactSha256?: string
   chainCbor?: CborInfo
   artifactCbor?: CborInfo
+  /** [chain, artifact] counts of embedded child-metadata digests zeroed before comparison. */
+  embeddedDigestsMasked?: [number, number]
   /** Byte offset of the first difference in masked+stripped runtime, when sizes match but content differs. */
   firstDivergence?: number | null
 }

@@ -28,6 +28,40 @@ export function sha256Hex(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')
 }
 
+// CBOR encodings inside solc metadata blobs:
+//   64 'ipfs'  58 22 12 20 <32-byte digest>   (ipfs multihash)
+//   65 'bzzr0' 58 20       <32-byte digest>   (legacy swarm)
+//   65 'bzzr1' 58 20       <32-byte digest>
+const EMBEDDED_DIGEST_MARKERS: Array<{ marker: number[]; digestLen: number }> = [
+  { marker: [0x64, 0x69, 0x70, 0x66, 0x73, 0x58, 0x22, 0x12, 0x20], digestLen: 32 },
+  { marker: [0x65, 0x62, 0x7a, 0x7a, 0x72, 0x30, 0x58, 0x20], digestLen: 32 },
+  { marker: [0x65, 0x62, 0x7a, 0x7a, 0x72, 0x31, 0x58, 0x20], digestLen: 32 },
+]
+
+/**
+ * Factories embed CHILD creation bytecode (e.g. GenericFactory embeds
+ * BeaconProxy, IRM factories embed their IRMs) and that embedded code carries
+ * its own metadata digest, which varies with source *paths* even when the
+ * code is identical. Stripping the outer trailer cannot reach these. Zero
+ * every embedded metadata DIGEST (the 32 hash bytes only — the embedded
+ * child code itself remains fully compared).
+ */
+export function maskEmbeddedMetadataDigests(code: Uint8Array): { masked: Uint8Array; count: number } {
+  const out = new Uint8Array(code)
+  let count = 0
+  for (const { marker, digestLen } of EMBEDDED_DIGEST_MARKERS) {
+    outer: for (let i = 0; i + marker.length + digestLen <= out.length; i++) {
+      for (let j = 0; j < marker.length; j++) {
+        if (code[i + j] !== marker[j]) continue outer
+      }
+      out.fill(0, i + marker.length, i + marker.length + digestLen)
+      count++
+      i += marker.length + digestLen - 1
+    }
+  }
+  return { masked: out, count }
+}
+
 export interface CompareResult {
   match: boolean
   evidence: CompareEvidence
@@ -66,9 +100,14 @@ export function compareRuntime(
     return { match: false, evidence: { ...base, firstDivergence: null } }
   }
 
-  // Mask within the stripped runtime, retaining strict range bounds.
-  const chainStripped = maskRanges(chainSplit.runtime, ranges)
-  const artifactStripped = maskRanges(artifactSplit.runtime, ranges)
+  // Mask within the stripped runtime, retaining strict range bounds; then
+  // zero embedded child-metadata digests (factories embed child creation
+  // code whose metadata varies with source paths).
+  const chainEmbedded = maskEmbeddedMetadataDigests(maskRanges(chainSplit.runtime, ranges))
+  const artifactEmbedded = maskEmbeddedMetadataDigests(maskRanges(artifactSplit.runtime, ranges))
+  const chainStripped = chainEmbedded.masked
+  const artifactStripped = artifactEmbedded.masked
+  base.embeddedDigestsMasked = [chainEmbedded.count, artifactEmbedded.count]
 
   const chainSha = sha256Hex(chainStripped)
   const artifactSha = sha256Hex(artifactStripped)
