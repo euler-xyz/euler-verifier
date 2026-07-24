@@ -96,6 +96,15 @@ async function main(): Promise<number> {
 
   if (values.json) console.log(JSON.stringify(records, null, 2))
 
+  // Fail closed: an empty selection must not pass vacuously (a typo in
+  // --chain/--contract would otherwise bypass a verification gate).
+  if (records.length === 0) {
+    console.error(
+      `error: selection matched no manifest entries (chain=${values.chain ?? 'any'}, contract=${values.contract ?? 'any'})`,
+    )
+    return 1
+  }
+
   const ok = records.every((r) => r.verdict === 'MATCH' || r.verdict === 'WAIVED')
   if (!values.json) {
     const counts = records.reduce<Record<string, number>>((acc, r) => ({ ...acc, [r.verdict]: (acc[r.verdict] ?? 0) + 1 }), {})

@@ -44,25 +44,31 @@ export function compareRuntime(
 ): CompareResult {
   const ranges = collectImmutableRanges(immutableReferences)
 
-  const chainCbor = decodeCborInfo(splitMetadata(chainCode).cbor)
-  const artifactCbor = decodeCborInfo(splitMetadata(artifactCode).cbor)
+  // Strip the CBOR trailer FIRST: identical executable runtimes may carry
+  // different-length metadata (bytecode_hash settings, solc variations), and
+  // comparing raw lengths before the strip would reject them falsely.
+  const chainSplit = splitMetadata(chainCode)
+  const artifactSplit = splitMetadata(artifactCode)
 
   const base: CompareEvidence = {
     chainCodeSize: chainCode.length,
     artifactCodeSize: artifactCode.length,
+    chainRuntimeSize: chainSplit.runtime.length,
+    artifactRuntimeSize: artifactSplit.runtime.length,
     maskedRanges: ranges,
-    chainCbor,
-    artifactCbor,
+    chainCbor: decodeCborInfo(chainSplit.cbor),
+    artifactCbor: decodeCborInfo(artifactSplit.cbor),
   }
 
-  // Immutable offsets are only meaningful when the code shapes agree; a size
-  // difference is already a definitive mismatch (different source or settings).
-  if (chainCode.length !== artifactCode.length) {
+  // Immutable offsets are only meaningful when the executable shapes agree; a
+  // stripped-runtime size difference is a definitive mismatch.
+  if (chainSplit.runtime.length !== artifactSplit.runtime.length) {
     return { match: false, evidence: { ...base, firstDivergence: null } }
   }
 
-  const chainStripped = splitMetadata(maskRanges(chainCode, ranges)).runtime
-  const artifactStripped = splitMetadata(maskRanges(artifactCode, ranges)).runtime
+  // Mask within the stripped runtime, retaining strict range bounds.
+  const chainStripped = maskRanges(chainSplit.runtime, ranges)
+  const artifactStripped = maskRanges(artifactSplit.runtime, ranges)
 
   const chainSha = sha256Hex(chainStripped)
   const artifactSha = sha256Hex(artifactStripped)

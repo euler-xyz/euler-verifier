@@ -72,5 +72,19 @@ export function toHex(bytes: Uint8Array): string {
 export function fromHex(hex: string): Uint8Array {
   const clean = hex.startsWith('0x') ? hex.slice(2) : hex
   if (clean.length % 2 !== 0) throw new Error(`odd-length hex string (${clean.length} chars)`)
+  // Fail closed: Buffer.from(_, 'hex') silently stops at the first non-hex
+  // byte, which would truncate Foundry artifacts containing unresolved
+  // library link placeholders (__$...$__) into a valid-looking prefix.
+  const bad = clean.search(/[^0-9a-fA-F]/)
+  if (bad !== -1) {
+    const isLinkPlaceholder = /__\$[0-9a-fA-F]{34}\$__|__[A-Za-z$]/.test(clean)
+    throw new Error(
+      `invalid hex at offset ${bad}${
+        isLinkPlaceholder
+          ? ' — bytecode contains unresolved library link placeholders; the build must resolve library addresses before comparison'
+          : ''
+      }`,
+    )
+  }
   return Uint8Array.from(Buffer.from(clean, 'hex'))
 }

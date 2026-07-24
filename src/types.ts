@@ -45,6 +45,9 @@ export interface CborInfo {
 export interface CompareEvidence {
   chainCodeSize: number
   artifactCodeSize: number
+  /** Executable size after the CBOR metadata trailer is stripped. */
+  chainRuntimeSize?: number
+  artifactRuntimeSize?: number
   maskedRanges: ImmutableRange[]
   strippedChainSha256?: string
   strippedArtifactSha256?: string
