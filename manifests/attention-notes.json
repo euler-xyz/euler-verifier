@@ -1,0 +1,28 @@
+{
+ "all": {
+  "eulerSwapV2ProtocolFeeConfig": {
+   "flag": true,
+   "assessment": "The deployed V2 release (tag eulerswap-2.0) post-dates the September 2025 Cantina review baseline. Within that delta, protocol-fee handling was redesigned: the reviewed model (fee parameters fixed into each pool at install, 10\u201325% bounds, permissionless enablement after one year) was replaced by the EulerSwapProtocolFeeConfig singleton, which pools query live on every swap. The fee-config admin can set a default fee and per-pool overrides taking effect immediately, up to MAX_PROTOCOL_FEE = 15% of the LP fee amount (lower than the previously reviewed 25% maximum); zero is allowed. Pre-release hardening is included: the admin and fee recipients may not be known EVC sub-accounts, and configuration events are emitted. Curve and quote math are unchanged by this mechanism. It post-dates the September 2025 review and is not yet listed in the audit registry."
+  },
+  "eulerSwapV2Implementation": {
+   "severity": "info",
+   "assessment": "Beyond the fee mechanism, the post-baseline delta is an EIP-170 code-size refactor that moved management functions into EulerSwapManagement \u2014 a separate delegatecall implementation whose address is a public immutable of EulerSwap. Its deployed bytecode is verified in this report from the same euler-swap pin, with the getter value cross-checked against the implementation\u2019s embedded immutable words. The delta also includes ZeroShares handling for EulerEarn-style vaults and pre-release hardening (pool kept locked during activate), landed at the eulerswap-2.0 release merge."
+  },
+  "balanceTracker": {
+   "severity": "low",
+   "assessment": "The deployed pin post-dates the audit-verified baseline by one source change: PR #26, which made enableReward/disableReward return bool, updateReward/claimReward return the claimed amount, and added the isRewardEnabled view. Interface/return plumbing with no accounting change; it post-dates every registered audit\u2019s reviewed revision. The pin also bumps the EVC submodule to v1.0.0, the Cantina-fixed EVC release."
+  },
+  "evc": {
+   "severity": "low",
+   "assessment": "The multichain pin (and Polygon\u2019s set-size descendant) includes PRs #178/#179: isSignerValid excludes the EIP-7587 precompile range and the 0x42 predeploy address space from acting as message signers. Proactive, restrictive-only hardening (five lines) added ahead of the Nov-2024 multichain deployment; it maps to no registered audit finding.",
+   "pins": [
+    "a7d3c29ef7e4964736e47675e0588630d6afbfd7",
+    "912b301f51301e586e5a7f09e48cf52bd52e9a0e"
+   ]
+  },
+  "oracleRouterFactory": {
+   "severity": "low",
+   "assessment": "All four deployed pins share one factory-shell delta vs the audited baseline: the EVC address threaded through the factory constructor into each deployed EulerRouter (+10/\u22121). The router-side EVC integration this mirrors was audited (Cantina finding 443 fix, approved by the yAudit fixes review); the factory shell itself was not re-reviewed after June 2024. The embedded EulerRouter source has been frozen since Aug 2024 and is byte-identical across all deployed gitlinks modulo import-path cosmetics."
+  }
+ }
+}
