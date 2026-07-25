@@ -5,7 +5,11 @@
     "status": "production",
     "explorer_url": "https://etherscan.io",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://ethereum-rpc.publicnode.com",
+      "https://cloudflare-eth.com"
+    ]
   },
   "arbitrum": {
     "chain_id": 42161,
@@ -13,7 +17,11 @@
     "status": "production",
     "explorer_url": "https://arbiscan.io",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://arbitrum-one-rpc.publicnode.com",
+      "https://arb1.arbitrum.io/rpc"
+    ]
   },
   "base": {
     "chain_id": 8453,
@@ -21,7 +29,11 @@
     "status": "production",
     "explorer_url": "https://basescan.org",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://base-rpc.publicnode.com",
+      "https://mainnet.base.org"
+    ]
   },
   "bsc": {
     "chain_id": 56,
@@ -29,7 +41,11 @@
     "status": "production",
     "explorer_url": "https://bscscan.com",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://bsc-rpc.publicnode.com",
+      "https://bsc-dataseed.bnbchain.org"
+    ]
   },
   "avalanche": {
     "chain_id": 43114,
@@ -37,7 +53,11 @@
     "status": "production",
     "explorer_url": "https://snowtrace.io",
     "explorer_api": "https://api.snowtrace.io/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://avalanche-c-chain-rpc.publicnode.com",
+      "https://api.avax.network/ext/bc/C/rpc"
+    ]
   },
   "linea": {
     "chain_id": 59144,
@@ -45,7 +65,11 @@
     "status": "production",
     "explorer_url": "https://lineascan.build",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://linea-rpc.publicnode.com",
+      "https://rpc.linea.build"
+    ]
   },
   "gnosis": {
     "chain_id": 100,
@@ -53,7 +77,11 @@
     "status": "testing",
     "explorer_url": "https://gnosisscan.io",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://gnosis-rpc.publicnode.com",
+      "https://rpc.gnosischain.com"
+    ]
   },
   "optimism": {
     "chain_id": 10,
@@ -61,7 +89,11 @@
     "status": "testing",
     "explorer_url": "https://optimistic.etherscan.io",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://optimism-rpc.publicnode.com",
+      "https://mainnet.optimism.io"
+    ]
   },
   "polygon": {
     "chain_id": 137,
@@ -69,7 +101,11 @@
     "status": "testing",
     "explorer_url": "https://polygonscan.com",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://polygon-bor-rpc.publicnode.com",
+      "https://polygon.drpc.org"
+    ]
   },
   "swell": {
     "chain_id": 1923,
@@ -77,7 +113,10 @@
     "status": "production",
     "explorer_url": "https://explorer.swellnetwork.io",
     "explorer_api": "https://explorer.swellnetwork.io/api",
-    "api_type": "blockscout_v2"
+    "api_type": "blockscout_v2",
+    "rpc": [
+      "https://rpc.ankr.com/swell"
+    ]
   },
   "bob": {
     "chain_id": 60808,
@@ -85,7 +124,10 @@
     "status": "production",
     "explorer_url": "https://explorer.gobob.xyz",
     "explorer_api": "https://explorer.gobob.xyz/api",
-    "api_type": "blockscout_v2"
+    "api_type": "blockscout_v2",
+    "rpc": [
+      "https://rpc.gobob.xyz"
+    ]
   },
   "unichain": {
     "chain_id": 130,
@@ -93,7 +135,11 @@
     "status": "production",
     "explorer_url": "https://unichain.blockscout.com",
     "explorer_api": "https://unichain.blockscout.com/api",
-    "api_type": "blockscout_v2"
+    "api_type": "blockscout_v2",
+    "rpc": [
+      "https://unichain-rpc.publicnode.com",
+      "https://mainnet.unichain.org"
+    ]
   },
   "berachain": {
     "chain_id": 80094,
@@ -101,7 +147,10 @@
     "status": "production",
     "explorer_url": "https://berascan.com",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://rpc.berachain.com"
+    ]
   },
   "sonic": {
     "chain_id": 146,
@@ -109,7 +158,11 @@
     "status": "production",
     "explorer_url": "https://sonicscan.org",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://sonic-rpc.publicnode.com",
+      "https://rpc.soniclabs.com"
+    ]
   },
   "monad": {
     "chain_id": 143,
@@ -117,7 +170,10 @@
     "status": "production",
     "explorer_url": "https://monadvision.com",
     "explorer_api": "https://sourcify-api-monad.blockvision.org",
-    "api_type": "sourcify"
+    "api_type": "sourcify",
+    "rpc": [
+      "https://rpc.monad.xyz"
+    ]
   },
   "tac": {
     "chain_id": 239,
@@ -125,7 +181,11 @@
     "status": "production",
     "explorer_url": "https://explorer.tac.build",
     "explorer_api": "https://explorer.tac.build/api",
-    "api_type": "blockscout_v2"
+    "api_type": "blockscout_v2",
+    "rpc": [
+      "https://rpc.tac.build",
+      "https://rpc.ankr.com/tac"
+    ]
   },
   "plasma": {
     "chain_id": 9745,
@@ -133,7 +193,10 @@
     "status": "production",
     "explorer_url": "https://plasmascan.to",
     "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://rpc.plasma.to"
+    ]
   },
   "morph": {
     "chain_id": 2818,
@@ -141,7 +204,11 @@
     "status": "production",
     "explorer_url": "https://explorer.morph.network",
     "explorer_api": "https://explorer-api.morph.network/api",
-    "api_type": "blockscout_v2"
+    "api_type": "blockscout_v2",
+    "rpc": [
+      "https://rpc.morphl2.io",
+      "https://rpc-quicknode.morphl2.io"
+    ]
   },
   "katana": {
     "chain_id": 747474,

@@ -20,3 +20,7 @@ repos/
 
 # OS
 .DS_Store
+
+# Node / TypeScript engine
+node_modules/
+repos/engine/
