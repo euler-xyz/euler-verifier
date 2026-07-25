@@ -27,7 +27,7 @@ Options:
   --no-explorer        Skip the untrusted explorer cross-check.
   --json               Emit JSON records instead of human-readable lines.
 
-Environment (see .env.example; Doppler-provided in team setups):
+Environment (all optional; public defaults from networks.json are used otherwise):
   DEPLOYMENT_RPC_URL_<chainId>   RPC endpoint override per chain
   ETHERSCAN_API_KEY              explorer cross-check only
 

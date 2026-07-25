@@ -15,7 +15,6 @@ pnpm test              # unit tests
 pnpm test:integration  # freshly clones + builds a repo and proves EVC on public RPCs (needs git + forge + network)
 ```
 
-RPC endpoints follow the evk-periphery convention: `DEPLOYMENT_RPC_URL_<chainId>` (Doppler-provided in team setups — run `script/dopplerLogin.sh`, then `script/dopplerSync.sh`) overrides per chain, with public defaults in `networks.json` so most chains verify with no secrets at all. The explorer cross-check is optional and never affects the verdict: set `ETHERSCAN_API_KEY` (one Etherscan v2 key covers all etherscan_v2 chains), or per-chain `VERIFIER_URL_<chainId>` / `VERIFIER_API_KEY_<chainId>` to override. See `.env.example`.
 
 > The Python pipeline documented below is the legacy verifier, kept until the manifest migration (P2) reaches parity with the engine.
 

@@ -217,5 +217,16 @@
     "explorer_url": "https://katanascan.com",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2"
+  },
+  "hyperevm": {
+    "chain_id": 999,
+    "name": "HyperEVM",
+    "status": "production",
+    "explorer_url": "https://hyperevmscan.io",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2",
+    "rpc": [
+      "https://rpc.hyperliquid.xyz/evm"
+    ]
   }
 }

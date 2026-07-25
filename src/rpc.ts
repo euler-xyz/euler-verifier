@@ -4,7 +4,7 @@ import type { NetworkInfo } from './types.js'
 
 /**
  * RPC endpoint resolution, following the evk-periphery convention:
- * DEPLOYMENT_RPC_URL_<chainId> from the environment (Doppler-provided) takes
+ * DEPLOYMENT_RPC_URL_<chainId> from the environment (optional) takes
  * precedence; the public defaults from networks.json are fallbacks so that
  * third parties can re-run verification without any secrets.
  */
