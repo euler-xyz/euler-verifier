@@ -17,6 +17,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadNetworks } from './networks.js'
+import { unitScopedDelta } from './unit-scope.js'
 import type { ComponentBaseline } from './run-baselines.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -26,7 +27,7 @@ interface Outcome {
   key: string
   address: string
   status: string
-  matched?: { repo: string; commit: string; contractName: string }
+  matched?: { repo: string; commit: string; contractName: string; sources?: string[] }
   strippedSha256?: string
 }
 interface ManifestEntry {
@@ -180,14 +181,10 @@ async function main(): Promise<number> {
     lines.push('Verification = on-chain runtime bytecode ≡ compile(repo@commit, profile), metadata stripped, immutables masked, embedded child-metadata digests zeroed. The block explorer is never in the trust path. Each proven pin is then diffed against its component\'s audited baseline — the fixes-included state of the component\'s most recent audit — so every deployed source delta beyond audited code is shown below as a real diff. Re-run: see the repository README.')
     lines.push('')
 
-    // ─── Attention first: unproven, waived, and medium+ findings ───
+    // ─── Attention first: unproven and waived entries ───
     const unprovenRows = rows.filter((r) => r.status !== 'PROVEN' && r.status !== 'CANONICAL' && !entryOf(r.key)?.waiver)
     const waivedRows = rows.filter((r) => entryOf(r.key)?.waiver)
-    const findingRows = rows.filter((r) => {
-      const n = noteFor(chainId, r.key, entryOf(r.key)?.commit)
-      return n && (n.flag || n.severity === 'medium') && r.status === 'PROVEN'
-    })
-    if (unprovenRows.length || waivedRows.length || findingRows.length) {
+    if (unprovenRows.length || waivedRows.length) {
       lines.push('## ⚠️ Requires attention')
       lines.push('')
       for (const r of unprovenRows) {
@@ -201,16 +198,17 @@ async function main(): Promise<number> {
         const n = chainNoteFor(chainId, r.key)
         if (n) lines.push(...renderNote(n))
       }
-      for (const r of findingRows) {
-        const n = noteFor(chainId, r.key, entryOf(r.key)?.commit)!
-        lines.push(`- **${r.key}** — post-audit functionality change ([diff below](#component-${keyToComponent.get(r.key)?.component.toLowerCase() ?? ''})):`)
-        lines.push(...renderNote(n))
-      }
       lines.push('')
     } else {
-      lines.push('**No attention items on this chain: every contract is bytecode-proven and matches or is reconciled to its audited baseline.**')
+      lines.push('**All contracts on this chain are bytecode-proven against their pinned commits.**')
       lines.push('')
     }
+    // Flagged assessments (flag or medium severity) render with the product
+    // section their contract belongs to, directly above that section's table.
+    const flaggedRows = rows.filter((r) => {
+      const n = noteFor(chainId, r.key, entryOf(r.key)?.commit)
+      return n && (n.flag || n.severity === 'medium') && r.status === 'PROVEN'
+    })
 
     // ─── Contract table ───
     // Three product sections so EulerSwap-specific items never read onto the
@@ -242,13 +240,21 @@ async function main(): Promise<number> {
       if (r.status === 'PROVEN') {
         const pair = pairFor(chainId, r.key, entry?.commit)
         if (pair) {
-          baselineCell =
-            pair.files === 0
-              ? '≡ baseline'
-              : pair.predatesBaseline
-                ? `predates (+${pair.insertions}/−${pair.deletions} audited later)`
-                : `+${pair.insertions}/−${pair.deletions} vs baseline`
-          deltaCell = pair.files === 0 ? '—' : (pair.pinNote?.label ?? 'see diff below')
+          // Scope the component-level diff to this contract's own compilation
+          // unit (when the outcome carries the compiled source list), so a
+          // sibling contract's change never reads onto an unaffected one.
+          const unit = unitScopedDelta(pair, r.matched?.sources)
+          if (pair.files === 0) {
+            baselineCell = '≡ baseline'
+          } else if (unit?.files === 0) {
+            baselineCell = '≡ baseline (unit)'
+          } else if (pair.predatesBaseline) {
+            baselineCell = `predates (+${pair.insertions}/−${pair.deletions} audited later)`
+          } else {
+            const { insertions, deletions } = unit ?? pair
+            baselineCell = `+${insertions}/−${deletions} vs baseline`
+          }
+          deltaCell = pair.files === 0 || unit?.files === 0 ? '—' : (pair.pinNote?.label ?? 'see diff below')
         }
       } else if (r.status === 'CANONICAL') {
         baselineCell = 'long-established (see note)'
@@ -260,6 +266,12 @@ async function main(): Promise<number> {
       if (grows.length === 0) continue
       lines.push(`## ${group}`)
       lines.push('')
+      for (const r of flaggedRows.filter((f) => groupOf(f.key) === group)) {
+        const n = noteFor(chainId, r.key, entryOf(r.key)?.commit)!
+        lines.push(`- **${r.key}** — post-audit functionality change ([diff below](#component-${keyToComponent.get(r.key)?.component.toLowerCase() ?? ''})):`)
+        lines.push(...renderNote(n))
+        lines.push('')
+      }
       lines.push('| Contract | Address | Source | Bytecode | vs audited baseline | What changed |')
       lines.push('|----------|---------|--------|----------|---------------------|--------------|')
       lines.push(...grows)
@@ -338,7 +350,8 @@ async function main(): Promise<number> {
           lines.push(p.numstat)
           lines.push('```')
           const [from, to] = p.predatesBaseline ? [p.pin, p.baseline] : [p.baseline, p.pin]
-          lines.push(`_Reproduce: \`git diff ${from.slice(0, 12)} ${to.slice(0, 12)} -- ${spec.componentPaths.join(' ')}\` in ${p.repo}._`)
+          const pathspecs = spec.componentPaths.map((s) => (/[():]/.test(s) ? `'${s}'` : s)).join(' ')
+          lines.push(`_Reproduce: \`git diff ${from.slice(0, 12)} ${to.slice(0, 12)} -- ${pathspecs}\` in ${p.repo}._`)
         }
         for (const lib of p.libComponents) {
           lines.push('')
