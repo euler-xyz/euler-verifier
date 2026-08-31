@@ -15,13 +15,13 @@
     "verify": "tsx src/cli.ts"
   },
   "dependencies": {
-    "viem": "^2.21.0"
+    "viem": "^2.55.19"
   },
   "devDependencies": {
-    "@types/node": "^26.1.1",
-    "tsx": "^4.19.0",
+    "@types/node": "^26.3.0",
+    "tsx": "^4.23.12",
     "typescript": "^5.7.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "packageManager": "pnpm@10.1.0"
 }
