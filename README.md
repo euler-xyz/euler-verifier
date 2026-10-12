@@ -53,7 +53,8 @@ pnpm test              # unit suite
 pnpm test:integration  # clones + builds a pinned repo and proves EVC on public RPCs
 ```
 
-Requirements: node + pnpm (version pinned in `package.json`), `git`, `forge`.
+Requirements: node + pnpm (version pinned in `package.json`), `git`, `forge` 1.7.1 (pinned in CI; other
+versions change the metadata hash, which breaks the integration tests' byte-for-byte fixture check).
 No secrets are required; see `.env.example` for the optional RPC override.
 
 Operational procedures (adding a chain or contract, endpoint rotation,

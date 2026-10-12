@@ -77,7 +77,8 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: stable
+          # forge 1.8 emits a different metadata hash, so the byte-for-byte fixture check fails.
+          version: v1.7.1
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

@@ -210,14 +210,6 @@
       "https://rpc-quicknode.morphl2.io"
     ]
   },
-  "katana": {
-    "chain_id": 747474,
-    "name": "Katana",
-    "status": "testing",
-    "explorer_url": "https://katanascan.com",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2"
-  },
   "hyperevm": {
     "chain_id": 999,
     "name": "HyperEVM",
