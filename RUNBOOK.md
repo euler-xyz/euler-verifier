@@ -37,23 +37,30 @@ from an unpushed tree. Fix the pin, or use a waiver (below) — never merge red.
 
 ## Add a chain
 
-1. euler-interfaces PR adds `addresses/<chainId>/…` (existing process).
-2. In euler-verifier `networks.json`, add the network: chain_id, name,
+1. In euler-verifier `networks.json`, add the network: chain_id, name,
    status, explorer_url/api + `api_type`, and a keyless public `rpc` list —
    verify each endpoint with `eth_chainId` before committing (chainlist.org
-   is the source of choice).
-3. Optionally export `DEPLOYMENT_RPC_URL_<chainId>` for a premium endpoint
+   is the source of choice). Merge it here **first**: euler-interfaces CI runs
+   the engine at a pinned commit (`ref:` in its
+   `deployed-code-verification.yml`), so bump that pin to a commit that knows
+   the chain before (or in) the euler-interfaces PR, or its check fails.
+2. Optionally export `DEPLOYMENT_RPC_URL_<chainId>` for a premium endpoint
    (public defaults from `networks.json` are used otherwise); mirror any new
    var names into `.env.example`.
-4. Manifest entries for every deployed allowlisted contract, as above. The
+3. The euler-interfaces PR adds `addresses/<chainId>/…` (written by the
+   evk-periphery deployment scripts; see its `script/NEW_CHAIN.md`) and the
+   manifest entries for every deployed allowlisted contract, as above. The
    completeness check (`src/check-completeness.ts`) lists what is missing.
+4. Render the chain's report (`run-baselines` then `render-report`, see
+   README → Usage) and commit `verify/<chainId>.md` plus its row in
+   `verify/README.md` with the same PR. CI validates manifests and proves
+   bytecode; it does not render reports.
 
 ## Add an audit
 
 1. Append an entry to `verify/audits.json`:
    - `commits.final` = the **last revision the auditors reviewed** (revision
-     table in the report; else the audit tag; else fix-PR merge commits —
-     see `manifests/AUDITS-REVIEW.md` for the pin-selection ladder).
+     table in the report; else the audit tag; else fix-PR merge commits).
    - `scope` = the file list/prefixes as stated by the report.
    - `confidence` per the ladder; `signed_off: true` only after human review.
 2. Commit the PDF to the source repo's `audits/` and pin the `report` URL to
@@ -90,7 +97,8 @@ pnpm verify --manifest <euler-interfaces>/verify/manifest.json \
   --addresses <euler-interfaces>/addresses --chain 1 --no-explorer
 ```
 
-No secrets required on chains with public RPC defaults. Verdicts are
+No secrets required on chains with public RPC defaults. Builds need `forge`
+1.7.1 (the version Engine CI pins); other versions change the metadata hash. Verdicts are
 independently reproducible — that reproducibility, not this repo's word, is
 the guarantee.
 
