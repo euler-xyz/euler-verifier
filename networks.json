@@ -71,34 +71,10 @@
       "https://rpc.linea.build"
     ]
   },
-  "gnosis": {
-    "chain_id": 100,
-    "name": "Gnosis",
-    "status": "testing",
-    "explorer_url": "https://gnosisscan.io",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
-    "rpc": [
-      "https://gnosis-rpc.publicnode.com",
-      "https://rpc.gnosischain.com"
-    ]
-  },
-  "optimism": {
-    "chain_id": 10,
-    "name": "Optimism",
-    "status": "testing",
-    "explorer_url": "https://optimistic.etherscan.io",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
-    "rpc": [
-      "https://optimism-rpc.publicnode.com",
-      "https://mainnet.optimism.io"
-    ]
-  },
   "polygon": {
     "chain_id": 137,
     "name": "Polygon",
-    "status": "testing",
+    "status": "unlisted",
     "explorer_url": "https://polygonscan.com",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -110,7 +86,7 @@
   "swell": {
     "chain_id": 1923,
     "name": "Swell",
-    "status": "production",
+    "status": "deprecated",
     "explorer_url": "https://explorer.swellnetwork.io",
     "explorer_api": "https://explorer.swellnetwork.io/api",
     "api_type": "blockscout_v2",
@@ -121,7 +97,7 @@
   "bob": {
     "chain_id": 60808,
     "name": "BOB",
-    "status": "production",
+    "status": "deprecated",
     "explorer_url": "https://explorer.gobob.xyz",
     "explorer_api": "https://explorer.gobob.xyz/api",
     "api_type": "blockscout_v2",
@@ -144,7 +120,7 @@
   "berachain": {
     "chain_id": 80094,
     "name": "Berachain",
-    "status": "production",
+    "status": "deprecated",
     "explorer_url": "https://berascan.com",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -155,7 +131,7 @@
   "sonic": {
     "chain_id": 146,
     "name": "Sonic",
-    "status": "production",
+    "status": "deprecated",
     "explorer_url": "https://sonicscan.org",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -178,7 +154,7 @@
   "tac": {
     "chain_id": 239,
     "name": "TAC",
-    "status": "production",
+    "status": "deprecated",
     "explorer_url": "https://explorer.tac.build",
     "explorer_api": "https://explorer.tac.build/api",
     "api_type": "blockscout_v2",
@@ -196,18 +172,6 @@
     "api_type": "etherscan_v2",
     "rpc": [
       "https://rpc.plasma.to"
-    ]
-  },
-  "morph": {
-    "chain_id": 2818,
-    "name": "Morph",
-    "status": "production",
-    "explorer_url": "https://explorer.morph.network",
-    "explorer_api": "https://explorer-api.morph.network/api",
-    "api_type": "blockscout_v2",
-    "rpc": [
-      "https://rpc.morphl2.io",
-      "https://rpc-quicknode.morphl2.io"
     ]
   },
   "hyperevm": {
