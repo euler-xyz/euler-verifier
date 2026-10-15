@@ -310,3 +310,17 @@ describe('finding 7: redeployed contracts are regenerated', () => {
     })
   })
 })
+
+describe('case-sensitive filesystems', () => {
+  it('finds the source whose import differs in letter case from the file name', async () => {
+    const { unresolvedImporter } = await import('../src/compile.js')
+    const output = [
+      'forge build src --skip test --skip script failed:',
+      'Error (6275): Source "src/Chainlink/DatastreamsVerifier.sol" not found: File not found. Searched the following locations: "/w/evk-periphery".',
+      'ParserError: Source "src/Chainlink/DatastreamsVerifier.sol" not found: File not found.',
+      ' --> src/HookTarget/HookTargetMarketStatus.sol:5:1:',
+    ].join('\n')
+    expect(unresolvedImporter(output)).toBe('src/HookTarget/HookTargetMarketStatus.sol')
+    expect(unresolvedImporter('Error (2314): Expected \';\' but got identifier\n --> src/A.sol:3:1:')).toBeNull()
+  })
+})

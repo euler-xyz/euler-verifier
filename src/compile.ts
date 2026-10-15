@@ -328,6 +328,38 @@ function buildSignature(req: BuildRequest): string {
   return `${req.repo}|${req.commit}|${p}|${ov}`
 }
 
+/** The source whose import solc couldn't resolve, from forge's error output. */
+export function unresolvedImporter(output: string): string | null {
+  if (!/Source "[^"]+" not found/.test(output)) return null
+  return /-->\s+([^\s:]+\.sol):\d+:\d+/.exec(output)?.[1] ?? null
+}
+
+/**
+ * Build only src/ and its transitive imports: repo and library test/script
+ * trees are irrelevant to deployed bytecode and dominate compile time.
+ * Some pinned commits import a file under different letter case than its
+ * name, which resolves only on case-insensitive filesystems. Such a source is
+ * skipped and the build retried; if the contract under verification needs it,
+ * the build still fails.
+ */
+async function forgeBuild(repoDir: string, profile: CompileProfile | 'native'): Promise<void> {
+  const skipped: string[] = []
+  for (;;) {
+    try {
+      await run('forge', ['build', 'src', '--skip', 'test', '--skip', 'script', ...skipped.flatMap((f) => ['--skip', f])], {
+        cwd: repoDir,
+        env: profileEnv(profile),
+        timeoutMs: 900_000,
+      })
+      return
+    } catch (err) {
+      const importer = unresolvedImporter(err instanceof Error ? err.message : String(err))
+      if (!importer || skipped.includes(basename(importer)) || skipped.length >= 10) throw err
+      skipped.push(basename(importer))
+    }
+  }
+}
+
 /** Checkout `repo@commit`, build with the manifest profile, return the deployed-bytecode artifact. */
 export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
   const signature = buildSignature(req)
@@ -342,13 +374,7 @@ export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
     rmSync(join(repoDir, 'out'), { recursive: true, force: true })
     rmSync(join(repoDir, 'cache'), { recursive: true, force: true })
 
-    // Build only src/ and its transitive imports: repo and library test/script
-    // trees are irrelevant to deployed bytecode and dominate compile time.
-    await run('forge', ['build', 'src', '--skip', 'test', '--skip', 'script'], {
-      cwd: repoDir,
-      env: profileEnv(req.profile),
-      timeoutMs: 900_000,
-    })
+    await forgeBuild(repoDir, req.profile)
     currentBuildSignature.set(dirKey, signature)
   }
   const repoDir = dirKey
