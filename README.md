@@ -8,6 +8,12 @@ build produces — block explorers are never in the trust path — and then
 diffs each deployment against its component's audited baseline so any code
 beyond audited revisions is visible as a real diff.
 
+**What a proof claims.** A MATCH shows runtime correspondence under explicit
+normalization and trust assumptions: the deployed runtime code equals the
+pinned build once the metadata trailer is stripped and immutables and
+build-located embedded metadata digests are masked. It does not prove
+initialization, governance, immutable configuration or deployment safety.
+
 The verified inputs and generated per-chain reports live in
 [euler-interfaces `verify/`](https://github.com/euler-xyz/euler-interfaces/tree/master/verify):
 `manifest.json` (SHA-only provenance pins), `audits.json` (audit registry),
@@ -16,21 +22,33 @@ The chains themselves come from euler-interfaces `EulerChains.json`.
 
 ## Method
 
-1. `eth_getCode` for the address, trying `DEPLOYMENT_RPC_URL_<chainId>` first
+1. Resolve the address consumers receive: `addresses/<chainId>/` with the
+   `config/addresses/<chainId>/` overlay applied, exactly as euler-interfaces
+   `chains.js` merges them into `EulerChains.json`, which must be current.
+   Manifest address overrides are rejected.
+2. `eth_getCode` for the address, trying `DEPLOYMENT_RPC_URL_<chainId>` first
    if set, then viem's default public endpoints for the chain. The viem chain
-   is the one euler-interfaces `EulerChains.json` names (`viemName`, else the
-   only viem chain with that id).
-2. Check out `repo@commit`, apply the recorded build profile (and submodule
-   overrides, if any), `forge build`.
-3. Strip trailing CBOR metadata from both artifact and chain code, mask
-   `immutableReferences`, zero embedded child-artifact metadata digests.
-4. Byte-equality proves the pin; the sha256 of the stripped code is recorded
-   as evidence.
+   is the one `EulerChains.json` names (`viemName`, else the only viem chain
+   with that id). A declared proxy must still delegate to the declared
+   implementation (EIP-1967 slot), whose code is then proven.
+3. Check out `repo@commit` in an engine-managed clone with the repo's GitHub
+   origin, reset hard and cleaned of untracked files (submodules too), apply
+   the recorded build profile and submodule pins (full 40-hex SHAs only),
+   `forge build`.
+4. Normalize both codes: strip the metadata trailer if it validates as
+   Solidity CBOR, mask `immutableReferences`, and mask the metadata digests of
+   embedded child contracts at the offsets the build locates: each child
+   creation or runtime code of the same build found verbatim in the code
+   contributes its own validated trailer's digest positions. No byte pattern
+   is masked on its own.
+5. Byte-equality proves the pin; the sha256 of the normalized code is
+   recorded as evidence.
 
-Contracts reachable only through another contract's immutables (the EVault
-modules, the EulerSwap V2 management implementation) are unpacked via their
-public getters, cross-checked against the immutable words embedded in the
-parent's on-chain code, and proven from the same pin.
+Code reachable only through a verified implementation (the eight EVault
+modules, the EulerSwap V2 management contract) is unpacked via public
+getters, cross-checked against the immutable words embedded in the
+implementation's on-chain code, and proven from the same pin. `pnpm verify`
+does this for every implementation that matches, so the CI gate covers it.
 
 ## Usage
 
@@ -42,12 +60,15 @@ pnpm install
 
 `pnpm add-entries` writes the `verify/manifest.json` entries euler-interfaces
 is missing and renders the reports. Nobody edits the manifest by hand. It
-handles every allowlisted contract under `addresses/<chainId>/` that has no
-entry: a new chain, or one new or redeployed contract on an existing chain.
+handles every allowlisted contract that has no entry, or whose entry was
+proven at another address (a redeploy): a new chain, or one new or
+redeployed contract on an existing chain. Each entry records the address it
+was proven at in `evidence.address`.
 
 1. Deploy, and let the deployment write `addresses/<chainId>/` into your
-   euler-interfaces checkout. A new chain also needs its `chains.js` entry and
-   a regenerated `EulerChains.json` (euler-interfaces README, "Adding a chain").
+   euler-interfaces checkout. Run `node chains.js` there so `EulerChains.json`
+   carries the new addresses (a new chain also needs its `chains.js` entry;
+   euler-interfaces README, "Adding a chain").
 2. Push the deployed commits. The engine clones them from GitHub.
 3. From this repo, with `forge` on PATH (CI uses 1.7.1):
 
@@ -64,8 +85,8 @@ entry: a new chain, or one new or redeployed contract on an existing chain.
 4. Review and commit the changed `verify/manifest.json`, `verify/<chainId>.md`
    and `verify/README.md` in the same euler-interfaces PR as the addresses.
 
-Each missing contract is proven against candidate pins, and the first that
-proves is written:
+Each missing or redeployed contract is proven against candidate pins, and
+the first that proves is written:
 
 - `--candidates-from <checkout>`: the checkout's HEAD commit and the commits
   its GitHub submodules point at (EVC, EVK, reward-streams, euler-earn,
@@ -76,6 +97,7 @@ proves is written:
   `euler-xyz/euler-earn@<sha>` (owner defaults to `euler-xyz`). It is built
   with the repo's own profile and every profile the manifest uses for that
   contract. Repeatable.
+- For a redeploy, the entry's own pin next.
 - Then the pins other chains use for the same contract, with their profiles,
   declared submodule pins and proxy declarations. A pin this chain already
   uses for another contract comes first, then the most used.
@@ -97,7 +119,12 @@ written `evidence.origin` says where the proven pin came from:
 | `--engine-ref <label>` | Report footer label (default `master`). |
 
 Only the reports of the chains it touched change, and only their rows in
-`verify/README.md`; they are the same bytes a full render produces.
+`verify/README.md`; they are the same bytes a full render produces. A chain
+renders only when every entry proves with the same guards as `pnpm verify`
+(canonical addresses, proxy slots) and its EVault modules and EulerSwap
+management contract prove too; otherwise nothing is written for it and the
+command exits 1. Entries recorded before `evidence.address` existed are
+re-proven at their current address once and stamped.
 
 ### Verify
 
@@ -107,12 +134,16 @@ pnpm verify --manifest <euler-interfaces>/verify/manifest.json --addresses <eule
   [--chains <EulerChains.json>] [--chain 1] [--contract <key>] [--no-explorer]
 
 # Validators (used as the CI gate on euler-interfaces PRs)
-pnpm tsx src/validate-manifests.ts --manifest <manifest.json> --audits <audits.json>
+pnpm tsx src/validate-manifests.ts --manifest <manifest.json> --audits <audits.json> --baselines <baselines.json>
 pnpm tsx src/check-completeness.ts --manifest <manifest.json> --addresses <addresses>
 ```
 
-When contracts lack entries, `check-completeness` prints the `pnpm add-entries`
-command to run.
+`pnpm verify` also proves the delegated code of every matching
+implementation. `validate-manifests` rejects address overrides and any pin
+that is not a full 40-hex SHA (manifest commits, submodule pins, baselines).
+`check-completeness` fails on contracts without an entry, entries proven at
+another address and an `EulerChains.json` that lags the address files, and
+prints the `pnpm add-entries` command to run.
 
 ### Individual steps
 

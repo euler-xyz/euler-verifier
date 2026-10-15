@@ -6,6 +6,11 @@ contract: **reports are a pure function of committed inputs** (addresses and
 `verify/audits.json`, `verify/baselines.json`). Nothing runs on a schedule;
 everything regenerates through PRs.
 
+A MATCH is runtime correspondence under explicit normalization and trust
+assumptions (metadata trailer stripped; immutables and build-located embedded
+metadata digests masked). It is not a proof of initialization, governance,
+immutable configuration or deployment safety; those need their own review.
+
 ## Add a deployment (the common case)
 
 Done by whoever deploys, **in the same euler-interfaces PR that adds the
@@ -13,7 +18,10 @@ address** — the required check makes it impossible to forget. The manifest
 entry and the report come from `pnpm add-entries`; nobody writes them by hand.
 
 1. Deploy the contract. The deployment writes its address into your
-   euler-interfaces checkout under `addresses/<chainId>/`.
+   euler-interfaces checkout under `addresses/<chainId>/`. Run
+   `node chains.js` there: the engine verifies the addresses consumers get
+   (with `config/addresses/` applied) and refuses an `EulerChains.json` that
+   lags the address files.
 2. Push the commit you deployed from (the engine clones it from GitHub).
 3. In this repo, generate the entry and the report. Name the deploying
    checkout, or the exact commit:
@@ -26,16 +34,22 @@ entry and the report come from `pnpm add-entries`; nobody writes them by hand.
      --candidate euler-xyz/evk-periphery@<40-hex sha>
    ```
 
-   It proves the bytecode, writes the entry into `verify/manifest.json`, and
-   re-renders `verify/8453.md` and that chain's row in `verify/README.md`.
+   It proves the bytecode, writes the entry into `verify/manifest.json` with
+   the address it was proven at (`evidence.address`), and re-renders
+   `verify/8453.md` and that chain's row in `verify/README.md`. A redeploy at
+   a new address is detected by that field: the old entry is regenerated,
+   trying its own pin after the commits you name.
 4. Commit those files with the address change and open the PR. CI proves the
    changed chain again (or fails the PR).
 
 If nothing proves, the command lists the contract with every candidate tried
 and writes nothing for it. Wrong or unpushed commit, or a build profile none of
 the candidates used: offer the right commit with `--candidate`, or use a
-waiver (below) — never merge red. A forgotten entry also fails CI:
-`check-completeness` names the `pnpm add-entries` command to run.
+waiver (below) — never merge red. A forgotten or stale entry also fails CI:
+`check-completeness` names the `pnpm add-entries` command to run. CI proves
+every chain whose verification inputs the PR changes (address files,
+`config/addresses`, the chain's manifest entries or `EulerChains.json` row),
+and every chain when the verifier pin, workflow, baselines or audits change.
 
 ## Add a chain
 
@@ -45,7 +59,7 @@ waiver (below) — never merge red. A forgotten entry also fails CI:
    from `EulerChains.json`, and its name and RPC endpoints from viem. No
    euler-verifier change and no pin bump are needed.
 2. Deploy. The deployment writes `addresses/<chainId>/` into your
-   euler-interfaces checkout.
+   euler-interfaces checkout; run `node chains.js` again.
 3. Generate every manifest entry and the chain's report:
 
    ```bash
@@ -116,12 +130,16 @@ the guarantee.
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
 | `MISMATCH`, sizes differ | wrong commit or profile | check `profile.context`; try the deployment repo's settings |
-| `MISMATCH`, diverges mid-code | embedded child code genuinely differs | wrong commit; if only paths differ the digest masking already handles it — investigate, don't waive blindly |
+| `MISMATCH`, diverges mid-code | embedded child code genuinely differs | wrong commit; digests of embedded children the build produces are already masked, so a difference there is real — investigate, don't waive blindly |
 | `build-error: submodule` | nested gitlink force-pushed away upstream | best-effort fallback handles it; if the missing dep is actually imported, pin a mirror |
 | `rpc: all endpoints failed` | endpoints unavailable | rotate per above |
 | `no RPC endpoint for chain …` | chain missing from `EulerChains.json`, or viem doesn't resolve it | add the chain to euler-interfaces, set `viemName`, bump viem, or set `DEPLOYMENT_RPC_URL_<chainId>` |
 | `NOT PROVEN` from `add-entries` | no candidate is the deployed commit + profile | pass the deploying checkout (`--candidates-from`) or the commit (`--candidate`) |
-| `not a full 40-hex commit SHA` | branch/tag pin in manifest | resolve to the SHA; pins are immutable by design |
+| `not a full 40-hex commit SHA` | branch/tag pin in manifest, submodule pin or baseline | resolve to the SHA; pins are immutable by design |
+| `EulerChains.json addresses differ …` | `node chains.js` not run after an address change | run it in euler-interfaces and commit the result |
+| `… was proven at 0x…; regenerate it` | the contract was redeployed | `pnpm add-entries` (with `--candidate`/`--candidates-from` for a new commit) |
+| `has origin …, expected …` | an engine clone points elsewhere | delete that directory under `repos/engine`; the engine clones it again |
+| `EVault modules not verified` / `EulerSwap management not verified` | delegated-code verification failed (RPC or build) | fix the cause and rerun; the chain's report is not written until it passes |
 
 ## Ownership
 
