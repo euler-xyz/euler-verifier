@@ -15,8 +15,12 @@ export interface VerifyOptions {
 
 function canonicalRecord(chainId: number, key: string, address: string, entry: CanonicalEntry): VerificationRecord {
   const base = { chainId, key, address, repo: entry.repo }
-  if (!CANONICAL_EXCEPTIONS[key]?.includes(chainId)) {
+  const expectedAddress = CANONICAL_EXCEPTIONS[key]?.[chainId]
+  if (!expectedAddress) {
     return { ...base, verdict: 'ERROR', error: `canonical entry ${chainId}/${key} is not a listed canonical exception` }
+  }
+  if (address.toLowerCase() !== expectedAddress.toLowerCase()) {
+    return { ...base, verdict: 'ERROR', error: `canonical entry ${chainId}/${key} expects ${expectedAddress}, got ${address}` }
   }
   return { ...base, verdict: 'CANONICAL', note: entry.note }
 }

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { execFile } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, dirname, resolve } from 'node:path'
 import { promisify } from 'node:util'
@@ -61,9 +61,22 @@ beforeEach(() => {
 })
 
 describe('canonical manifest entries', () => {
-  it('reports a listed canonical exception without fetching or building', async () => {
-    const record = await verifyEntry(1, 'EUL', '0xd9Fcd98c322942075A5C3860693e9f4f03AAE07b', CANONICAL_EUL, OPTS)
+  it.each([
+    '0xd9Fcd98c322942075A5C3860693e9f4f03AAE07b',
+    '0xd9fcd98c322942075a5c3860693e9f4f03aae07b',
+  ])('reports the canonical address %s without fetching or building', async (address) => {
+    const record = await verifyEntry(1, 'EUL', address, CANONICAL_EUL, OPTS)
     expect(record).toMatchObject({ verdict: 'CANONICAL', note: CANONICAL_EUL.note })
+    expect(fetchDeployedCode).not.toHaveBeenCalled()
+    expect(buildAtCommit).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    '0x0000000000000000000000000000000000000001',
+    'not-an-address',
+  ])('rejects a different canonical address: %s', async (address) => {
+    const record = await verifyEntry(1, 'EUL', address, CANONICAL_EUL, OPTS)
+    expect(record.verdict).toBe('ERROR')
     expect(fetchDeployedCode).not.toHaveBeenCalled()
     expect(buildAtCommit).not.toHaveBeenCalled()
   })
@@ -72,6 +85,28 @@ describe('canonical manifest entries', () => {
     const record = await verifyEntry(8453, 'EUL', '0xd9Fcd98c322942075A5C3860693e9f4f03AAE07b', CANONICAL_EUL, OPTS)
     expect(record.verdict).toBe('ERROR')
     expect(record.error).toMatch(/not a listed canonical exception/)
+  })
+
+  it('CLI fails when the address registry replaces the canonical token', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'verifier-canonical-address-'))
+    try {
+      const manifestPath = join(dir, 'manifest.json')
+      const addressesDir = join(dir, 'addresses')
+      mkdirSync(join(addressesDir, '1'), { recursive: true })
+      writeFileSync(manifestPath, JSON.stringify({ '1': { EUL: CANONICAL_EUL } }))
+      writeFileSync(join(addressesDir, '1', 'TokenAddresses.json'), JSON.stringify({
+        EUL: '0x0000000000000000000000000000000000000001',
+      }))
+      const tsx = join(ROOT, 'node_modules', '.bin', 'tsx')
+      await expect(execFileAsync(tsx, [
+        'src/cli.ts', '--manifest', manifestPath, '--addresses', addressesDir, '--chain', '1', '--no-explorer',
+      ], { cwd: ROOT, timeout: 60_000 })).rejects.toMatchObject({
+        code: 1,
+        stdout: expect.stringContaining('summary: {"ERROR":1} -> FAILED'),
+      })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 
   it('CLI verifies a commit-less canonical entry instead of crashing', async () => {
