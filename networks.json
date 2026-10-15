@@ -109,7 +109,7 @@
     "chain_id": 130,
     "name": "Unichain",
     "status": "production",
-    "explorer_url": "https://unichain.blockscout.com",
+    "explorer_url": "https://uniscan.xyz",
     "explorer_api": "https://unichain.blockscout.com/api",
     "api_type": "blockscout_v2",
     "rpc": [
@@ -144,7 +144,7 @@
     "chain_id": 143,
     "name": "Monad",
     "status": "production",
-    "explorer_url": "https://monadvision.com",
+    "explorer_url": "https://monadscan.com",
     "explorer_api": "https://sourcify-api-monad.blockvision.org",
     "api_type": "sourcify",
     "rpc": [
