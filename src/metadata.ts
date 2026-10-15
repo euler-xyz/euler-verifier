@@ -110,7 +110,11 @@ export function trailerDigestRanges(code: Uint8Array): Array<{ start: number; le
       continue
     }
     const [header, len] = h === 0x58 ? [2, cbor[i + 1]!] : [1, h - 0x40]
-    if (DIGEST_KEYS.has(key)) ranges.push({ start: base + i + header, length: len })
+    if (DIGEST_KEYS.has(key)) {
+      // An ipfs value is a multihash: 0x12 (sha2-256) 0x20 (32 bytes) then the digest; only the digest varies.
+      const multihash = key === 'ipfs' && len === 34 && cbor[i + header] === 0x12 && cbor[i + header + 1] === 0x20 ? 2 : 0
+      ranges.push({ start: base + i + header + multihash, length: len - multihash })
+    }
     i += header + len
   }
   return ranges
