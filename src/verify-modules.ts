@@ -3,13 +3,13 @@
  * P3 runner: verify the EVault modules for every chain in a proven manifest.
  *
  *   pnpm tsx src/verify-modules.ts --manifest <manifest.proven.json> \
- *     --addresses <euler-interfaces>/addresses --out <dir> [--chain N] [--repos-dir d]
+ *     --addresses <euler-interfaces>/addresses --out <dir> [--chains <EulerChains.json>] [--chain N] [--repos-dir d]
  */
 import { parseArgs } from 'node:util'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadNetworks } from './networks.js'
+import { chainsPathFor, loadNetworks } from './networks.js'
 import { resolveAddress } from './addresses.js'
 import { verifyModules } from './modules.js'
 import type { CompileProfile } from './types.js'
@@ -28,18 +28,19 @@ async function main(): Promise<number> {
     options: {
       manifest: { type: 'string' },
       addresses: { type: 'string' },
+      chains: { type: 'string' },
       out: { type: 'string' },
       chain: { type: 'string' },
       'repos-dir': { type: 'string' },
     },
   })
   if (!values.manifest || !values.addresses || !values.out) {
-    console.error('usage: verify-modules --manifest <json> --addresses <dir> --out <dir> [--chain N]')
+    console.error('usage: verify-modules --manifest <json> --addresses <dir> --out <dir> [--chains <EulerChains.json>] [--chain N]')
     return 1
   }
 
   const manifest = JSON.parse(readFileSync(resolve(values.manifest), 'utf8')) as Record<string, Record<string, ProvenEntry>>
-  const networks = loadNetworks(ROOT)
+  const networks = loadNetworks(chainsPathFor(values))
   const reposDir = values['repos-dir'] ? resolve(values['repos-dir']) : join(ROOT, 'repos', 'engine')
   const addressesDir = resolve(values.addresses)
   const outDir = resolve(values.out)

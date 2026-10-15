@@ -10,6 +10,7 @@ import type { Manifest } from '../src/types.js'
 
 const execFileAsync = promisify(execFile)
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const FIXTURE_CHAINS = join(ROOT, 'test', 'fixtures', 'EulerChains.json')
 
 describe('PR #38 review finding 1: fail-closed hex parsing', () => {
   it('rejects an unresolved-library Foundry artifact object instead of truncating', () => {
@@ -53,7 +54,7 @@ describe('PR #38 review finding 2: empty selection fails closed', () => {
   it('CLI exits non-zero when --chain matches nothing', async () => {
     const tsx = join(ROOT, 'node_modules', '.bin', 'tsx')
     await expect(
-      execFileAsync(tsx, ['src/cli.ts', '--manifest', 'manifests/manifest.json', '--chain', '999999', '--no-explorer'], {
+      execFileAsync(tsx, ['src/cli.ts', '--manifest', 'manifests/manifest.json', '--chains', FIXTURE_CHAINS, '--chain', '999999', '--no-explorer'], {
         cwd: ROOT,
         timeout: 60_000,
       }),
@@ -63,7 +64,7 @@ describe('PR #38 review finding 2: empty selection fails closed', () => {
   it('CLI exits non-zero when --contract matches nothing', async () => {
     const tsx = join(ROOT, 'node_modules', '.bin', 'tsx')
     await expect(
-      execFileAsync(tsx, ['src/cli.ts', '--manifest', 'manifests/manifest.json', '--contract', 'nope', '--no-explorer'], {
+      execFileAsync(tsx, ['src/cli.ts', '--manifest', 'manifests/manifest.json', '--chains', FIXTURE_CHAINS, '--contract', 'nope', '--no-explorer'], {
         cwd: ROOT,
         timeout: 60_000,
       }),

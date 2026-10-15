@@ -9,14 +9,14 @@
  * pin already proven for the implementation.
  *
  *   pnpm tsx src/verify-swap-management.ts --manifest <manifest.json> \
- *     --addresses <euler-interfaces>/addresses --out <dir> [--chain N]
+ *     --addresses <euler-interfaces>/addresses --out <dir> [--chains <EulerChains.json>] [--chain N]
  */
 import { parseArgs } from 'node:util'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createPublicClient, http, getAddress, parseAbi } from 'viem'
-import { loadNetworks } from './networks.js'
+import { chainsPathFor, loadNetworks } from './networks.js'
 import { resolveAddress } from './addresses.js'
 import { buildAtCommit } from './compile.js'
 import { compareRuntime } from './bytecode.js'
@@ -56,13 +56,14 @@ async function main(): Promise<number> {
     options: {
       manifest: { type: 'string' },
       addresses: { type: 'string' },
+      chains: { type: 'string' },
       out: { type: 'string' },
       chain: { type: 'string' },
       'repos-dir': { type: 'string' },
     },
   })
   if (!values.manifest || !values.addresses || !values.out) {
-    console.error('usage: verify-swap-management --manifest <json> --addresses <dir> --out <dir> [--chain N]')
+    console.error('usage: verify-swap-management --manifest <json> --addresses <dir> --out <dir> [--chains <EulerChains.json>] [--chain N]')
     return 1
   }
 
@@ -70,7 +71,7 @@ async function main(): Promise<number> {
     string,
     Record<string, ProvenEntry>
   >
-  const networks = loadNetworks(ROOT)
+  const networks = loadNetworks(chainsPathFor(values))
   const reposDir = values['repos-dir'] ? resolve(values['repos-dir']) : join(ROOT, 'repos', 'engine')
   const addressesDir = resolve(values.addresses)
   const outDir = resolve(values.out)

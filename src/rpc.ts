@@ -5,8 +5,9 @@ import type { NetworkInfo } from './types.js'
 /**
  * RPC endpoint resolution, following the evk-periphery convention:
  * DEPLOYMENT_RPC_URL_<chainId> from the environment (optional) takes
- * precedence; the public defaults from networks.json are fallbacks so that
- * third parties can re-run verification without any secrets.
+ * precedence; the network's public endpoints (a networks.json override, else
+ * viem's defaults) are fallbacks so that third parties can re-run
+ * verification without any secrets.
  */
 export function resolveRpcUrls(chainId: number, network: NetworkInfo | undefined, env: NodeJS.ProcessEnv = process.env): string[] {
   const urls: string[] = []
@@ -16,8 +17,9 @@ export function resolveRpcUrls(chainId: number, network: NetworkInfo | undefined
     if (!urls.includes(u)) urls.push(u)
   }
   if (urls.length === 0) {
+    const why = network ? (network.viemProblem ?? 'no endpoints') : 'not in EulerChains.json'
     throw new Error(
-      `no RPC endpoint for chain ${chainId}: set DEPLOYMENT_RPC_URL_${chainId} (see .env.example) or add a public default to networks.json`,
+      `no RPC endpoint for chain ${chainId} (${why}): set DEPLOYMENT_RPC_URL_${chainId} (see .env.example) or add an rpc override to networks.json`,
     )
   }
   return urls

@@ -3,7 +3,7 @@ import { parseArgs } from 'node:util'
 import { readFileSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadNetworks } from './networks.js'
+import { chainsPathFor, loadNetworks } from './networks.js'
 import { resolveAddress } from './addresses.js'
 import { iterateManifest, verifyEntry } from './verify.js'
 import type { Manifest, ManifestEntry, VerdictKind, VerificationRecord } from './types.js'
@@ -19,13 +19,16 @@ function pinOf(entry: ManifestEntry): { commit?: string; contractName?: string }
 const HELP = `euler-verifier engine — bytecode-level verification of deployed contracts
 
 Usage:
-  pnpm verify --manifest <path> [--addresses <euler-interfaces/addresses>] [options]
+  pnpm verify --manifest <path> --addresses <euler-interfaces/addresses> [options]
 
 Options:
   --manifest <path>    Manifest JSON (chainId -> contract key -> entry). Required.
   --addresses <dir>    euler-interfaces addresses/ directory, used to resolve
                        contract addresses. Entries may carry an explicit
                        "address" override (tests only).
+  --chains <path>      euler-interfaces EulerChains.json: chain names, explorers
+                       and the viem chain whose default RPCs are used
+                       (default: EulerChains.json beside --addresses).
   --chain <id>         Only verify this chain.
   --contract <key>     Only verify this manifest key (e.g. evc).
   --repos-dir <dir>    Where engine-managed source checkouts live
@@ -33,7 +36,7 @@ Options:
   --no-explorer        Skip the untrusted explorer cross-check.
   --json               Emit JSON records instead of human-readable lines.
 
-Environment (all optional; public defaults from networks.json are used otherwise):
+Environment (all optional; networks.json overrides, else viem's public RPCs, are used otherwise):
   DEPLOYMENT_RPC_URL_<chainId>   RPC endpoint override per chain
   ETHERSCAN_API_KEY              explorer cross-check only
 
@@ -45,6 +48,7 @@ async function main(): Promise<number> {
     options: {
       manifest: { type: 'string' },
       addresses: { type: 'string' },
+      chains: { type: 'string' },
       chain: { type: 'string' },
       contract: { type: 'string' },
       'repos-dir': { type: 'string' },
@@ -60,7 +64,7 @@ async function main(): Promise<number> {
   }
 
   const manifest = JSON.parse(readFileSync(resolve(values.manifest), 'utf8')) as Manifest
-  const networks = loadNetworks(ROOT_DIR)
+  const networks = loadNetworks(chainsPathFor(values))
   const reposDir = values['repos-dir'] ? resolve(values['repos-dir']) : join(ROOT_DIR, 'repos', 'engine')
   const addressesDir = values.addresses ? resolve(values.addresses) : null
 

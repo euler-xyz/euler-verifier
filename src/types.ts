@@ -40,7 +40,7 @@ export interface BytecodeEntry {
   verified?: 'bytecode'
   waiver?: Waiver | null
   /** Deployments built with submodules moved off their gitlinks record the refs here; the build must reproduce them. */
-  evidence?: { submoduleOverrides?: SubmoduleOverride[] }
+  evidence?: { codeSize?: number; origin?: string; strippedSha256?: string; submoduleOverrides?: SubmoduleOverride[] }
   proxy?: ProxyDeclaration
   /**
    * Test/override only: explicit address. In production runs addresses come
@@ -118,12 +118,19 @@ export interface VerificationRecord {
   artifactPath?: string
 }
 
+/** An explorer as euler-interfaces EulerChains.json declares it for contract verification. */
+export interface ExplorerVerifier {
+  type: 'etherscan' | 'blockscout' | 'sourcify' | 'custom'
+  url?: string
+}
+
 export interface NetworkInfo {
   name: string
   chainId: number
   explorerUrl: string
-  explorerApi: string
-  apiType: string
-  /** Public default RPC endpoints; env DEPLOYMENT_RPC_URL_<chainId> takes precedence. */
+  verifier?: ExplorerVerifier
+  /** networks.json override if set, else viem's default endpoints; env DEPLOYMENT_RPC_URL_<chainId> takes precedence. */
   rpc: string[]
+  /** Why viem supplied no endpoints, when it couldn't resolve the chain. */
+  viemProblem?: string
 }

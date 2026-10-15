@@ -10,17 +10,15 @@
  *
  *   pnpm tsx src/render-report.ts --manifest m.json --outcomes o.json \
  *     --baselines b.json --diffs component-diffs.json --modules mod.json \
- *     --swap-management sm.json --audits audits.json --notes n.json --out verify/
+ *     --swap-management sm.json --audits audits.json --notes n.json \
+ *     --chains EulerChains.json --out verify/
  */
 import { parseArgs } from 'node:util'
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { loadNetworks } from './networks.js'
 import { unitScopedDelta } from './unit-scope.js'
 import type { ComponentBaseline } from './run-baselines.js'
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 interface Outcome {
   chainId: number
@@ -111,12 +109,13 @@ async function main(): Promise<number> {
       'swap-management': { type: 'string' },
       audits: { type: 'string' },
       notes: { type: 'string' },
+      chains: { type: 'string' },
       out: { type: 'string' },
       'engine-ref': { type: 'string' },
     },
   })
-  if (!values.manifest || !values.outcomes || !values.baselines || !values.diffs || !values.out) {
-    console.error('usage: render-report --manifest m --outcomes o --baselines b --diffs d --out dir [--modules m] [--swap-management s] [--audits a] [--notes n]')
+  if (!values.manifest || !values.outcomes || !values.baselines || !values.diffs || !values.chains || !values.out) {
+    console.error('usage: render-report --manifest m --outcomes o --baselines b --diffs d --chains EulerChains.json --out dir [--modules m] [--swap-management s] [--audits a] [--notes n]')
     return 1
   }
 
@@ -154,7 +153,7 @@ async function main(): Promise<number> {
   const pairFor = (chainId: number, key: string, commit?: string): PairDiff | undefined =>
     pairs.find((p) => p.keys.includes(key) && p.chains.includes(String(chainId)) && (!commit || p.pin === commit))
 
-  const networks = loadNetworks(ROOT)
+  const networks = loadNetworks(resolve(values.chains))
   const outDir = resolve(values.out)
   mkdirSync(outDir, { recursive: true })
 

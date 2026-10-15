@@ -2,9 +2,6 @@
   "mainnet": {
     "chain_id": 1,
     "name": "Ethereum Mainnet",
-    "explorer_url": "https://etherscan.io",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://ethereum-rpc.publicnode.com",
       "https://cloudflare-eth.com"
@@ -13,9 +10,6 @@
   "arbitrum": {
     "chain_id": 42161,
     "name": "Arbitrum",
-    "explorer_url": "https://arbiscan.io",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://arbitrum-one-rpc.publicnode.com",
       "https://arb1.arbitrum.io/rpc"
@@ -24,9 +18,6 @@
   "base": {
     "chain_id": 8453,
     "name": "Base",
-    "explorer_url": "https://basescan.org",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://base-rpc.publicnode.com",
       "https://mainnet.base.org"
@@ -35,9 +26,6 @@
   "bsc": {
     "chain_id": 56,
     "name": "BSC",
-    "explorer_url": "https://bscscan.com",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://bsc-rpc.publicnode.com",
       "https://bsc-dataseed.bnbchain.org"
@@ -46,9 +34,6 @@
   "avalanche": {
     "chain_id": 43114,
     "name": "Avalanche",
-    "explorer_url": "https://snowtrace.io",
-    "explorer_api": "https://api.snowtrace.io/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://avalanche-c-chain-rpc.publicnode.com",
       "https://api.avax.network/ext/bc/C/rpc"
@@ -57,9 +42,6 @@
   "linea": {
     "chain_id": 59144,
     "name": "Linea",
-    "explorer_url": "https://lineascan.build",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://linea-rpc.publicnode.com",
       "https://rpc.linea.build"
@@ -68,9 +50,6 @@
   "polygon": {
     "chain_id": 137,
     "name": "Polygon",
-    "explorer_url": "https://polygonscan.com",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://polygon-bor-rpc.publicnode.com",
       "https://polygon.drpc.org"
@@ -79,9 +58,6 @@
   "bob": {
     "chain_id": 60808,
     "name": "BOB",
-    "explorer_url": "https://explorer.gobob.xyz",
-    "explorer_api": "https://explorer.gobob.xyz/api",
-    "api_type": "blockscout_v2",
     "rpc": [
       "https://rpc.gobob.xyz"
     ]
@@ -89,9 +65,6 @@
   "unichain": {
     "chain_id": 130,
     "name": "Unichain",
-    "explorer_url": "https://uniscan.xyz",
-    "explorer_api": "https://unichain.blockscout.com/api",
-    "api_type": "blockscout_v2",
     "rpc": [
       "https://unichain-rpc.publicnode.com",
       "https://mainnet.unichain.org"
@@ -100,9 +73,6 @@
   "berachain": {
     "chain_id": 80094,
     "name": "Berachain",
-    "explorer_url": "https://berascan.com",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://rpc.berachain.com"
     ]
@@ -110,9 +80,6 @@
   "sonic": {
     "chain_id": 146,
     "name": "Sonic",
-    "explorer_url": "https://sonicscan.org",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://sonic-rpc.publicnode.com",
       "https://rpc.soniclabs.com"
@@ -121,9 +88,6 @@
   "monad": {
     "chain_id": 143,
     "name": "Monad",
-    "explorer_url": "https://monadscan.com",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://rpc.monad.xyz"
     ]
@@ -131,9 +95,6 @@
   "tac": {
     "chain_id": 239,
     "name": "TAC",
-    "explorer_url": "https://explorer.tac.build",
-    "explorer_api": "https://explorer.tac.build/api",
-    "api_type": "blockscout_v2",
     "rpc": [
       "https://rpc.tac.build",
       "https://rpc.ankr.com/tac"
@@ -142,9 +103,6 @@
   "plasma": {
     "chain_id": 9745,
     "name": "Plasma",
-    "explorer_url": "https://plasmascan.to",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://rpc.plasma.to"
     ]
@@ -152,9 +110,6 @@
   "hyperevm": {
     "chain_id": 999,
     "name": "HyperEVM",
-    "explorer_url": "https://hyperevmscan.io",
-    "explorer_api": "https://api.etherscan.io/v2/api",
-    "api_type": "etherscan_v2",
     "rpc": [
       "https://rpc.hyperliquid.xyz/evm"
     ]
