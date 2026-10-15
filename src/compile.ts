@@ -50,7 +50,7 @@ export interface BuildRequest {
   submoduleOverrides?: Array<{ path: string; ref: string }>
 }
 
-async function run(cmd: string, args: string[], opts: { cwd?: string; env?: NodeJS.ProcessEnv; timeoutMs?: number }): Promise<string> {
+export async function run(cmd: string, args: string[], opts: { cwd?: string; env?: NodeJS.ProcessEnv; timeoutMs?: number }): Promise<string> {
   try {
     const { stdout } = await execFileAsync(cmd, args, {
       cwd: opts.cwd,
@@ -66,6 +66,29 @@ async function run(cmd: string, args: string[], opts: { cwd?: string; env?: Node
   }
 }
 
+/** Clone `repo` under `reposDir` unless an engine-managed clone is already there; returns its directory. */
+export async function ensureClone(reposDir: string, repo: string): Promise<string> {
+  mkdirSync(reposDir, { recursive: true })
+  const dir = join(reposDir, basename(repo))
+  if (!existsSync(join(dir, '.git'))) {
+    await run('git', ['clone', '--quiet', `https://github.com/${repo}.git`, dir], { timeoutMs: 600_000 })
+  }
+  return dir
+}
+
+/** Fetch `commit` into the clone at `dir` if it is not there yet. */
+export async function ensureCommit(dir: string, commit: string): Promise<void> {
+  const present = await run('git', ['cat-file', '-t', `${commit}^{commit}`], { cwd: dir }).then(
+    (t) => t.trim() === 'commit',
+    () => false,
+  )
+  if (!present) {
+    await run('git', ['fetch', '--quiet', 'origin', commit], { cwd: dir, timeoutMs: 600_000 }).catch(async () => {
+      await run('git', ['fetch', '--quiet', '--tags', 'origin'], { cwd: dir, timeoutMs: 600_000 })
+    })
+  }
+}
+
 /**
  * Clone (or reuse) an engine-managed checkout and pin it to the exact commit.
  * Engine clones live under `<reposDir>/` and are separate from any legacy
@@ -77,22 +100,8 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
     throw new Error(`manifest pin "${req.commit}" is not a full 40-hex commit SHA — branch and tag pins are rejected by design`)
   }
 
-  mkdirSync(req.reposDir, { recursive: true })
-  const dir = join(req.reposDir, basename(req.repo))
-
-  if (!existsSync(join(dir, '.git'))) {
-    await run('git', ['clone', '--quiet', `https://github.com/${req.repo}.git`, dir], { timeoutMs: 600_000 })
-  }
-
-  const present = await run('git', ['cat-file', '-t', `${req.commit}^{commit}`], { cwd: dir }).then(
-    (t) => t.trim() === 'commit',
-    () => false,
-  )
-  if (!present) {
-    await run('git', ['fetch', '--quiet', 'origin', req.commit], { cwd: dir, timeoutMs: 600_000 }).catch(async () => {
-      await run('git', ['fetch', '--quiet', '--tags', 'origin'], { cwd: dir, timeoutMs: 600_000 })
-    })
-  }
+  const dir = await ensureClone(req.reposDir, req.repo)
+  await ensureCommit(dir, req.commit)
 
   await run('git', ['checkout', '--quiet', '--force', req.commit], { cwd: dir })
   await run('git', ['submodule', 'sync', '--quiet', '--recursive'], { cwd: dir })

@@ -22,7 +22,8 @@ import { buildAtCommit } from './compile.js'
 import { compareRuntime } from './bytecode.js'
 import { fetchDeployedCode, resolveRpcUrls } from './rpc.js'
 import { embeddedAddressSet } from './modules.js'
-import type { CompileProfile } from './types.js'
+import { isEntrypoint } from './entrypoint.js'
+import type { CompileProfile, NetworkInfo } from './types.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const ABI = parseAbi(['function managementImpl() view returns (address)'])
@@ -51,41 +52,24 @@ async function readManagementAddress(implementation: string, urls: string[]): Pr
   throw new Error(`managementImpl() failed on all endpoints:\n  ${failures.join('\n  ')}`)
 }
 
-async function main(): Promise<number> {
-  const { values } = parseArgs({
-    options: {
-      manifest: { type: 'string' },
-      addresses: { type: 'string' },
-      chains: { type: 'string' },
-      out: { type: 'string' },
-      chain: { type: 'string' },
-      'repos-dir': { type: 'string' },
-    },
-  })
-  if (!values.manifest || !values.addresses || !values.out) {
-    console.error('usage: verify-swap-management --manifest <json> --addresses <dir> --out <dir> [--chains <EulerChains.json>] [--chain N]')
-    return 1
-  }
+export interface SwapManagementRun {
+  manifest: Record<string, Record<string, ProvenEntry>>
+  addressesDir: string
+  networks: Map<number, NetworkInfo>
+  reposDir: string
+  chains?: number[]
+}
 
-  const manifest = JSON.parse(readFileSync(resolve(values.manifest), 'utf8')) as Record<
-    string,
-    Record<string, ProvenEntry>
-  >
-  const networks = loadNetworks(chainsPathFor(values))
-  const reposDir = values['repos-dir'] ? resolve(values['repos-dir']) : join(ROOT, 'repos', 'engine')
-  const addressesDir = resolve(values.addresses)
-  const outDir = resolve(values.out)
-  mkdirSync(outDir, { recursive: true })
-
+export async function verifyManifestSwapManagement(run: SwapManagementRun): Promise<{ results: Record<string, unknown>; ok: boolean }> {
   const results: Record<string, unknown> = {}
   let ok = true
 
-  for (const [chainStr, contracts] of Object.entries(manifest)) {
+  for (const [chainStr, contracts] of Object.entries(run.manifest)) {
     const chainId = Number(chainStr)
-    if (values.chain !== undefined && chainId !== Number(values.chain)) continue
+    if (run.chains && !run.chains.includes(chainId)) continue
     const impl = contracts.eulerSwapV2Implementation
     if (!impl?.commit) continue
-    const implAddress = resolveAddress(addressesDir, chainId, 'eulerSwapV2Implementation')
+    const implAddress = resolveAddress(run.addressesDir, chainId, 'eulerSwapV2Implementation')
     if (!implAddress) {
       results[chainStr] = { error: 'eulerSwapV2Implementation address not found' }
       ok = false
@@ -93,7 +77,7 @@ async function main(): Promise<number> {
     }
 
     try {
-      const urls = resolveRpcUrls(chainId, networks.get(chainId))
+      const urls = resolveRpcUrls(chainId, run.networks.get(chainId))
       const managementAddress = await readManagementAddress(implAddress, urls)
       const profile: CompileProfile | 'native' =
         impl.profile?.context === 'native' ? 'native' : (impl.profile as CompileProfile)
@@ -104,7 +88,7 @@ async function main(): Promise<number> {
         commit: impl.commit,
         contractName: 'EulerSwap',
         profile,
-        reposDir,
+        reposDir: run.reposDir,
       })
       const crossChecked = embeddedAddressSet(implChain.code, implBuild.immutableReferences).has(managementAddress)
 
@@ -113,7 +97,7 @@ async function main(): Promise<number> {
         commit: impl.commit,
         contractName: 'EulerSwapManagement',
         profile,
-        reposDir,
+        reposDir: run.reposDir,
       })
       const { code } = await fetchDeployedCode(chainId, managementAddress, urls)
       const { match, evidence } = compareRuntime(code, artifact.code, artifact.immutableReferences)
@@ -136,15 +120,46 @@ async function main(): Promise<number> {
     }
   }
 
+  return { results, ok }
+}
+
+async function main(): Promise<number> {
+  const { values } = parseArgs({
+    options: {
+      manifest: { type: 'string' },
+      addresses: { type: 'string' },
+      chains: { type: 'string' },
+      out: { type: 'string' },
+      chain: { type: 'string' },
+      'repos-dir': { type: 'string' },
+    },
+  })
+  if (!values.manifest || !values.addresses || !values.out) {
+    console.error('usage: verify-swap-management --manifest <json> --addresses <dir> --out <dir> [--chains <EulerChains.json>] [--chain N]')
+    return 1
+  }
+
+  const outDir = resolve(values.out)
+  mkdirSync(outDir, { recursive: true })
+  const { results, ok } = await verifyManifestSwapManagement({
+    manifest: JSON.parse(readFileSync(resolve(values.manifest), 'utf8')) as SwapManagementRun['manifest'],
+    addressesDir: resolve(values.addresses),
+    networks: loadNetworks(chainsPathFor(values)),
+    reposDir: values['repos-dir'] ? resolve(values['repos-dir']) : join(ROOT, 'repos', 'engine'),
+    chains: values.chain !== undefined ? [Number(values.chain)] : undefined,
+  })
+
   writeFileSync(join(outDir, 'swap-management.json'), JSON.stringify(results, null, 1))
   console.log(ok ? '\nall management implementations verified' : '\nmanagement verification has failures')
   return ok ? 0 : 1
 }
 
-main().then(
-  (code) => process.exit(code),
-  (err) => {
-    console.error(err)
-    process.exit(1)
-  },
-)
+if (isEntrypoint(import.meta.url)) {
+  main().then(
+    (code) => process.exit(code),
+    (err) => {
+      console.error(err)
+      process.exit(1)
+    },
+  )
+}

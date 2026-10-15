@@ -16,6 +16,8 @@ import { promisify } from 'node:util'
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { ensureClone, ensureCommit } from './compile.js'
+import { isEntrypoint } from './entrypoint.js'
 
 const exec = promisify(execFile)
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -93,30 +95,53 @@ async function diffPair(
   return { files, insertions, deletions, numstat, diff }
 }
 
-async function main(): Promise<number> {
-  const { values } = parseArgs({
-    options: {
-      manifest: { type: 'string' },
-      baselines: { type: 'string' },
-      out: { type: 'string' },
-      'repos-dir': { type: 'string' },
-    },
-  })
-  if (!values.manifest || !values.baselines || !values.out) {
-    console.error('usage: run-baselines --manifest <file> --baselines <file> --out <dir> [--repos-dir d]')
-    return 1
-  }
-  const reposDir = values['repos-dir'] ? resolve(values['repos-dir']) : join(ROOT, 'repos', 'engine')
-  const outDir = resolve(values.out)
-  mkdirSync(outDir, { recursive: true })
+export interface PairDiff {
+  component: string
+  repo: string
+  pin: string
+  baseline: string
+  lastAudit: ComponentBaseline['lastAudit']
+  relation: string
+  predatesBaseline: boolean
+  diffDirection: string
+  chains: string[]
+  keys: string[]
+  files: number
+  insertions: number
+  deletions: number
+  numstat: string
+  diffFile: string | null
+  diffEmbeddable: boolean
+  pinNote: PinNote | null
+  libComponents: Array<{
+    repo: string
+    gitlinkPath: string
+    gitlink: string
+    baseline: string
+    lastAudit: LibComponent['lastAudit']
+    relation: string
+    files: number
+    insertions: number
+    deletions: number
+    numstat: string
+    diffFile: string | null
+    diffEmbeddable: boolean
+  }>
+}
 
-  const manifest = JSON.parse(readFileSync(resolve(values.manifest), 'utf8')) as Record<
-    string,
-    Record<string, ManifestEntry>
-  >
-  const { components } = JSON.parse(readFileSync(resolve(values.baselines), 'utf8')) as {
-    components: ComponentBaseline[]
-  }
+/**
+ * Diff every distinct (component, pin) of `manifest` against the component's
+ * baseline, writing the patch files into `outDir`. Clones and fetches what the
+ * diffs need under `reposDir`.
+ */
+export async function computeComponentDiffs(
+  manifest: Record<string, Record<string, ManifestEntry>>,
+  components: ComponentBaseline[],
+  reposDir: string,
+  outDir: string,
+  log: (line: string) => void = console.log,
+): Promise<PairDiff[]> {
+  mkdirSync(outDir, { recursive: true })
   const keyToComponent = new Map<string, ComponentBaseline>()
   for (const c of components) for (const k of c.keys) keyToComponent.set(k, c)
 
@@ -139,13 +164,14 @@ async function main(): Promise<number> {
     }
   }
   if (unmapped.size) {
-    console.error(`ERROR: manifest keys without a component baseline: ${[...unmapped].join(', ')}`)
-    return 1
+    throw new Error(`manifest keys without a component baseline: ${[...unmapped].join(', ')}`)
   }
 
-  const results = []
+  const results: PairDiff[] = []
   for (const { spec, pin, chains, keys } of pairs.values()) {
-    const repoDir = join(reposDir, spec.repo.split('/')[1]!)
+    const repoDir = await ensureClone(reposDir, spec.repo)
+    await ensureCommit(repoDir, spec.baseline.commit)
+    await ensureCommit(repoDir, pin)
     const rel = await relation(repoDir, spec.baseline.commit, pin)
     // For pins that predate the baseline the readable direction is pin→baseline:
     // hunks then show what the last audit reviewed that this deployment predates.
@@ -157,13 +183,15 @@ async function main(): Promise<number> {
 
     // Embedded lib components (e.g. EulerRouter inside EulerRouterFactory):
     // resolve the pin's gitlink and diff the lib against its own baseline.
-    const libs = []
+    const libs: PairDiff['libComponents'] = []
     for (const lib of spec.libComponents ?? []) {
       const gitlink = (await git(repoDir, ['ls-tree', pin, lib.gitlinkPath]))
         .trim()
         .split(/\s+/)[2]
       if (!gitlink) continue
-      const libDir = join(reposDir, lib.repo.split('/')[1]!)
+      const libDir = await ensureClone(reposDir, lib.repo)
+      await ensureCommit(libDir, lib.baseline.commit)
+      await ensureCommit(libDir, gitlink)
       const libRel = await relation(libDir, lib.baseline.commit, gitlink)
       const libDiff = await diffPair(libDir, lib.baseline.commit, gitlink, lib.componentPaths)
       const libDiffFile = `diff-${spec.component}-${pin.slice(0, 8)}-lib.patch`
@@ -204,18 +232,50 @@ async function main(): Promise<number> {
       pinNote: spec.pinNotes?.[pin] ?? null,
       libComponents: libs,
     })
-    console.log(
+    log(
       `${spec.component} @ ${pin.slice(0, 10)} [${rel}] ${d.files} files +${d.insertions}/-${d.deletions} (${chains.length} chains)`,
     )
   }
 
-  results.sort((a, b) => a.component.localeCompare(b.component) || a.pin.localeCompare(b.pin))
+  return results.sort((a, b) => a.component.localeCompare(b.component) || a.pin.localeCompare(b.pin))
+}
+
+async function main(): Promise<number> {
+  const { values } = parseArgs({
+    options: {
+      manifest: { type: 'string' },
+      baselines: { type: 'string' },
+      out: { type: 'string' },
+      'repos-dir': { type: 'string' },
+    },
+  })
+  if (!values.manifest || !values.baselines || !values.out) {
+    console.error('usage: run-baselines --manifest <file> --baselines <file> --out <dir> [--repos-dir d]')
+    return 1
+  }
+  const reposDir = values['repos-dir'] ? resolve(values['repos-dir']) : join(ROOT, 'repos', 'engine')
+  const outDir = resolve(values.out)
+  const manifest = JSON.parse(readFileSync(resolve(values.manifest), 'utf8')) as Record<
+    string,
+    Record<string, ManifestEntry>
+  >
+  const { components } = JSON.parse(readFileSync(resolve(values.baselines), 'utf8')) as {
+    components: ComponentBaseline[]
+  }
+
+  let results: PairDiff[]
+  try {
+    results = await computeComponentDiffs(manifest, components, reposDir, outDir)
+  } catch (err) {
+    console.error(`ERROR: ${err instanceof Error ? err.message : String(err)}`)
+    return 1
+  }
   writeFileSync(join(outDir, 'component-diffs.json'), JSON.stringify(results, null, 1) + '\n')
   console.log(`\n${results.length} (component, pin) pairs across ${components.length} components`)
   return 0
 }
 
-main().then(
+if (isEntrypoint(import.meta.url)) main().then(
   (code) => process.exit(code),
   (err) => {
     console.error(err)

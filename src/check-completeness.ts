@@ -8,7 +8,7 @@
  */
 import { parseArgs } from 'node:util'
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { CONTRACT_SPECS } from './contracts.js'
 import { resolveAddress } from './addresses.js'
 
@@ -27,6 +27,7 @@ const manifest = JSON.parse(readFileSync(resolve(values.manifest), 'utf8')) as R
 const addressesDir = resolve(values.addresses)
 
 const problems: string[] = []
+const missingChains = new Set<string>()
 const chains = readdirSync(addressesDir).filter((d) => /^\d+$/.test(d) && existsSync(join(addressesDir, d)))
 
 for (const chain of chains) {
@@ -36,6 +37,7 @@ for (const chain of chains) {
     const entry = manifest[chain]?.[key]
     if (!entry) {
       problems.push(`${chain}/${key} (${address}): deployed but missing from manifest`)
+      missingChains.add(chain)
     }
   }
   // Reverse direction: manifest entries for addresses that do not exist.
@@ -53,6 +55,13 @@ for (const chain of chains) {
 if (problems.length) {
   console.error(`${problems.length} completeness violation(s):`)
   for (const p of problems) console.error(`  - ${p}`)
+  if (missingChains.size) {
+    const interfaces = process.env.GITHUB_ACTIONS === 'true' ? '<your euler-interfaces checkout>' : dirname(addressesDir)
+    const chainArgs = [...missingChains].map((c) => ` --chain ${c}`).join('')
+    console.error('\nGenerate the missing entries and their reports from a euler-verifier checkout:')
+    console.error(`  pnpm add-entries --interfaces ${interfaces}${chainArgs}`)
+    console.error('If the deployed commits are new, add --candidates-from <deploying checkout> or --candidate <repo>@<sha>.')
+  }
   process.exit(1)
 }
 console.log(`completeness OK across ${chains.length} chains`)

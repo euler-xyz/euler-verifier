@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --exclude 'test/integration/**'",
     "test:integration": "RUN_INTEGRATION=1 vitest run test/integration",
-    "verify": "tsx src/cli.ts"
+    "verify": "tsx src/cli.ts",
+    "add-entries": "tsx src/add-entries.ts"
   },
   "dependencies": {
     "viem": "^2.21.0"
