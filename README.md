@@ -16,11 +16,10 @@ The chains themselves come from euler-interfaces `EulerChains.json`.
 
 ## Method
 
-1. `eth_getCode` for the address, trying in order `DEPLOYMENT_RPC_URL_<chainId>`
-   if set, then the chain's `rpc` override in `networks.json` if it has one,
-   else viem's default public endpoints for the chain. The viem chain is the
-   one euler-interfaces `EulerChains.json` names (`viemName`, else the only
-   viem chain with that id).
+1. `eth_getCode` for the address, trying `DEPLOYMENT_RPC_URL_<chainId>` first
+   if set, then viem's default public endpoints for the chain. The viem chain
+   is the one euler-interfaces `EulerChains.json` names (`viemName`, else the
+   only viem chain with that id).
 2. Check out `repo@commit`, apply the recorded build profile (and submodule
    overrides, if any), `forge build`.
 3. Strip trailing CBOR metadata from both artifact and chain code, mask
@@ -140,11 +139,11 @@ to the `EulerChains.json` beside `--addresses`.
 
 ### Networks
 
-Chains, names and explorers come from euler-interfaces `EulerChains.json`, and
-RPC endpoints from viem. `networks.json` holds optional overrides by chain:
-`name` (the report title) and `rpc` (replaces viem's endpoints). Add an `rpc`
-override only when viem's default endpoint for a chain is unusable. The
-explorer cross-check follows each chain's `verifier`: Etherscan V2 for
+The chains and their explorers come from euler-interfaces `EulerChains.json`.
+Each chain's name (the report title) and RPC endpoints come from the viem chain
+it resolves to. If viem's default endpoint for a chain is unusable, set
+`DEPLOYMENT_RPC_URL_<chainId>` for a local run, or bump viem once a release
+fixes it. The explorer cross-check follows each chain's `verifier`: Etherscan V2 for
 `etherscan` (with `ETHERSCAN_API_KEY`), the Etherscan-compatible API at the url
 for `blockscout` and `custom`, and the Sourcify v2 API at the url (default
 sourcify.dev) for `sourcify`. It is informational and never decides a verdict.
@@ -158,7 +157,7 @@ pnpm test:integration  # clones + builds a pinned repo and proves EVC on public 
 
 Requirements: node + pnpm (version pinned in `package.json`), `git`, `forge` 1.7.1 (pinned in CI; other
 versions change the metadata hash, which breaks the integration tests' byte-for-byte fixture check).
-No secrets are required; see `.env.example` for the optional overrides.
+No secrets are required; see `.env.example` for the optional RPC variables.
 
 Operational procedures (adding a chain or contract, endpoint rotation,
 re-verification) are in [RUNBOOK.md](RUNBOOK.md).

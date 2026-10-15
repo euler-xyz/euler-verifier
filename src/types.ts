@@ -125,11 +125,12 @@ export interface ExplorerVerifier {
 }
 
 export interface NetworkInfo {
+  /** The viem chain's name, used as the report title. */
   name: string
   chainId: number
   explorerUrl: string
   verifier?: ExplorerVerifier
-  /** networks.json override if set, else viem's default endpoints; env DEPLOYMENT_RPC_URL_<chainId> takes precedence. */
+  /** viem's default endpoints; env DEPLOYMENT_RPC_URL_<chainId> takes precedence. */
   rpc: string[]
   /** Why viem supplied no endpoints, when it couldn't resolve the chain. */
   viemProblem?: string

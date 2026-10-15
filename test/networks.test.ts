@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 vi.mock('viem/chains', () => ({
-  alpha: { id: 7001, name: 'Alpha', nativeCurrency: {}, rpcUrls: { default: { http: ['https://rpc.alpha.example'] } } },
+  alpha: { id: 7001, name: 'Alpha Mainnet', nativeCurrency: {}, rpcUrls: { default: { http: ['https://rpc.alpha.example'] } } },
 }))
 
 import { buildNetworks, chainsPathFor, loadNetworks, resolveViemChain, type RegistryChain } from '../src/networks.js'
@@ -15,7 +15,7 @@ function viemChain(id: number, name: string, http: string[]) {
 }
 
 const CATALOG = {
-  one: viemChain(1, 'One', ['https://rpc.one.example']),
+  one: viemChain(1, 'One', ['https://rpc.one.example', 'https://rpc-b.one.example']),
   twin: viemChain(2, 'Twin', ['https://rpc.twin.example']),
   twinTestnet: viemChain(2, 'Twin Testnet', ['https://rpc.twin-testnet.example']),
   three: viemChain(3, 'Three', ['https://rpc.three.example']),
@@ -31,30 +31,29 @@ const row = (chainId: number, extra: Partial<RegistryChain> = {}): RegistryChain
 })
 
 describe('chains from the registry', () => {
-  it('takes name, explorer and verifier from EulerChains.json and RPCs from viem', () => {
-    const networks = buildNetworks([row(1, { verifier: { type: 'blockscout', url: 'https://explorer1.example/api' } })], {}, CATALOG)
+  it('takes explorer and verifier from EulerChains.json, and name and RPCs from viem', () => {
+    const networks = buildNetworks([row(1, { verifier: { type: 'blockscout', url: 'https://explorer1.example/api' } })], CATALOG)
     expect(networks.get(1)).toEqual({
       chainId: 1,
-      name: 'chain1',
+      name: 'One',
       explorerUrl: 'https://explorer1.example',
       verifier: { type: 'blockscout', url: 'https://explorer1.example/api' },
-      rpc: ['https://rpc.one.example'],
+      rpc: ['https://rpc.one.example', 'https://rpc-b.one.example'],
     })
   })
 
   it('knows only the chains the registry lists', () => {
-    const networks = buildNetworks([row(1)], { other: { chain_id: 3, rpc: ['https://override.example'] } }, CATALOG)
-    expect([...networks.keys()]).toEqual([1])
+    expect([...buildNetworks([row(1), row(3)], CATALOG).keys()]).toEqual([1, 3])
   })
 
-  it('loads EulerChains.json and networks.json from disk, with viem/chains for RPCs', () => {
+  it('loads EulerChains.json from disk and resolves it against viem/chains', () => {
     const dir = mkdtempSync(join(tmpdir(), 'verifier-networks-'))
     try {
       writeFileSync(join(dir, 'EulerChains.json'), JSON.stringify([row(7001, { name: 'alpha', safeBaseUrl: 'ignored' } as Partial<RegistryChain>)]))
-      writeFileSync(join(dir, 'networks.json'), JSON.stringify({ alpha: { chain_id: 7001, name: 'Alpha Mainnet' } }))
-      const networks = loadNetworks(join(dir, 'EulerChains.json'), join(dir, 'networks.json'))
-      expect(networks.get(7001)).toMatchObject({ name: 'Alpha Mainnet', rpc: ['https://rpc.alpha.example'] })
-      expect(loadNetworks(join(dir, 'EulerChains.json'), join(dir, 'absent.json')).get(7001)?.name).toBe('alpha')
+      expect(loadNetworks(join(dir, 'EulerChains.json')).get(7001)).toMatchObject({
+        name: 'Alpha Mainnet',
+        rpc: ['https://rpc.alpha.example'],
+      })
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
@@ -70,6 +69,7 @@ describe('chains from the registry', () => {
 describe('viem chain resolution', () => {
   it('uses viemName when set', () => {
     expect(resolveViemChain({ chainId: 2, viemName: 'twinTestnet' }, CATALOG).name).toBe('Twin Testnet')
+    expect(buildNetworks([row(2, { viemName: 'twin' })], CATALOG).get(2)).toMatchObject({ name: 'Twin', rpc: ['https://rpc.twin.example'] })
   })
 
   it('uses the unique chain with the id when viemName is absent', () => {
@@ -82,37 +82,31 @@ describe('viem chain resolution', () => {
     expect(() => resolveViemChain({ chainId: 3, viemName: 'one' }, CATALOG)).toThrow(/not a viem chain with id 3/)
   })
 
-  it('keeps an unresolvable chain, without endpoints, and says why', () => {
-    const network = buildNetworks([row(2)], {}, CATALOG).get(2)
-    expect(network?.rpc).toEqual([])
-    expect(() => resolveRpcUrls(2, network, {})).toThrow(/several chains with id 2.*networks\.json/)
+  it('keeps an unresolvable chain under its registry name, without endpoints, and says why', () => {
+    const network = buildNetworks([row(2)], CATALOG).get(2)
+    expect(network).toMatchObject({ name: 'chain2', rpc: [] })
+    expect(() => resolveRpcUrls(2, network, {})).toThrow(/several chains with id 2.*DEPLOYMENT_RPC_URL_2/)
   })
 })
 
-describe('networks.json overrides', () => {
-  const overrides = {
-    one: { chain_id: 1, name: 'One Mainnet', rpc: ['https://override-one.example', 'https://override-one-b.example'] },
-    three: { chain_id: 3, name: 'Three Chain' },
-  }
-  const networks = buildNetworks([row(1), row(3), row(2, { viemName: 'twin' })], overrides, CATALOG)
+describe('RPC endpoints', () => {
+  const network = buildNetworks([row(1)], CATALOG).get(1)
 
-  it('replaces the name and viem RPCs where set', () => {
-    expect(networks.get(1)).toMatchObject({ name: 'One Mainnet', rpc: ['https://override-one.example', 'https://override-one-b.example'] })
-  })
-
-  it('keeps viem RPCs when the override sets only a name', () => {
-    expect(networks.get(3)).toMatchObject({ name: 'Three Chain', rpc: ['https://rpc.three.example'] })
-  })
-
-  it('runs a chain without an override from the registry and viem alone', () => {
-    expect(networks.get(2)).toMatchObject({ name: 'chain2', rpc: ['https://rpc.twin.example'] })
-  })
-
-  it('still puts DEPLOYMENT_RPC_URL_<id> first', () => {
-    expect(resolveRpcUrls(1, networks.get(1), { DEPLOYMENT_RPC_URL_1: 'https://private.example' })).toEqual([
+  it('puts DEPLOYMENT_RPC_URL_<id> before viem defaults', () => {
+    expect(resolveRpcUrls(1, network, { DEPLOYMENT_RPC_URL_1: 'https://private.example' })).toEqual([
       'https://private.example',
-      'https://override-one.example',
-      'https://override-one-b.example',
+      'https://rpc.one.example',
+      'https://rpc-b.one.example',
+    ])
+  })
+
+  it('uses viem defaults alone when no env URL is set', () => {
+    expect(resolveRpcUrls(1, network, {})).toEqual(['https://rpc.one.example', 'https://rpc-b.one.example'])
+  })
+
+  it('works from DEPLOYMENT_RPC_URL_<id> alone for a chain viem cannot resolve', () => {
+    expect(resolveRpcUrls(2, buildNetworks([row(2)], CATALOG).get(2), { DEPLOYMENT_RPC_URL_2: 'https://private.example' })).toEqual([
+      'https://private.example',
     ])
   })
 })

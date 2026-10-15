@@ -41,9 +41,9 @@ waiver (below) — never merge red. A forgotten entry also fails CI:
 
 1. euler-interfaces: add the chain to `chains.js` and run `node chains.js`
    (euler-interfaces README, "Adding a chain"). CI requires every chain to
-   resolve to a viem chain; the engine reads its name, explorer and verifier
-   from `EulerChains.json` and its RPC endpoints from viem. No euler-verifier
-   change and no pin bump are needed.
+   resolve to a viem chain. The engine reads the chain's explorer and verifier
+   from `EulerChains.json`, and its name and RPC endpoints from viem. No
+   euler-verifier change and no pin bump are needed.
 2. Deploy. The deployment writes `addresses/<chainId>/` into your
    euler-interfaces checkout.
 3. Generate every manifest entry and the chain's report:
@@ -56,12 +56,10 @@ waiver (below) — never merge red. A forgotten entry also fails CI:
 4. Open one euler-interfaces PR with the addresses, the `chains.js` entry,
    `EulerChains.json`, and the generated `verify/` changes.
 
-Only if viem's default RPC for the chain is unusable: add an override to
-`networks.json` in this repo (`chain_id`, and an `rpc` list of keyless public
-endpoints, each checked with `eth_chainId`), and move the euler-interfaces CI
-pin to that commit. `DEPLOYMENT_RPC_URL_<chainId>` covers a local run without
-it. An override's `name` sets the report title; without one, the title is the
-`EulerChains.json` name.
+If viem's default RPC for the chain is unusable, set
+`DEPLOYMENT_RPC_URL_<chainId>` for local runs. For CI, bump viem in this repo
+to a release whose default works, then move the euler-interfaces CI pin. The
+report title is the viem chain's name.
 
 ## Add an audit
 
@@ -92,11 +90,10 @@ an exemption — prefer reconstructing and tagging the real source.
 
 ## Rotate or fix an RPC endpoint
 
-- Public endpoints come from viem unless `networks.json` has an `rpc`
-  override for the chain, which replaces them. To fix a broken one, edit or
-  add the override (curl-verify `eth_chainId` first), then move the
-  euler-interfaces CI pin. The engine tries the list in order, so one broken
-  endpoint only degrades that chain.
+- Public endpoints are viem's defaults for the chain, tried in order, so one
+  broken endpoint only degrades that chain. Locally, `DEPLOYMENT_RPC_URL_<chainId>`
+  goes first. If viem's default stays broken, bump viem to a release that fixes
+  it (curl-verify `eth_chainId` first), then move the euler-interfaces CI pin.
 
 ## Re-run everything from scratch (integrator instructions)
 
@@ -122,7 +119,7 @@ the guarantee.
 | `MISMATCH`, diverges mid-code | embedded child code genuinely differs | wrong commit; if only paths differ the digest masking already handles it — investigate, don't waive blindly |
 | `build-error: submodule` | nested gitlink force-pushed away upstream | best-effort fallback handles it; if the missing dep is actually imported, pin a mirror |
 | `rpc: all endpoints failed` | endpoints unavailable | rotate per above |
-| `no RPC endpoint for chain …` | chain missing from `EulerChains.json`, or viem doesn't resolve it | add the chain to euler-interfaces, set `viemName`, or add an `rpc` override |
+| `no RPC endpoint for chain …` | chain missing from `EulerChains.json`, or viem doesn't resolve it | add the chain to euler-interfaces, set `viemName`, bump viem, or set `DEPLOYMENT_RPC_URL_<chainId>` |
 | `NOT PROVEN` from `add-entries` | no candidate is the deployed commit + profile | pass the deploying checkout (`--candidates-from`) or the commit (`--candidate`) |
 | `not a full 40-hex commit SHA` | branch/tag pin in manifest | resolve to the SHA; pins are immutable by design |
 

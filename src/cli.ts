@@ -26,9 +26,9 @@ Options:
   --addresses <dir>    euler-interfaces addresses/ directory, used to resolve
                        contract addresses. Entries may carry an explicit
                        "address" override (tests only).
-  --chains <path>      euler-interfaces EulerChains.json: chain names, explorers
-                       and the viem chain whose default RPCs are used
-                       (default: EulerChains.json beside --addresses).
+  --chains <path>      euler-interfaces EulerChains.json: the chains, their
+                       explorers and the viem chain whose name and default RPCs
+                       are used (default: EulerChains.json beside --addresses).
   --chain <id>         Only verify this chain.
   --contract <key>     Only verify this manifest key (e.g. evc).
   --repos-dir <dir>    Where engine-managed source checkouts live
@@ -36,7 +36,7 @@ Options:
   --no-explorer        Skip the untrusted explorer cross-check.
   --json               Emit JSON records instead of human-readable lines.
 
-Environment (all optional; networks.json overrides, else viem's public RPCs, are used otherwise):
+Environment (all optional; viem's default public RPCs are used otherwise):
   DEPLOYMENT_RPC_URL_<chainId>   RPC endpoint override per chain
   ETHERSCAN_API_KEY              explorer cross-check only
 

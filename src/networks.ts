@@ -1,11 +1,8 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import * as viemChains from 'viem/chains'
 import type { Chain } from 'viem'
 import type { ExplorerVerifier, NetworkInfo } from './types.js'
-
-export const DEFAULT_OVERRIDES = join(resolve(dirname(fileURLToPath(import.meta.url)), '..'), 'networks.json')
 
 /** The fields of a euler-interfaces EulerChains.json row the engine reads. */
 export interface RegistryChain {
@@ -14,12 +11,6 @@ export interface RegistryChain {
   viemName?: string
   explorerUrl: string
   verifier?: ExplorerVerifier
-}
-
-export interface NetworkOverride {
-  chain_id: number
-  name?: string
-  rpc?: string[]
 }
 
 type ViemCatalog = Record<string, unknown>
@@ -56,43 +47,34 @@ export function resolveViemChain(row: Pick<RegistryChain, 'chainId' | 'viemName'
   )
 }
 
-function viemEndpoints(row: RegistryChain, catalog: ViemCatalog): { rpc: string[]; viemProblem?: string } {
+/** The viem chain's name and default endpoints; a chain viem can't resolve keeps its registry name and no endpoints. */
+function fromViem(row: RegistryChain, catalog: ViemCatalog): Pick<NetworkInfo, 'name' | 'rpc' | 'viemProblem'> {
   try {
-    return { rpc: [...resolveViemChain(row, catalog).rpcUrls.default.http] }
+    const chain = resolveViemChain(row, catalog)
+    return { name: chain.name, rpc: [...chain.rpcUrls.default.http] }
   } catch (err) {
-    return { rpc: [], viemProblem: err instanceof Error ? err.message : String(err) }
+    return { name: row.name, rpc: [], viemProblem: err instanceof Error ? err.message : String(err) }
   }
 }
 
-export function buildNetworks(
-  registry: RegistryChain[],
-  overrides: Record<string, NetworkOverride>,
-  catalog: ViemCatalog,
-): Map<number, NetworkInfo> {
-  const overrideFor = new Map(Object.values(overrides).map((o) => [o.chain_id, o]))
+export function buildNetworks(registry: RegistryChain[], catalog: ViemCatalog): Map<number, NetworkInfo> {
   return new Map(
     registry.map((row) => {
-      const override = overrideFor.get(row.chainId)
-      const endpoints = override?.rpc?.length ? { rpc: [...override.rpc] } : viemEndpoints(row, catalog)
       const network: NetworkInfo = {
-        name: override?.name ?? row.name,
         chainId: row.chainId,
         explorerUrl: row.explorerUrl,
         ...(row.verifier ? { verifier: row.verifier } : {}),
-        ...endpoints,
+        ...fromViem(row, catalog),
       }
       return [row.chainId, network]
     }),
   )
 }
 
-/** Chains from euler-interfaces EulerChains.json, RPCs from viem, with networks.json as optional overrides. */
-export function loadNetworks(chainsPath: string, overridesPath: string = DEFAULT_OVERRIDES): Map<number, NetworkInfo> {
+/** Chains from euler-interfaces EulerChains.json; names and RPC endpoints from viem. */
+export function loadNetworks(chainsPath: string): Map<number, NetworkInfo> {
   const registry = JSON.parse(readFileSync(chainsPath, 'utf8')) as RegistryChain[]
-  const overrides = existsSync(overridesPath)
-    ? (JSON.parse(readFileSync(overridesPath, 'utf8')) as Record<string, NetworkOverride>)
-    : {}
-  return buildNetworks(registry, overrides, viemChains)
+  return buildNetworks(registry, viemChains)
 }
 
 /** `--chains` if given, else the EulerChains.json beside the `--addresses` directory. */
