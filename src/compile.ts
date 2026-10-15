@@ -3,6 +3,7 @@ import { promisify } from 'node:util'
 import { existsSync, rmSync, readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs'
 import { join, basename } from 'node:path'
 import { fromHex } from './metadata.js'
+import { embeddedMetadataRanges } from './bytecode.js'
 import type { CompileProfile, ImmutableRange } from './types.js'
 
 const execFileAsync = promisify(execFile)
@@ -18,6 +19,8 @@ export interface EffectiveProfile {
 export interface BuildResult {
   code: Uint8Array
   immutableReferences: Record<string, ImmutableRange[]>
+  /** Runtime offsets of embedded child-metadata digests, derived from the build's artifacts. */
+  embeddedMetadata: ImmutableRange[]
   artifactPath: string
   repoDir: string
   /** Settings the compiler actually used, parsed from the artifact metadata. */
@@ -66,12 +69,22 @@ export async function run(cmd: string, args: string[], opts: { cwd?: string; env
   }
 }
 
-/** Clone `repo` under `reposDir` unless an engine-managed clone is already there; returns its directory. */
+/**
+ * Clone `repo` under `reposDir` unless an engine-managed clone is already
+ * there; returns its directory. A reused clone must have the repo's GitHub
+ * origin.
+ */
 export async function ensureClone(reposDir: string, repo: string): Promise<string> {
   mkdirSync(reposDir, { recursive: true })
   const dir = join(reposDir, basename(repo))
+  const origin = `https://github.com/${repo}.git`
   if (!existsSync(join(dir, '.git'))) {
-    await run('git', ['clone', '--quiet', `https://github.com/${repo}.git`, dir], { timeoutMs: 600_000 })
+    await run('git', ['clone', '--quiet', origin, dir], { timeoutMs: 600_000 })
+    return dir
+  }
+  const actual = (await run('git', ['remote', 'get-url', 'origin'], { cwd: dir })).trim()
+  if (actual.replace(/\.git$/, '') !== origin.replace(/\.git$/, '')) {
+    throw new Error(`${dir} has origin ${actual}, expected ${origin}: remove it so the engine clones it again`)
   }
   return dir
 }
@@ -103,7 +116,10 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
   const dir = await ensureClone(req.reposDir, req.repo)
   await ensureCommit(dir, req.commit)
 
+  // A reused checkout may hold edits or untracked sources a build would pick up.
   await run('git', ['checkout', '--quiet', '--force', req.commit], { cwd: dir })
+  await run('git', ['reset', '--quiet', '--hard', req.commit], { cwd: dir })
+  await run('git', ['clean', '-ffdxq'], { cwd: dir })
   await run('git', ['submodule', 'sync', '--quiet', '--recursive'], { cwd: dir })
   // Recursive by default: builds (unlike text comparison) need the full
   // dependency tree — nested lib sources are compiled, not just read.
@@ -136,6 +152,11 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
     })
   }
 
+  await run('git', ['submodule', 'foreach', '--quiet', '--recursive', 'git reset --quiet --hard && git clean -ffdxq'], {
+    cwd: dir,
+    timeoutMs: 600_000,
+  })
+
   for (const o of req.submoduleOverrides ?? []) {
     const subDir = join(dir, o.path)
     if (!existsSync(subDir)) throw new Error(`submodule override path missing: ${o.path}`)
@@ -148,6 +169,7 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
       await run('git', ['fetch', '--quiet', 'origin', o.ref], { cwd: subDir, timeoutMs: 600_000 }).catch(() => {})
     }
     await run('git', ['checkout', '--quiet', '--force', o.ref], { cwd: subDir })
+    await run('git', ['clean', '-ffdxq'], { cwd: subDir })
     // The override's own dependency tree must follow it.
     await run('git', ['submodule', 'update', '--quiet', '--init', '--force', '--recursive', '--jobs', '4'], {
       cwd: subDir,
@@ -256,6 +278,42 @@ function findArtifacts(outDir: string, fileName: string): string[] {
   return hits.sort()
 }
 
+function allArtifacts(outDir: string): string[] {
+  const hits: string[] = []
+  if (!existsSync(outDir)) return hits
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const p = join(dir, entry)
+      if (statSync(p).isDirectory()) {
+        if (entry !== 'build-info') walk(p)
+      } else if (entry.endsWith('.json')) hits.push(p)
+    }
+  }
+  walk(outDir)
+  return hits.sort()
+}
+
+/** Every creation and deployed bytecode of the build, as candidate embedded children. */
+const buildChildCodes = new Map<string, Uint8Array[]>()
+
+function childCodes(outDir: string, signature: string): Uint8Array[] {
+  const cached = buildChildCodes.get(signature)
+  if (cached) return cached
+  const seen = new Set<string>()
+  const codes: Uint8Array[] = []
+  for (const file of allArtifacts(outDir)) {
+    const a = JSON.parse(readFileSync(file, 'utf8')) as { bytecode?: { object?: string }; deployedBytecode?: { object?: string } }
+    for (const hex of [a.bytecode?.object, a.deployedBytecode?.object]) {
+      const clean = hex?.replace(/^0x/, '')
+      if (!clean || seen.has(clean) || /[^0-9a-fA-F]/.test(clean)) continue
+      seen.add(clean)
+      codes.push(fromHex(clean))
+    }
+  }
+  buildChildCodes.set(signature, codes)
+  return codes
+}
+
 /**
  * Different contracts from the same (repo, commit, profile) share one forge
  * build: track what each repo checkout currently holds and reuse `out/`
@@ -313,9 +371,11 @@ export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
 
   const { effective, sources } = parseArtifactMetadata(artifact.metadata)
 
+  const code = fromHex(object)
   return {
-    code: fromHex(object),
+    code,
     immutableReferences: artifact.deployedBytecode?.immutableReferences ?? {},
+    embeddedMetadata: embeddedMetadataRanges(code, childCodes(join(repoDir, 'out'), signature)),
     artifactPath: preferred,
     repoDir,
     effectiveProfile: effective,

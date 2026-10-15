@@ -13,7 +13,7 @@ import { chainsPathFor, loadNetworks } from './networks.js'
 import { resolveAddress } from './addresses.js'
 import { verifyModules } from './modules.js'
 import { isEntrypoint } from './entrypoint.js'
-import type { CompileProfile, NetworkInfo } from './types.js'
+import type { CompileProfile, NetworkInfo, SubmoduleOverride } from './types.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -22,6 +22,7 @@ export interface ProvenEntry {
   commit: string
   contractName: string
   profile: (CompileProfile & { context?: string }) | undefined
+  evidence?: { submoduleOverrides?: SubmoduleOverride[] }
 }
 
 export interface ModulesRun {
@@ -42,8 +43,8 @@ export async function verifyManifestModules(run: ModulesRun): Promise<{ results:
     const impl = contracts.eVaultImplementation
     if (!impl) continue
     const implAddress = resolveAddress(run.addressesDir, chainId, 'eVaultImplementation')
-    if (!implAddress) {
-      results[chainStr] = { error: 'implementation address not found' }
+    if (!implAddress || !impl.profile) {
+      results[chainStr] = { error: implAddress ? 'implementation has no build profile' : 'implementation address not found' }
       ok = false
       continue
     }
@@ -55,7 +56,8 @@ export async function verifyManifestModules(run: ModulesRun): Promise<{ results:
         implementationAddress: implAddress,
         repo: impl.repo,
         commit: impl.commit,
-        profile: impl.profile?.context === 'native' ? 'native' : (impl.profile as CompileProfile),
+        profile: impl.profile,
+        submoduleOverrides: impl.evidence?.submoduleOverrides,
         reposDir: run.reposDir,
         networks: run.networks,
       })

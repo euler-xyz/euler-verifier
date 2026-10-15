@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { splitMetadata, decodeCborInfo } from './metadata.js'
+import { splitMetadata, decodeCborInfo, trailerDigestRanges } from './metadata.js'
 import type { CompareEvidence, ImmutableRange } from './types.js'
 
 /**
@@ -28,38 +28,44 @@ export function sha256Hex(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')
 }
 
-// CBOR encodings inside solc metadata blobs:
-//   64 'ipfs'  58 22 12 20 <32-byte digest>   (ipfs multihash)
-//   65 'bzzr0' 58 20       <32-byte digest>   (legacy swarm)
-//   65 'bzzr1' 58 20       <32-byte digest>
-const EMBEDDED_DIGEST_MARKERS: Array<{ marker: number[]; digestLen: number }> = [
-  { marker: [0x64, 0x69, 0x70, 0x66, 0x73, 0x58, 0x22, 0x12, 0x20], digestLen: 32 },
-  { marker: [0x65, 0x62, 0x7a, 0x7a, 0x72, 0x30, 0x58, 0x20], digestLen: 32 },
-  { marker: [0x65, 0x62, 0x7a, 0x7a, 0x72, 0x31, 0x58, 0x20], digestLen: 32 },
-]
-
 /**
- * Factories embed CHILD creation bytecode (e.g. GenericFactory embeds
- * BeaconProxy, IRM factories embed their IRMs) and that embedded code carries
- * its own metadata digest, which varies with source *paths* even when the
- * code is identical. Stripping the outer trailer cannot reach these. Zero
- * every embedded metadata DIGEST (the 32 hash bytes only — the embedded
- * child code itself remains fully compared).
+ * Factories embed CHILD creation code (e.g. GenericFactory embeds
+ * BeaconProxy), and the embedded code carries its own metadata digest, which
+ * varies with source *paths* even when the code is identical. Stripping the
+ * outer trailer cannot reach these.
+ *
+ * Locations come only from the build: every child code of the same build
+ * (each artifact's creation and deployed bytecode) found verbatim in `code`
+ * contributes the digests of its validated metadata trailer, recursively for
+ * the children it embeds itself. A byte pattern that merely looks like
+ * metadata (e.g. inside a bytes constant) is never masked.
  */
-export function maskEmbeddedMetadataDigests(code: Uint8Array): { masked: Uint8Array; count: number } {
-  const out = new Uint8Array(code)
-  let count = 0
-  for (const { marker, digestLen } of EMBEDDED_DIGEST_MARKERS) {
-    outer: for (let i = 0; i + marker.length + digestLen <= out.length; i++) {
-      for (let j = 0; j < marker.length; j++) {
-        if (code[i + j] !== marker[j]) continue outer
+export function embeddedMetadataRanges(code: Uint8Array, childCodes: Uint8Array[]): ImmutableRange[] {
+  const children = childCodes.filter((c) => trailerDigestRanges(c).length > 0)
+  const memo = new Map<Uint8Array, ImmutableRange[]>()
+
+  const within = (outer: Uint8Array): ImmutableRange[] => {
+    const haystack = Buffer.from(outer.buffer, outer.byteOffset, outer.length)
+    const found: ImmutableRange[] = []
+    for (const child of children) {
+      if (child.length >= outer.length) continue
+      const needle = Buffer.from(child.buffer, child.byteOffset, child.length)
+      for (let at = haystack.indexOf(needle); at !== -1; at = haystack.indexOf(needle, at + 1)) {
+        for (const r of ownAndNested(child)) found.push({ start: at + r.start, length: r.length })
       }
-      out.fill(0, i + marker.length, i + marker.length + digestLen)
-      count++
-      i += marker.length + digestLen - 1
     }
+    return found
   }
-  return { masked: out, count }
+  const ownAndNested = (child: Uint8Array): ImmutableRange[] => {
+    const cached = memo.get(child)
+    if (cached) return cached
+    const ranges = [...trailerDigestRanges(child), ...within(child)]
+    memo.set(child, ranges)
+    return ranges
+  }
+
+  const unique = new Map(within(code).map((r) => [`${r.start}:${r.length}`, r]))
+  return [...unique.values()].sort((a, b) => a.start - b.start)
 }
 
 export interface CompareResult {
@@ -68,13 +74,15 @@ export interface CompareResult {
 }
 
 /**
- * The core verification comparison:
- * mask immutables in both, strip CBOR metadata from both, byte-compare.
+ * The core verification comparison: strip the validated CBOR trailer from
+ * both, mask immutables and the given embedded metadata digests in both,
+ * byte-compare.
  */
 export function compareRuntime(
   chainCode: Uint8Array,
   artifactCode: Uint8Array,
   immutableReferences: Record<string, ImmutableRange[]> | undefined | null,
+  embeddedMetadata: ImmutableRange[] = [],
 ): CompareResult {
   const ranges = collectImmutableRanges(immutableReferences)
 
@@ -100,14 +108,12 @@ export function compareRuntime(
     return { match: false, evidence: { ...base, firstDivergence: null } }
   }
 
-  // Mask within the stripped runtime, retaining strict range bounds; then
-  // zero embedded child-metadata digests (factories embed child creation
-  // code whose metadata varies with source paths).
-  const chainEmbedded = maskEmbeddedMetadataDigests(maskRanges(chainSplit.runtime, ranges))
-  const artifactEmbedded = maskEmbeddedMetadataDigests(maskRanges(artifactSplit.runtime, ranges))
-  const chainStripped = chainEmbedded.masked
-  const artifactStripped = artifactEmbedded.masked
-  base.embeddedDigestsMasked = [chainEmbedded.count, artifactEmbedded.count]
+  // Mask immutables and the artifact-derived embedded child-metadata digests
+  // at the same offsets in both, retaining strict range bounds.
+  const masks = [...ranges, ...embeddedMetadata]
+  const chainStripped = maskRanges(chainSplit.runtime, masks)
+  const artifactStripped = maskRanges(artifactSplit.runtime, masks)
+  base.embeddedDigestsMasked = [embeddedMetadata.length, embeddedMetadata.length]
 
   const chainSha = sha256Hex(chainStripped)
   const artifactSha = sha256Hex(artifactStripped)

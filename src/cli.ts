@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chainsPathFor, loadNetworks } from './networks.js'
-import { resolveAddress } from './addresses.js'
-import { iterateManifest, verifyEntry } from './verify.js'
+import { assertRegistryCurrent, resolveAddress } from './addresses.js'
+import { iterateManifest, verifyDelegatedCode, verifyEntry } from './verify.js'
 import type { Manifest, ManifestEntry, VerdictKind, VerificationRecord } from './types.js'
 
 const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -23,9 +23,9 @@ Usage:
 
 Options:
   --manifest <path>    Manifest JSON (chainId -> contract key -> entry). Required.
-  --addresses <dir>    euler-interfaces addresses/ directory, used to resolve
-                       contract addresses. Entries may carry an explicit
-                       "address" override (tests only).
+  --addresses <dir>    euler-interfaces addresses/ directory. Required. Each
+                       address is the one consumers receive: config/addresses/
+                       overrides applied, as in EulerChains.json.
   --chains <path>      euler-interfaces EulerChains.json: the chains, their
                        explorers and the viem chain whose name and default RPCs
                        are used (default: EulerChains.json beside --addresses).
@@ -40,8 +40,11 @@ Environment (all optional; viem's default public RPCs are used otherwise):
   DEPLOYMENT_RPC_URL_<chainId>   RPC endpoint override per chain
   ETHERSCAN_API_KEY              explorer cross-check only
 
-Exit code: 0 if every selected entry is MATCH, WAIVED or CANONICAL (a listed
-canonical exception); 1 otherwise.`
+An implementation that MATCHes also has its delegated code proven from the
+same pin: the eight EVault modules, and EulerSwap V2's management contract.
+
+Exit code: 0 if every selected entry and its delegated code is MATCH, WAIVED or
+CANONICAL (a listed canonical exception at its bound address); 1 otherwise.`
 
 async function main(): Promise<number> {
   const { values } = parseArgs({
@@ -58,15 +61,18 @@ async function main(): Promise<number> {
     },
   })
 
-  if (values.help || !values.manifest) {
+  if (values.help || !values.manifest || !values.addresses) {
     console.log(HELP)
     return values.help ? 0 : 1
   }
 
   const manifest = JSON.parse(readFileSync(resolve(values.manifest), 'utf8')) as Manifest
-  const networks = loadNetworks(chainsPathFor(values))
+  const addressesDir = resolve(values.addresses)
+  const chainsPath = chainsPathFor(values)
+  assertRegistryCurrent(chainsPath, addressesDir)
+  const networks = loadNetworks(chainsPath)
   const reposDir = values['repos-dir'] ? resolve(values['repos-dir']) : join(ROOT_DIR, 'repos', 'engine')
-  const addressesDir = values.addresses ? resolve(values.addresses) : null
+  const opts = { reposDir, networks, explorer: !values['no-explorer'] }
 
   const selection = {
     chainId: values.chain !== undefined ? Number(values.chain) : undefined,
@@ -76,19 +82,22 @@ async function main(): Promise<number> {
   const records: VerificationRecord[] = []
 
   for (const { chainId, key, entry } of iterateManifest(manifest, selection)) {
-    const address = entry.address ?? (addressesDir ? resolveAddress(addressesDir, chainId, key) : null)
+    const override = 'address' in entry
+    const address = override ? null : resolveAddress(addressesDir, chainId, key)
     if (!address) {
-      records.push({
+      const record: VerificationRecord = {
         chainId,
         key,
         address: '',
         verdict: 'ERROR',
         repo: entry.repo,
         ...pinOf(entry),
-        error: addressesDir
-          ? `address for "${key}" not found under ${addressesDir}/${chainId}/`
-          : 'no --addresses directory given and entry has no address override',
-      })
+        error: override
+          ? 'manifest address overrides are not allowed: addresses come from euler-interfaces'
+          : `address for "${key}" not found under ${addressesDir}/${chainId}/ or its config/addresses overlay`,
+      }
+      records.push(record)
+      if (!values.json) printHuman(record)
       continue
     }
 
@@ -96,13 +105,16 @@ async function main(): Promise<number> {
       const against = entry.verified === 'canonical' ? `${entry.repo} (canonical)` : `${entry.repo}@${entry.commit.slice(0, 8)}`
       console.log(`verifying chain=${chainId} ${key} @ ${address} against ${against} ...`)
     }
-    const record = await verifyEntry(chainId, key, address, entry, {
-      reposDir,
-      networks,
-      explorer: !values['no-explorer'],
-    })
+    const record = await verifyEntry(chainId, key, address, entry, opts)
     records.push(record)
     if (!values.json) printHuman(record)
+  }
+
+  for (const chainId of [...new Set(records.map((r) => r.chainId))]) {
+    const matched = new Set(records.filter((r) => r.chainId === chainId && r.verdict === 'MATCH').map((r) => r.key))
+    const delegated = await verifyDelegatedCode(chainId, manifest[String(chainId)] ?? {}, matched, addressesDir, opts)
+    records.push(...delegated)
+    if (!values.json) delegated.forEach(printHuman)
   }
 
   if (values.json) console.log(JSON.stringify(records, null, 2))
@@ -128,7 +140,8 @@ function printHuman(r: VerificationRecord): void {
   const head = `  ${r.verdict.padEnd(8)} chain=${r.chainId} ${r.key}`
   if (r.verdict === 'MATCH') {
     const via = r.implementation ? ` (implementation ${r.implementation})` : ''
-    console.log(`${head} sha256(masked,stripped)=${r.evidence?.strippedChainSha256?.slice(0, 16)}${via} via ${r.rpcUrl}`)
+    const sha = r.evidence ? ` sha256(masked,stripped)=${r.evidence.strippedChainSha256?.slice(0, 16)}` : ` ${r.address}`
+    console.log(`${head}${sha}${via}${r.rpcUrl ? ` via ${r.rpcUrl}` : ''}`)
   } else if (r.verdict === 'MISMATCH') {
     const e = r.evidence
     const why =

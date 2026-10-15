@@ -110,7 +110,7 @@ export interface RenderInputs {
   pairs: PairDiff[]
   /** Directory holding the patch files named in `pairs`. */
   diffsDir: string
-  modules: Record<string, { implementation?: string; modules?: ModuleRec[] }>
+  modules: Record<string, { implementation?: string; modules?: ModuleRec[]; error?: string }>
   swapMgmt: Record<string, SwapMgmtRec>
   audits: AuditEntry[]
   notes: Record<string, Record<string, Note>>
@@ -173,13 +173,21 @@ export function renderReports(inputs: RenderInputs): RenderedChain[] {
         `${waived ? ` · Waived: ${waived}` : ''}${canonical ? ` · Canonical: ${canonical}` : ''}`,
     )
     lines.push('')
-    lines.push('Verification = on-chain runtime bytecode ≡ compile(repo@commit, profile), metadata stripped, immutables masked, embedded child-metadata digests zeroed. The block explorer is never in the trust path. Each proven pin is then diffed against its component\'s audited baseline — the fixes-included state of the component\'s most recent audit — so every deployed source delta beyond audited code is shown below as a real diff. Re-run: see the repository README.')
+    lines.push('Verification = on-chain runtime bytecode ≡ compile(repo@commit, profile), with the metadata trailer stripped, immutables masked, and the metadata digests of embedded child contracts masked at the offsets the build locates. The block explorer is never in the trust path. This shows runtime correspondence under that normalization, not initialization, governance, immutable configuration or deployment safety. Each proven pin is then diffed against its component\'s audited baseline — the fixes-included state of the component\'s most recent audit — so every deployed source delta beyond audited code is shown below as a real diff. Re-run: see the repository README.')
     lines.push('')
 
     // ─── Attention first: unproven and waived entries ───
     const unprovenRows = rows.filter((r) => r.status !== 'PROVEN' && r.status !== 'CANONICAL' && !entryOf(r.key)?.waiver)
     const waivedRows = rows.filter((r) => entryOf(r.key)?.waiver)
-    if (unprovenRows.length || waivedRows.length) {
+    const mod = modules[String(chainId)]
+    const sm = swapMgmt[String(chainId)]
+    const delegatedIssues = [
+      ...(mod?.error ? [`**EVault modules** — verification INCOMPLETE: ${mod.error.split('\n')[0]}`] : []),
+      ...(mod?.modules ?? []).filter((m) => m.verdict !== 'MATCH' || !m.crossCheckedInImplementation).map((m) => `**EVault module ${m.module}** — FAILED (\`${m.verdict}\`).`),
+      ...(sm?.error ? [`**EulerSwapManagement** — verification INCOMPLETE: ${sm.error.split('\n')[0]}`] : []),
+      ...(sm?.managementAddress && (sm.verdict !== 'MATCH' || !sm.crossCheckedInImplementation) ? [`**EulerSwapManagement** — FAILED (\`${sm.verdict}\`).`] : []),
+    ]
+    if (unprovenRows.length || waivedRows.length || delegatedIssues.length) {
       lines.push('## ⚠️ Requires attention')
       lines.push('')
       for (const r of unprovenRows) {
@@ -193,6 +201,7 @@ export function renderReports(inputs: RenderInputs): RenderedChain[] {
         const n = chainNoteFor(chainId, r.key)
         if (n) lines.push(...renderNote(n))
       }
+      for (const issue of delegatedIssues) lines.push(`- ${issue}`)
       lines.push('')
     } else {
       lines.push('**All contracts on this chain are bytecode-proven against their pinned commits.**')
@@ -274,7 +283,6 @@ export function renderReports(inputs: RenderInputs): RenderedChain[] {
     }
 
     // ─── Unpacked implementations: EVault modules + EulerSwap management ───
-    const mod = modules[String(chainId)]
     if (mod?.modules?.length) {
       lines.push('')
       lines.push('## EVault modules (unpacked from the implementation)')
@@ -285,7 +293,6 @@ export function renderReports(inputs: RenderInputs): RenderedChain[] {
         lines.push(`| ${m.module} | \`${m.address}\` | ${m.verdict === 'MATCH' ? '✅' : `❌ ${m.verdict}`} | ${m.crossCheckedInImplementation ? '✅' : '❌'} |`)
       }
     }
-    const sm = swapMgmt[String(chainId)]
     if (sm?.managementAddress) {
       lines.push('')
       lines.push('## EulerSwap V2 management implementation (unpacked from the implementation)')
@@ -403,7 +410,7 @@ export function renderIndex(rows: Map<number, string>): string {
   const index = [
     '# Deployed Code Verification Reports',
     '',
-    'Bytecode-level verification of every allowlisted Euler contract: on-chain code is proven equal to a commit-pinned local build (metadata stripped, immutables masked) — the block explorer is never in the trust path — then each deployment is diffed against its component\'s audited baseline: the fixes-included state of the component\'s most recent audit. Reports lead with anything requiring attention and show every deployed source delta beyond audited code as a real diff. Reproducible by anyone.',
+    'Bytecode-level verification of every allowlisted Euler contract: on-chain runtime code is proven equal to a commit-pinned local build (metadata trailer stripped; immutables and build-located embedded metadata digests masked) — the block explorer is never in the trust path — then each deployment is diffed against its component\'s audited baseline: the fixes-included state of the component\'s most recent audit. Reports lead with anything requiring attention and show every deployed source delta beyond audited code as a real diff. Reproducible by anyone. The claim is runtime correspondence under this normalization, not initialization, governance, immutable configuration or deployment safety.',
     '',
     '| Network | Chain ID | Proven |',
     '|---------|----------|--------|',

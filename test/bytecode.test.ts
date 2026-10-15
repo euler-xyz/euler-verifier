@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { collectImmutableRanges, compareRuntime, maskEmbeddedMetadataDigests, maskRanges, sha256Hex } from '../src/bytecode.js'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { collectImmutableRanges, compareRuntime, embeddedMetadataRanges, maskRanges, sha256Hex } from '../src/bytecode.js'
+import { fromHex } from '../src/metadata.js'
+
+const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), 'fixtures')
 
 function withTrailer(runtime: number[], versionByte: number): Uint8Array {
   // Valid solidity-shaped trailer: map1{ "solc": bytes3(v,v,v) } + 2-byte length.
@@ -78,27 +84,47 @@ describe('compareRuntime', () => {
   })
 })
 
-describe('maskEmbeddedMetadataDigests (factories embedding child creation code)', () => {
-  const IPFS_MARKER = [0x64, 0x69, 0x70, 0x66, 0x73, 0x58, 0x22, 0x12, 0x20]
+// Compiled with solc 0.8.24 (forge 1.7.1, runs 200, cancun) from the same sources
+// under two source paths (2026-10-15): Factory embeds Child's creation code, and
+// BytesConstant returns a constant shaped like an ipfs metadata entry, with
+// 0xaa.. or 0xbb.. as the "digest".
+const BUILDS = JSON.parse(readFileSync(join(FIXTURES, 'embedded', 'artifacts.json'), 'utf8')) as Record<
+  string,
+  { bytecode: string; deployedBytecode: string }
+>
+const runtime = (id: string) => fromHex(BUILDS[id]!.deployedBytecode)
+const buildCodes = (v: 'a' | 'b') =>
+  Object.entries(BUILDS)
+    .filter(([id]) => id.startsWith(`${v}/`))
+    .flatMap(([, a]) => [fromHex(a.bytecode), fromHex(a.deployedBytecode)])
 
-  function embedded(digestByte: number): number[] {
-    return [...IPFS_MARKER, ...Array.from({ length: 32 }, () => digestByte)]
-  }
-
-  it('two codes differing only in an embedded child metadata digest MATCH', () => {
-    const prefix = [0x60, 0x80, 0x60, 0x40]
-    const suffix = [0x00, 0x33]
-    const a = withTrailer([...prefix, ...embedded(0xaa), ...suffix], 0x11)
-    const b = withTrailer([...prefix, ...embedded(0xbb), ...suffix], 0x11)
-    const { match, evidence } = compareRuntime(a, b, {})
+describe('embedded child metadata (factories embedding child creation code)', () => {
+  it('masks the embedded child digest at the offsets the build derives, so path-only differences MATCH', () => {
+    const ranges = embeddedMetadataRanges(runtime('b/Factory'), buildCodes('b'))
+    expect(ranges).toHaveLength(1)
+    const { match, evidence } = compareRuntime(runtime('a/Factory'), runtime('b/Factory'), {}, ranges)
     expect(match).toBe(true)
     expect(evidence.embeddedDigestsMasked).toEqual([1, 1])
   })
 
-  it('a semantic difference in the embedded child code still MISMATCHes', () => {
-    const a = withTrailer([0x01, ...embedded(0xaa), 0x02], 0x11)
-    const b = withTrailer([0x01, ...embedded(0xaa), 0x03], 0x11)
-    expect(compareRuntime(a, b, {}).match).toBe(false)
+  it('never masks a metadata-shaped constant: different returned bytes MISMATCH', () => {
+    const ranges = embeddedMetadataRanges(runtime('b/BytesConstant'), buildCodes('b'))
+    expect(ranges).toEqual([])
+    expect(compareRuntime(runtime('a/BytesConstant'), runtime('b/BytesConstant'), {}, ranges).match).toBe(false)
+    expect(compareRuntime(runtime('a/BytesConstant'), runtime('b/BytesConstant'), {}).match).toBe(false)
+  })
+
+  it('a semantic difference inside the embedded child code still MISMATCHes', () => {
+    const ranges = embeddedMetadataRanges(runtime('b/Factory'), buildCodes('b'))
+    const tampered = runtime('a/Factory')
+    const childAt = Buffer.from(tampered).indexOf(Buffer.from(fromHex(BUILDS['a/Child']!.bytecode)))
+    tampered[childAt + 5] = tampered[childAt + 5]! ^ 0xff
+    expect(compareRuntime(tampered, runtime('b/Factory'), {}, ranges).match).toBe(false)
+  })
+
+  it('ignores candidate codes without a valid metadata trailer', () => {
+    const bare = fromHex('0x6080604052348015600e575f80fd5b50')
+    expect(embeddedMetadataRanges(Uint8Array.from([...bare, ...bare]), [bare])).toEqual([])
   })
 })
 

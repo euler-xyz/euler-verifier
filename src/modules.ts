@@ -2,7 +2,7 @@ import { createPublicClient, http, getAddress, parseAbi } from 'viem'
 import { buildAtCommit } from './compile.js'
 import { compareRuntime, collectImmutableRanges } from './bytecode.js'
 import { fetchDeployedCode, resolveRpcUrls } from './rpc.js'
-import type { CompileProfile, ImmutableRange, NetworkInfo, VerdictKind } from './types.js'
+import type { CompileProfile, ImmutableRange, NetworkInfo, SubmoduleOverride, VerdictKind } from './types.js'
 
 /**
  * P3 (decision D1): EVault module verification. The implementation
@@ -100,6 +100,7 @@ export interface VerifyModulesRequest {
   repo: string
   commit: string
   profile: CompileProfile | 'native'
+  submoduleOverrides?: SubmoduleOverride[]
   reposDir: string
   networks: Map<number, NetworkInfo>
 }
@@ -116,6 +117,7 @@ export async function verifyModules(req: VerifyModulesRequest): Promise<ModuleVe
     contractName: 'EVault',
     profile: req.profile,
     reposDir: req.reposDir,
+    submoduleOverrides: req.submoduleOverrides,
   })
   const embedded = embeddedAddressSet(implChain.code, implBuild.immutableReferences)
 
@@ -132,9 +134,10 @@ export async function verifyModules(req: VerifyModulesRequest): Promise<ModuleVe
         contractName: name,
         profile: req.profile,
         reposDir: req.reposDir,
+        submoduleOverrides: req.submoduleOverrides,
       })
       const { code } = await fetchDeployedCode(req.chainId, address, urls)
-      const { match, evidence } = compareRuntime(code, artifact.code, artifact.immutableReferences)
+      const { match, evidence } = compareRuntime(code, artifact.code, artifact.immutableReferences, artifact.embeddedMetadata)
       results.push({
         module: name,
         address,

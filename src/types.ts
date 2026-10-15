@@ -39,14 +39,12 @@ export interface BytecodeEntry {
   profile: CompileProfile
   verified?: 'bytecode'
   waiver?: Waiver | null
-  /** Deployments built with submodules moved off their gitlinks record the refs here; the build must reproduce them. */
-  evidence?: { codeSize?: number; origin?: string; strippedSha256?: string; submoduleOverrides?: SubmoduleOverride[] }
-  proxy?: ProxyDeclaration
   /**
-   * Test/override only: explicit address. In production runs addresses come
-   * from euler-interfaces/addresses/<chainId>/ and this field must be absent.
+   * Deployments built with submodules moved off their gitlinks record the refs here; the build must reproduce them.
+   * `address` is the address the entry was proven at; a different current address means a redeploy.
    */
-  address?: string
+  evidence?: { address?: string; codeSize?: number; origin?: string; strippedSha256?: string; submoduleOverrides?: SubmoduleOverride[] }
+  proxy?: ProxyDeclaration
 }
 
 /** Long-established contract documented by a provenance note instead of a bytecode proof (see CANONICAL_EXCEPTIONS). */
@@ -54,7 +52,6 @@ export interface CanonicalEntry {
   repo: string
   verified: 'canonical'
   note: string
-  address?: string
 }
 
 export type ManifestEntry = BytecodeEntry | CanonicalEntry

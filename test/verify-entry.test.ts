@@ -23,6 +23,7 @@ import type { BytecodeEntry, CanonicalEntry } from '../src/types.js'
 const execFileAsync = promisify(execFile)
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const FIXTURE_CHAINS = join(ROOT, 'test', 'fixtures', 'EulerChains.json')
+const FIXTURE_ADDRESSES = join(ROOT, 'test', 'fixtures', 'interfaces', 'addresses')
 
 const RUNTIME = fromHex('0x6080604052348015600e575f80fd5b50')
 const OPTS: VerifyOptions = { reposDir: '/nonexistent', networks: new Map(), explorer: false }
@@ -55,6 +56,7 @@ beforeEach(() => {
   vi.mocked(buildAtCommit).mockResolvedValue({
     code: RUNTIME,
     immutableReferences: {},
+    embeddedMetadata: [],
     artifactPath: 'out/Artifact.json',
     repoDir: '/nonexistent',
     sources: [],
@@ -114,10 +116,10 @@ describe('canonical manifest entries', () => {
     const dir = mkdtempSync(join(tmpdir(), 'verifier-canonical-'))
     try {
       const manifestPath = join(dir, 'manifest.json')
-      const manifest = { '1': { EUL: { ...CANONICAL_EUL, address: '0xd9Fcd98c322942075A5C3860693e9f4f03AAE07b' } } }
+      const manifest = { '1': { EUL: CANONICAL_EUL } }
       writeFileSync(manifestPath, JSON.stringify(manifest))
       const tsx = join(ROOT, 'node_modules', '.bin', 'tsx')
-      const { stdout } = await execFileAsync(tsx, ['src/cli.ts', '--manifest', manifestPath, '--chains', FIXTURE_CHAINS, '--chain', '1', '--no-explorer'], {
+      const { stdout } = await execFileAsync(tsx, ['src/cli.ts', '--manifest', manifestPath, '--addresses', FIXTURE_ADDRESSES, '--chains', FIXTURE_CHAINS, '--chain', '1', '--no-explorer'], {
         cwd: ROOT,
         timeout: 60_000,
       })

@@ -2,13 +2,15 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { resolveAddress } from './addresses.js'
-import { BuildCache, proveTask, type ProveOutcome } from './prove.js'
+import { BuildCache, proveTask } from './prove.js'
+import { resolveRpcUrls } from './rpc.js'
+import { canonicalProblem, codeAddress } from './verify.js'
 import { computeComponentDiffs, type ComponentBaseline } from './run-baselines.js'
 import { verifyManifestModules, type ProvenEntry } from './verify-modules.js'
 import { verifyManifestSwapManagement } from './verify-swap-management.js'
 import { renderReports, writeChainReports, type AuditEntry, type Note, type Outcome, type RenderInputs } from './render-report.js'
 import { CONTRACT_SPECS } from './contracts.js'
-import type { BytecodeEntry, Manifest, NetworkInfo } from './types.js'
+import type { Manifest, NetworkInfo } from './types.js'
 
 export interface InterfacesPaths {
   manifest: string
@@ -41,27 +43,40 @@ export interface ChainRenderRun {
   engineRef?: string
 }
 
-/** The address whose code an entry's pin is proven against. */
-function codeAddress(entry: BytecodeEntry, address: string): string {
-  return entry.proxy && entry.proxy.address.toLowerCase() === address.toLowerCase() ? entry.proxy.implementation : address
-}
+const message = (err: unknown) => (err instanceof Error ? err.message.split('\n')[0] : String(err))
 
-/** Prove every entry of `chainId` at its own pin, as the full report render does. */
-async function chainOutcomes(chainId: number, run: ChainRenderRun): Promise<{ outcomes: Outcome[]; proven: ProveOutcome[] } | string> {
+/**
+ * Prove every entry of `chainId` at its own pin, with the same guards as
+ * `pnpm verify`: a canonical entry must be a listed exception at its bound
+ * address, and a declared proxy must still delegate to the declared
+ * implementation. Returns the problem that stops the chain from rendering.
+ */
+async function chainOutcomes(chainId: number, run: ChainRenderRun): Promise<Outcome[] | string> {
   const outcomes: Outcome[] = []
-  const proven: ProveOutcome[] = []
   for (const [key, entry] of Object.entries(run.manifest[String(chainId)] ?? {})) {
     const address = resolveAddress(run.paths.addresses, chainId, key)
-    if (!address) return `${chainId}/${key}: no address under addresses/${chainId}/`
-    if (entry.verified === 'canonical' || entry.waiver) {
-      outcomes.push({ chainId, key, address, status: entry.verified === 'canonical' ? 'CANONICAL' : 'WAIVED' })
+    if (!address) return `${chainId}/${key}: no address under addresses/${chainId}/ or its config/addresses overlay`
+    if (entry.verified === 'canonical') {
+      const problem = canonicalProblem(chainId, key, address)
+      if (problem) return problem
+      outcomes.push({ chainId, key, address, status: 'CANONICAL' })
       continue
+    }
+    if (entry.waiver) {
+      outcomes.push({ chainId, key, address, status: 'WAIVED' })
+      continue
+    }
+    let target: string
+    try {
+      target = await codeAddress(chainId, address, entry, resolveRpcUrls(chainId, run.networks.get(chainId)))
+    } catch (err) {
+      return `${chainId}/${key}: ${message(err)}`
     }
     const outcome = await proveTask(
       {
         chainId,
         key,
-        address: codeAddress(entry, address),
+        address: target,
         candidates: [
           {
             repo: entry.repo,
@@ -80,52 +95,63 @@ async function chainOutcomes(chainId: number, run: ChainRenderRun): Promise<{ ou
     if (outcome.status !== 'PROVEN') {
       return `${chainId}/${key}: ${outcome.status} at its manifest pin (${outcome.error ?? outcome.attempts.map((a) => a.result).join('; ')})`
     }
-    outcomes.push(outcome)
-    proven.push(outcome)
+    outcomes.push({ ...outcome, address: entry.proxy ? entry.proxy.implementation : address })
   }
-  return { outcomes, proven }
+  return outcomes
 }
 
-/** Modules and EulerSwap management are built with the profile each implementation was proven with. */
-function provenManifest(outcomes: ProveOutcome[]): Record<string, Record<string, ProvenEntry>> {
-  const out: Record<string, Record<string, ProvenEntry>> = {}
-  for (const o of outcomes) {
-    if (o.status !== 'PROVEN' || !o.matched) continue
-    const m = o.matched
-    const profile = m.profile === 'native' ? { context: 'effective', ...m.effectiveProfile! } : { ...m.profile, context: 'proven' }
-    out[String(o.chainId)] = { ...out[String(o.chainId)], [o.key]: { repo: m.repo, commit: m.commit, contractName: m.contractName, profile } }
+type Delegated = { error?: string; modules?: Array<{ module: string; verdict: string }>; verdict?: string }
+
+/** Why a chain's EVault modules or EulerSwap management did not all prove, if they didn't. */
+export function delegatedProblems(chainId: number, modules: Record<string, unknown>, swapMgmt: Record<string, unknown>): string[] {
+  const problems: string[] = []
+  const m = modules[String(chainId)] as Delegated | undefined
+  if (m?.error) problems.push(`${chainId}: EVault modules not verified (${m.error.split('\n')[0]})`)
+  for (const rec of m?.modules ?? []) {
+    if (rec.verdict !== 'MATCH') problems.push(`${chainId}: EVault module ${rec.module} is ${rec.verdict}`)
   }
-  return out
+  const s = swapMgmt[String(chainId)] as Delegated | undefined
+  if (s?.error) problems.push(`${chainId}: EulerSwap management not verified (${s.error.split('\n')[0]})`)
+  else if (s && s.verdict !== 'MATCH') problems.push(`${chainId}: EulerSwap management is ${s.verdict}`)
+  return problems
 }
 
 /**
  * Render the reports of `chainIds` into euler-interfaces verify/ and update
  * their rows in verify/README.md; `replaceIndex` rewrites README.md from
- * these chains alone. Returns the problems that stopped a chain from rendering.
+ * these chains alone. A chain with any failed proof, delegated-code
+ * verification included, is not written. Returns those problems.
  */
 export async function renderChains(chainIds: number[], replaceIndex: boolean, run: ChainRenderRun): Promise<string[]> {
   const problems: string[] = []
   const outcomes: Outcome[] = []
-  const provenOutcomes: ProveOutcome[] = []
+  const modules: Record<string, unknown> = {}
+  const swapMgmt: Record<string, unknown> = {}
   const rendered: number[] = []
+  const entries = run.manifest as unknown as Record<string, Record<string, ProvenEntry>>
+
   for (const chainId of chainIds) {
     const result = await chainOutcomes(chainId, run)
     if (typeof result === 'string') {
       problems.push(result)
       continue
     }
-    outcomes.push(...result.outcomes)
-    provenOutcomes.push(...result.proven)
+    const shared = { manifest: entries, addressesDir: run.paths.addresses, networks: run.networks, reposDir: run.reposDir, chains: [chainId] }
+    const chainModules = (await verifyManifestModules(shared)).results
+    const chainSwap = (await verifyManifestSwapManagement(shared)).results
+    const delegated = delegatedProblems(chainId, chainModules, chainSwap)
+    if (delegated.length) {
+      problems.push(...delegated)
+      continue
+    }
+    outcomes.push(...result)
+    Object.assign(modules, chainModules)
+    Object.assign(swapMgmt, chainSwap)
     rendered.push(chainId)
   }
   if (rendered.length === 0 || (replaceIndex && problems.length)) return problems
 
   const scoped: Manifest = Object.fromEntries(rendered.map((id) => [String(id), run.manifest[String(id)] ?? {}]))
-  const proven = provenManifest(provenOutcomes)
-  const shared = { manifest: proven, addressesDir: run.paths.addresses, networks: run.networks, reposDir: run.reposDir, chains: rendered }
-  const modules = await verifyManifestModules(shared)
-  const swapMgmt = await verifyManifestSwapManagement(shared)
-
   const read = <T>(p: string): T => JSON.parse(readFileSync(p, 'utf8')) as T
   const { components } = read<{ components: ComponentBaseline[] }>(run.paths.baselines)
   const diffsDir = mkdtempSync(join(tmpdir(), 'verifier-diffs-'))
@@ -137,8 +163,8 @@ export async function renderChains(chainIds: number[], replaceIndex: boolean, ru
       components,
       pairs,
       diffsDir,
-      modules: modules.results as RenderInputs['modules'],
-      swapMgmt: swapMgmt.results as RenderInputs['swapMgmt'],
+      modules: modules as RenderInputs['modules'],
+      swapMgmt: swapMgmt as RenderInputs['swapMgmt'],
       audits: read<AuditEntry[]>(run.paths.audits),
       notes: read<Record<string, Record<string, Note>>>(run.notesPath),
       networks: run.networks,

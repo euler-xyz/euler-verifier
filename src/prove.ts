@@ -29,6 +29,7 @@ export interface ProveTask {
 export interface CachedBuild {
   codeHex: string
   immutableReferences: Record<string, ImmutableRange[]>
+  embeddedMetadata?: ImmutableRange[]
   effectiveProfile?: EffectiveProfile
   sources: string[]
   artifactPath: string
@@ -76,8 +77,11 @@ export class BuildCache {
     const file = join(this.cacheDir, `${key}.json`)
     if (existsSync(file)) {
       const cached = JSON.parse(readFileSync(file, 'utf8')) as CachedBuild
-      this.mem.set(key, cached)
-      return cached
+      // Entries from before embedded digests were derived from the build lack them; rebuild those.
+      if (cached.error || cached.embeddedMetadata) {
+        this.mem.set(key, cached)
+        return cached
+      }
     }
 
     let result: CachedBuild
@@ -95,6 +99,7 @@ export class BuildCache {
       result = {
         codeHex: toHex(built.code),
         immutableReferences: built.immutableReferences,
+        embeddedMetadata: built.embeddedMetadata,
         effectiveProfile: built.effectiveProfile,
         sources: built.sources,
         artifactPath: built.artifactPath,
@@ -103,6 +108,7 @@ export class BuildCache {
       result = {
         codeHex: '',
         immutableReferences: {},
+        embeddedMetadata: [],
         sources: [],
         artifactPath: '',
         error: err instanceof Error ? err.message.slice(0, 2000) : String(err),
@@ -150,7 +156,7 @@ export async function proveTask(task: ProveTask, cache: BuildCache, opts: ProveR
       continue
     }
     const artifactCode = fromHex(build.codeHex)
-    const { match, evidence } = compareRuntime(chainCode, artifactCode, build.immutableReferences)
+    const { match, evidence } = compareRuntime(chainCode, artifactCode, build.immutableReferences, build.embeddedMetadata)
     if (match) {
       log(`  PROVEN ${task.chainId}/${task.key} <- ${label} (${c.origin})`)
       return {

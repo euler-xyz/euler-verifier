@@ -15,41 +15,19 @@ import { parseArgs } from 'node:util'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createPublicClient, http, getAddress, parseAbi } from 'viem'
 import { chainsPathFor, loadNetworks } from './networks.js'
 import { resolveAddress } from './addresses.js'
-import { buildAtCommit } from './compile.js'
-import { compareRuntime } from './bytecode.js'
-import { fetchDeployedCode, resolveRpcUrls } from './rpc.js'
-import { embeddedAddressSet } from './modules.js'
+import { verifySwapManagement } from './swap-management.js'
 import { isEntrypoint } from './entrypoint.js'
-import type { CompileProfile, NetworkInfo } from './types.js'
+import type { CompileProfile, NetworkInfo, SubmoduleOverride } from './types.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const ABI = parseAbi(['function managementImpl() view returns (address)'])
 
-interface ProvenEntry {
+export interface ProvenEntry {
   repo: string
   commit: string
   profile: (CompileProfile & { context?: string }) | undefined
-}
-
-async function readManagementAddress(implementation: string, urls: string[]): Promise<string> {
-  const failures: string[] = []
-  for (const url of urls) {
-    try {
-      const client = createPublicClient({ transport: http(url, { timeout: 15_000, retryCount: 1 }) })
-      const addr = (await client.readContract({
-        address: getAddress(implementation),
-        abi: ABI,
-        functionName: 'managementImpl',
-      })) as string
-      return getAddress(addr)
-    } catch (err) {
-      failures.push(`${url}: ${err instanceof Error ? err.message.split('\n')[0] : String(err)}`)
-    }
-  }
-  throw new Error(`managementImpl() failed on all endpoints:\n  ${failures.join('\n  ')}`)
+  evidence?: { submoduleOverrides?: SubmoduleOverride[] }
 }
 
 export interface SwapManagementRun {
@@ -60,6 +38,7 @@ export interface SwapManagementRun {
   chains?: number[]
 }
 
+/** Per chain: the management verification, or `{ error }` when it could not complete. ok is false on any failure. */
 export async function verifyManifestSwapManagement(run: SwapManagementRun): Promise<{ results: Record<string, unknown>; ok: boolean }> {
   const results: Record<string, unknown> = {}
   let ok = true
@@ -70,49 +49,25 @@ export async function verifyManifestSwapManagement(run: SwapManagementRun): Prom
     const impl = contracts.eulerSwapV2Implementation
     if (!impl?.commit) continue
     const implAddress = resolveAddress(run.addressesDir, chainId, 'eulerSwapV2Implementation')
-    if (!implAddress) {
-      results[chainStr] = { error: 'eulerSwapV2Implementation address not found' }
+    if (!implAddress || !impl.profile) {
+      results[chainStr] = { error: implAddress ? 'eulerSwapV2Implementation has no build profile' : 'eulerSwapV2Implementation address not found' }
       ok = false
       continue
     }
-
     try {
-      const urls = resolveRpcUrls(chainId, run.networks.get(chainId))
-      const managementAddress = await readManagementAddress(implAddress, urls)
-      const profile: CompileProfile | 'native' =
-        impl.profile?.context === 'native' ? 'native' : (impl.profile as CompileProfile)
-
-      const implChain = await fetchDeployedCode(chainId, implAddress, urls)
-      const implBuild = await buildAtCommit({
+      const result = await verifySwapManagement({
+        chainId,
+        implementationAddress: implAddress,
         repo: impl.repo,
         commit: impl.commit,
-        contractName: 'EulerSwap',
-        profile,
+        profile: impl.profile,
+        submoduleOverrides: impl.evidence?.submoduleOverrides,
         reposDir: run.reposDir,
+        networks: run.networks,
       })
-      const crossChecked = embeddedAddressSet(implChain.code, implBuild.immutableReferences).has(managementAddress)
-
-      const artifact = await buildAtCommit({
-        repo: impl.repo,
-        commit: impl.commit,
-        contractName: 'EulerSwapManagement',
-        profile,
-        reposDir: run.reposDir,
-      })
-      const { code } = await fetchDeployedCode(chainId, managementAddress, urls)
-      const { match, evidence } = compareRuntime(code, artifact.code, artifact.immutableReferences)
-
-      const verdict = match && crossChecked ? 'MATCH' : 'MISMATCH'
-      if (verdict !== 'MATCH') ok = false
-      results[chainStr] = {
-        implementation: implAddress,
-        managementAddress,
-        pin: `${impl.repo}@${impl.commit}`,
-        verdict,
-        crossCheckedInImplementation: crossChecked,
-        strippedSha256: evidence.strippedChainSha256,
-      }
-      console.log(`${verdict.padEnd(8)} chain ${chainId} EulerSwapManagement ${managementAddress} xcheck=${crossChecked}`)
+      if (result.verdict !== 'MATCH') ok = false
+      results[chainStr] = result
+      console.log(`${result.verdict.padEnd(8)} chain ${chainId} EulerSwapManagement ${result.managementAddress} xcheck=${result.crossCheckedInImplementation}`)
     } catch (err) {
       results[chainStr] = { error: err instanceof Error ? err.message.slice(0, 500) : String(err) }
       ok = false
