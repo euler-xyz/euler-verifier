@@ -86,10 +86,8 @@ export interface VerificationRecord {
 }
 
 export interface NetworkInfo {
-  key: string
   name: string
   chainId: number
-  status: string
   explorerUrl: string
   explorerApi: string
   apiType: string

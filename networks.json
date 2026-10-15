@@ -2,7 +2,6 @@
   "mainnet": {
     "chain_id": 1,
     "name": "Ethereum Mainnet",
-    "status": "production",
     "explorer_url": "https://etherscan.io",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -14,7 +13,6 @@
   "arbitrum": {
     "chain_id": 42161,
     "name": "Arbitrum",
-    "status": "production",
     "explorer_url": "https://arbiscan.io",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -26,7 +24,6 @@
   "base": {
     "chain_id": 8453,
     "name": "Base",
-    "status": "production",
     "explorer_url": "https://basescan.org",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -38,7 +35,6 @@
   "bsc": {
     "chain_id": 56,
     "name": "BSC",
-    "status": "production",
     "explorer_url": "https://bscscan.com",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -50,7 +46,6 @@
   "avalanche": {
     "chain_id": 43114,
     "name": "Avalanche",
-    "status": "production",
     "explorer_url": "https://snowtrace.io",
     "explorer_api": "https://api.snowtrace.io/api",
     "api_type": "etherscan_v2",
@@ -62,7 +57,6 @@
   "linea": {
     "chain_id": 59144,
     "name": "Linea",
-    "status": "production",
     "explorer_url": "https://lineascan.build",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -74,7 +68,6 @@
   "polygon": {
     "chain_id": 137,
     "name": "Polygon",
-    "status": "unlisted",
     "explorer_url": "https://polygonscan.com",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -86,7 +79,6 @@
   "swell": {
     "chain_id": 1923,
     "name": "Swell",
-    "status": "deprecated",
     "explorer_url": "https://explorer.swellnetwork.io",
     "explorer_api": "https://explorer.swellnetwork.io/api",
     "api_type": "blockscout_v2",
@@ -97,7 +89,6 @@
   "bob": {
     "chain_id": 60808,
     "name": "BOB",
-    "status": "deprecated",
     "explorer_url": "https://explorer.gobob.xyz",
     "explorer_api": "https://explorer.gobob.xyz/api",
     "api_type": "blockscout_v2",
@@ -108,7 +99,6 @@
   "unichain": {
     "chain_id": 130,
     "name": "Unichain",
-    "status": "production",
     "explorer_url": "https://uniscan.xyz",
     "explorer_api": "https://unichain.blockscout.com/api",
     "api_type": "blockscout_v2",
@@ -120,7 +110,6 @@
   "berachain": {
     "chain_id": 80094,
     "name": "Berachain",
-    "status": "deprecated",
     "explorer_url": "https://berascan.com",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -131,7 +120,6 @@
   "sonic": {
     "chain_id": 146,
     "name": "Sonic",
-    "status": "deprecated",
     "explorer_url": "https://sonicscan.org",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -143,10 +131,9 @@
   "monad": {
     "chain_id": 143,
     "name": "Monad",
-    "status": "production",
     "explorer_url": "https://monadscan.com",
-    "explorer_api": "https://sourcify-api-monad.blockvision.org",
-    "api_type": "sourcify",
+    "explorer_api": "https://api.etherscan.io/v2/api",
+    "api_type": "etherscan_v2",
     "rpc": [
       "https://rpc.monad.xyz"
     ]
@@ -154,7 +141,6 @@
   "tac": {
     "chain_id": 239,
     "name": "TAC",
-    "status": "deprecated",
     "explorer_url": "https://explorer.tac.build",
     "explorer_api": "https://explorer.tac.build/api",
     "api_type": "blockscout_v2",
@@ -166,7 +152,6 @@
   "plasma": {
     "chain_id": 9745,
     "name": "Plasma",
-    "status": "production",
     "explorer_url": "https://plasmascan.to",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",
@@ -177,7 +162,6 @@
   "hyperevm": {
     "chain_id": 999,
     "name": "HyperEVM",
-    "status": "production",
     "explorer_url": "https://hyperevmscan.io",
     "explorer_api": "https://api.etherscan.io/v2/api",
     "api_type": "etherscan_v2",

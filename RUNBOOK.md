@@ -39,7 +39,7 @@ from an unpushed tree. Fix the pin, or use a waiver (below) — never merge red.
 
 1. euler-interfaces PR adds `addresses/<chainId>/…` (existing process).
 2. In euler-verifier `networks.json`, add the network: chain_id, name,
-   status, explorer_url/api + `api_type`, and a keyless public `rpc` list —
+   explorer_url/api + `api_type`, and a keyless public `rpc` list —
    verify each endpoint with `eth_chainId` before committing (chainlist.org
    is the source of choice).
 3. Optionally export `DEPLOYMENT_RPC_URL_<chainId>` for a premium endpoint
