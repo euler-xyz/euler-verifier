@@ -6,9 +6,15 @@ import { fileURLToPath } from 'node:url'
 import { loadNetworks } from './networks.js'
 import { resolveAddress } from './addresses.js'
 import { iterateManifest, verifyEntry } from './verify.js'
-import type { Manifest, VerificationRecord } from './types.js'
+import type { Manifest, ManifestEntry, VerdictKind, VerificationRecord } from './types.js'
 
 const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+const PASSING = new Set<VerdictKind>(['MATCH', 'WAIVED', 'CANONICAL'])
+
+function pinOf(entry: ManifestEntry): { commit?: string; contractName?: string } {
+  return entry.verified === 'canonical' ? {} : { commit: entry.commit, contractName: entry.contractName }
+}
 
 const HELP = `euler-verifier engine — bytecode-level verification of deployed contracts
 
@@ -31,7 +37,8 @@ Environment (all optional; public defaults from networks.json are used otherwise
   DEPLOYMENT_RPC_URL_<chainId>   RPC endpoint override per chain
   ETHERSCAN_API_KEY              explorer cross-check only
 
-Exit code: 0 if every selected entry is MATCH or WAIVED; 1 otherwise.`
+Exit code: 0 if every selected entry is MATCH, WAIVED or CANONICAL (a listed
+canonical exception); 1 otherwise.`
 
 async function main(): Promise<number> {
   const { values } = parseArgs({
@@ -73,8 +80,7 @@ async function main(): Promise<number> {
         address: '',
         verdict: 'ERROR',
         repo: entry.repo,
-        commit: entry.commit,
-        contractName: entry.contractName,
+        ...pinOf(entry),
         error: addressesDir
           ? `address for "${key}" not found under ${addressesDir}/${chainId}/`
           : 'no --addresses directory given and entry has no address override',
@@ -83,7 +89,8 @@ async function main(): Promise<number> {
     }
 
     if (!values.json) {
-      console.log(`verifying chain=${chainId} ${key} @ ${address} against ${entry.repo}@${entry.commit.slice(0, 8)} ...`)
+      const against = entry.verified === 'canonical' ? `${entry.repo} (canonical)` : `${entry.repo}@${entry.commit.slice(0, 8)}`
+      console.log(`verifying chain=${chainId} ${key} @ ${address} against ${against} ...`)
     }
     const record = await verifyEntry(chainId, key, address, entry, {
       reposDir,
@@ -105,7 +112,7 @@ async function main(): Promise<number> {
     return 1
   }
 
-  const ok = records.every((r) => r.verdict === 'MATCH' || r.verdict === 'WAIVED')
+  const ok = records.every((r) => PASSING.has(r.verdict))
   if (!values.json) {
     const counts = records.reduce<Record<string, number>>((acc, r) => ({ ...acc, [r.verdict]: (acc[r.verdict] ?? 0) + 1 }), {})
     console.log(`\nsummary: ${JSON.stringify(counts)} -> ${ok ? 'OK' : 'FAILED'}`)
@@ -116,7 +123,8 @@ async function main(): Promise<number> {
 function printHuman(r: VerificationRecord): void {
   const head = `  ${r.verdict.padEnd(8)} chain=${r.chainId} ${r.key}`
   if (r.verdict === 'MATCH') {
-    console.log(`${head} sha256(masked,stripped)=${r.evidence?.strippedChainSha256?.slice(0, 16)} via ${r.rpcUrl}`)
+    const via = r.implementation ? ` (implementation ${r.implementation})` : ''
+    console.log(`${head} sha256(masked,stripped)=${r.evidence?.strippedChainSha256?.slice(0, 16)}${via} via ${r.rpcUrl}`)
   } else if (r.verdict === 'MISMATCH') {
     const e = r.evidence
     const why =
@@ -126,6 +134,8 @@ function printHuman(r: VerificationRecord): void {
     console.log(`${head} ${why}`)
   } else if (r.verdict === 'WAIVED') {
     console.log(`${head} reason: ${r.waiver?.reason} (signed: ${r.waiver?.signed_by})`)
+  } else if (r.verdict === 'CANONICAL') {
+    console.log(`${head} ${r.note}`)
   } else {
     console.log(`${head} ${r.error}`)
   }
