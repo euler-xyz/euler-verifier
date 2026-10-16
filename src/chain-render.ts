@@ -124,10 +124,15 @@ export function delegatedProblems(chainId: number, modules: Record<string, unkno
 /**
  * Render the reports of `chainIds` into euler-interfaces verify/ and update
  * their rows in verify/README.md; `replaceIndex` rewrites README.md from
- * these chains alone. A chain with any failed proof, delegated-code
- * verification included, is not written. Returns those problems.
+ * these chains alone, so it writes nothing unless every chain renders. A
+ * chain with any failed proof, delegated-code verification included, is not
+ * written. Returns the chains written and the problems of the others.
  */
-export async function renderChains(chainIds: number[], replaceIndex: boolean, run: ChainRenderRun): Promise<string[]> {
+export async function renderChains(
+  chainIds: number[],
+  replaceIndex: boolean,
+  run: ChainRenderRun,
+): Promise<{ rendered: number[]; problems: string[] }> {
   const problems: string[] = []
   const outcomes: Outcome[] = []
   const modules: Record<string, unknown> = {}
@@ -154,7 +159,7 @@ export async function renderChains(chainIds: number[], replaceIndex: boolean, ru
     Object.assign(swapMgmt, chainSwap)
     rendered.push(chainId)
   }
-  if (rendered.length === 0 || (replaceIndex && problems.length)) return problems
+  if (rendered.length === 0 || (replaceIndex && problems.length)) return { rendered: [], problems }
 
   const scoped: Manifest = Object.fromEntries(rendered.map((id) => [String(id), run.manifest[String(id)] ?? {}]))
   const read = <T>(p: string): T => JSON.parse(readFileSync(p, 'utf8')) as T
@@ -179,5 +184,5 @@ export async function renderChains(chainIds: number[], replaceIndex: boolean, ru
   } finally {
     rmSync(diffsDir, { recursive: true, force: true })
   }
-  return problems
+  return { rendered, problems }
 }

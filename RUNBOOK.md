@@ -43,8 +43,10 @@ entry and the report come from `pnpm add-entries`; nobody writes them by hand.
    changed chain again (or fails the PR).
 
 If nothing proves, the command lists the contract with every candidate tried
-and writes nothing for it. Wrong or unpushed commit, or a build profile none of
-the candidates used: offer the right commit with `--candidate`, or use a
+and writes nothing for it. A proven entry is written only with its chain's
+report: if the chain doesn't render, the entry is listed as `NOT WRITTEN` and
+the next run proves it again. Wrong or unpushed commit, or a build profile none
+of the candidates used: offer the right commit with `--candidate`, or use a
 waiver (below) — never merge red. A forgotten or stale entry also fails CI:
 `check-completeness` names the `pnpm add-entries` command to run. CI proves
 every chain whose verification inputs the PR changes (address files,
@@ -140,6 +142,7 @@ the guarantee.
 | `… has different addresses in …` | one key in two address files with different values (a zero address included) | keep the published one in euler-interfaces, remove the other |
 | `submodule override path … is not an initialized submodule` | an override names the root, a plain folder or an uninitialized submodule | fix `evidence.submoduleOverrides` to name the submodule path |
 | `submodule override … is at …, not at …` | a later override of a parent reset a submodule inside it | list parents before the submodules inside them |
+| `NOT WRITTEN …` from `add-entries` | the entry proved but its chain's report did not render | fix the `NOT RENDERED` cause and rerun |
 | `… was proven at 0x…; regenerate it` | the contract was redeployed | `pnpm add-entries` (with `--candidate`/`--candidates-from` for a new commit) |
 | `has origin …, expected …` | an engine clone points elsewhere | delete that directory under `repos/engine`; the engine clones it again |
 | `EVault modules not verified` / `EulerSwap management not verified` | delegated-code verification failed (RPC or build) | fix the cause and rerun; the chain's report is not written until it passes |

@@ -32,6 +32,7 @@ import { addressChainIds, resolveAddress, staleRegistryChains } from '../src/add
 import { ensureRepoCheckout } from '../src/compile.js'
 import { interfacesPaths, renderChains } from '../src/chain-render.js'
 import { findWork, staleEntries } from '../src/manifest-work.js'
+import { revertEntries } from '../src/add-entries.js'
 import { verifyDelegatedCode } from '../src/verify.js'
 import { buildNetworks } from '../src/networks.js'
 import * as viemChains from 'viem/chains'
@@ -146,7 +147,7 @@ describe('finding 3: add-entries renders with the same guards as verify', () => 
   it('a canonical entry at the wrong address stops the chain and writes nothing', async () => {
     const manifest: Manifest = { '1': { EUL: { repo: 'euler-xyz/euler-governance', verified: 'canonical', note: 'n' } } }
     const root = interfaces({ 'addresses/1/TokenAddresses.json': { EUL: OTHER } }, manifest)
-    const problems = await renderChains([1], true, run(root, manifest))
+    const { problems } = await renderChains([1], true, run(root, manifest))
     expect(problems.join('\n')).toMatch(/expects 0xd9Fcd98c322942075A5C3860693e9f4f03AAE07b/)
     expect(existsSync(join(root, 'verify', '1.md'))).toBe(false)
     expect(readFileSync(join(root, 'verify', 'README.md'), 'utf8')).toBe('# rendered before\n')
@@ -166,7 +167,7 @@ describe('finding 3: add-entries renders with the same guards as verify', () => 
       '1': { eulOFTAdapter: bytecodeEntry({ contractName: 'OFTAdapterUpgradeable', proxy: { address: PROXY, implementation: IMPLEMENTATION } }) },
     }
     const root = interfaces({ 'addresses/1/BridgeAddresses.json': { eulOFTAdapter: PROXY } }, manifest)
-    const problems = await renderChains([1], false, run(root, manifest))
+    const { problems } = await renderChains([1], false, run(root, manifest))
     expect(problems.join('\n')).toMatch(/delegates to 0x0000000000000000000000000000000000000001/)
     expect(proveTask).not.toHaveBeenCalled()
     expect(existsSync(join(root, 'verify', '1.md'))).toBe(false)
@@ -190,7 +191,7 @@ describe('finding 4: delegated-code failures are never dropped', () => {
     vi.mocked(verifyManifestModules).mockResolvedValue({ results: { '8453': { error: 'rpc: all RPC endpoints failed' } }, ok: false })
     vi.mocked(verifyManifestSwapManagement).mockResolvedValue({ results: {}, ok: true })
     const root = interfaces({ 'addresses/8453/PeripheryAddresses.json': { swapVerifier: SWAP_VERIFIER } }, manifest)
-    const problems = await renderChains([8453], false, run(root, manifest))
+    const { problems } = await renderChains([8453], false, run(root, manifest))
     expect(problems).toEqual(['8453: EVault modules not verified (rpc: all RPC endpoints failed)'])
     expect(existsSync(join(root, 'verify', '8453.md'))).toBe(false)
   })
@@ -200,7 +201,7 @@ describe('finding 4: delegated-code failures are never dropped', () => {
     vi.mocked(verifyManifestModules).mockResolvedValue({ results: {}, ok: true })
     vi.mocked(verifyManifestSwapManagement).mockResolvedValue({ results: { '8453': { error: 'forge build src failed' } }, ok: false })
     const root = interfaces({ 'addresses/8453/PeripheryAddresses.json': { swapVerifier: SWAP_VERIFIER } }, manifest)
-    const problems = await renderChains([8453], false, run(root, manifest))
+    const { problems } = await renderChains([8453], false, run(root, manifest))
     expect(problems).toEqual(['8453: EulerSwap management not verified (forge build src failed)'])
     expect(existsSync(join(root, 'verify', '8453.md'))).toBe(false)
   })
@@ -531,5 +532,22 @@ describe('a chain published only from config/addresses is covered', () => {
       timeout: 60_000,
     })
     await expect(check).rejects.toMatchObject({ code: 1, stderr: expect.stringContaining('8453: manifest entries for a chain without address files') })
+  })
+})
+
+describe('add-entries writes an entry only with its chain report', () => {
+  it('reverts entries whose chain did not render, keeping the rest', () => {
+    const original: Manifest = { '1': { EUL: bytecodeEntry({ commit: SHA('1') }) } }
+    const next: Manifest = {
+      '1': { EUL: bytecodeEntry({ commit: SHA('2') }), swapVerifier: bytecodeEntry() },
+      '8453': { swapVerifier: bytecodeEntry() },
+      '130': { swapVerifier: bytecodeEntry() },
+    }
+    const reverted = revertEntries(next, original, [
+      { chainId: 1, key: 'EUL', address: EUL },
+      { chainId: 1, key: 'swapVerifier', address: SWAP_VERIFIER },
+      { chainId: 8453, key: 'swapVerifier', address: SWAP_VERIFIER },
+    ])
+    expect(reverted).toEqual({ '1': original['1'], '130': next['130'] })
   })
 })

@@ -98,6 +98,21 @@ function entryFor(c: Candidate, outcome: ProveOutcome, address: string, proxy: P
   }
 }
 
+/** `next` with the entries of `items` as they are in `original`: a manifest entry lands only with its chain's report. */
+export function revertEntries(next: Manifest, original: Manifest, items: Item[]): Manifest {
+  return items.reduce<Manifest>((manifest, { chainId, key }) => {
+    const chain = String(chainId)
+    const { [key]: _, ...others } = manifest[chain] ?? {}
+    const before = original[chain]?.[key]
+    const entries = before ? { ...others, [key]: before } : others
+    if (Object.keys(entries).length === 0 && !original[chain]) {
+      const { [chain]: __, ...rest } = manifest
+      return rest
+    }
+    return { ...manifest, [chain]: entries }
+  }, next)
+}
+
 /** The entry's own pin, as a candidate for re-proving it at the current address. */
 function ownCandidate(chainId: number, key: string, entry: BytecodeEntry): Candidate {
   return {
@@ -213,9 +228,8 @@ async function main(): Promise<number> {
     added.push(w)
   }
 
-  if (added.length || stamped) writeFileSync(paths.manifest, formatManifest(next))
   const renderedChains = values.render ? chainIds : [...new Set(added.map((m) => m.chainId))]
-  const renderProblems = renderedChains.length
+  const render = renderedChains.length
     ? await renderChains(renderedChains, values.render && !values.chain, {
         manifest: next,
         paths,
@@ -226,16 +240,20 @@ async function main(): Promise<number> {
         notesPath: join(ROOT, 'manifests', 'attention-notes.json'),
         engineRef: values['engine-ref'],
       })
-    : []
+    : { rendered: [], problems: [] }
+  const unrendered = added.filter((m) => !render.rendered.includes(m.chainId))
+  const written = added.filter((m) => render.rendered.includes(m.chainId))
+  if (written.length || stamped) writeFileSync(paths.manifest, formatManifest(revertEntries(next, manifest, unrendered)))
 
-  console.log(`\nadded or regenerated ${added.length} entr${added.length === 1 ? 'y' : 'ies'}: ${added.map((m) => `${m.chainId}/${m.key}`).join(', ') || 'none'}`)
+  console.log(`\nadded or regenerated ${written.length} entr${written.length === 1 ? 'y' : 'ies'}: ${written.map((m) => `${m.chainId}/${m.key}`).join(', ') || 'none'}`)
   if (stamped) console.log(`recorded the proven address of ${stamped} existing entr${stamped === 1 ? 'y' : 'ies'}`)
   for (const { missing: m, attempts, reason } of unproven) {
     console.log(`NOT PROVEN ${m.chainId}/${m.key} @ ${getAddress(m.address)}${reason ? `: ${reason}` : ''}`)
     for (const a of attempts) console.log(`  tried ${a.candidate} (${a.origin}): ${a.result}`)
   }
-  for (const p of renderProblems) console.log(`NOT RENDERED ${p}`)
-  return unproven.length || renderProblems.length ? 1 : 0
+  for (const m of unrendered) console.log(`NOT WRITTEN ${m.chainId}/${m.key}: proven, but its chain did not render; rerun once fixed`)
+  for (const p of render.problems) console.log(`NOT RENDERED ${p}`)
+  return unproven.length || render.problems.length ? 1 : 0
 }
 
 if (isEntrypoint(import.meta.url)) {
