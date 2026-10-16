@@ -56,7 +56,7 @@ function candidateKey(c: Pick<ProveCandidate, 'repo' | 'commit' | 'contractName'
 }
 
 /** Masks are derived when an entry is built, so an entry of another format is rebuilt. */
-const CACHE_FORMAT = 3
+const CACHE_FORMAT = 4
 
 /**
  * Build-once cache across the whole sweep: distinct (repo, commit, contract,
