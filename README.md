@@ -33,8 +33,11 @@ The chains themselves come from euler-interfaces `EulerChains.json`.
    implementation (EIP-1967 slot), whose code is then proven.
 3. Check out `repo@commit` in an engine-managed clone with the repo's GitHub
    origin, reset hard and cleaned of untracked files (submodules too), apply
-   the recorded build profile and submodule pins (full 40-hex SHAs only),
-   `forge build --ast`.
+   the recorded build profile and submodule pins (full 40-hex SHAs only, each
+   on an initialized submodule, parents before the submodules inside them).
+   The root and every pinned submodule must then be at their commits; any
+   other submodule not at the commit its parent records is removed, as a
+   fresh clone would lack it. `forge build --ast`.
 4. Normalize both codes: strip the metadata trailer if it validates as
    Solidity CBOR, mask `immutableReferences`, and mask the metadata digests of
    embedded child contracts. Children are the contracts the compiler lists in

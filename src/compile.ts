@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { existsSync, rmSync, readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, rmSync, readFileSync, writeFileSync, mkdirSync, readdirSync, realpathSync, statSync } from 'node:fs'
 import { join, basename, relative } from 'node:path'
 import { fromHex } from './metadata.js'
 import { embeddedMetadataRanges, rangesChangedByMetadata } from './bytecode.js'
@@ -158,9 +158,10 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
     timeoutMs: 600_000,
   })
 
-  for (const o of req.submoduleOverrides ?? []) {
-    const subDir = join(dir, o.path)
-    if (!existsSync(subDir)) throw new Error(`submodule override path missing: ${o.path}`)
+  await dropDriftedSubmodules(dir, new Set())
+  const overrides = req.submoduleOverrides ?? []
+  for (const o of overrides) {
+    const subDir = await initializedSubmodule(dir, o.path)
     const have = await run('git', ['cat-file', '-t', `${o.ref}^{commit}`], { cwd: subDir }).then(
       (t) => t.trim() === 'commit',
       () => false,
@@ -178,7 +179,71 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
     }).catch(() => {})
   }
 
+  await dropDriftedSubmodules(dir, new Set(overrides.map((o) => o.path)))
+
+  const head = await revParse(dir, 'HEAD')
+  if (head !== req.commit) throw new Error(`${req.repo} checkout is at ${head}, not at its pin ${req.commit}`)
+  for (const o of overrides) {
+    const subDir = await initializedSubmodule(dir, o.path)
+    const [at, ref] = await Promise.all([revParse(subDir, 'HEAD'), revParse(subDir, `${o.ref}^{commit}`)])
+    if (at !== ref) throw new Error(`submodule override ${o.path} is at ${at}, not at ${o.ref}: list a parent before the submodules inside it`)
+  }
   return dir
+}
+
+const revParse = async (cwd: string, rev: string) => (await run('git', ['rev-parse', '--verify', '--quiet', rev], { cwd })).trim()
+
+/** Initialized submodules of the checkout at `dir`, nested ones included; `drifted` when not at the commit their parent records. */
+async function initializedSubmodules(dir: string): Promise<Array<{ path: string; drifted: boolean }>> {
+  const listed = await run(
+    'git',
+    ['submodule', 'foreach', '--quiet', '--recursive', 'printf "%s %s %s\\0" "$sha1" "$(git rev-parse HEAD)" "$displaypath"'],
+    { cwd: dir },
+  )
+  return listed.split('\0').flatMap((record) => {
+    const m = /^([0-9a-f]+) ([0-9a-f]+) (.+)$/s.exec(record)
+    return m ? [{ path: m[3]!, drifted: m[1] !== m[2] }] : []
+  })
+}
+
+/**
+ * The directory of the initialized submodule at `path` of the checkout at
+ * `dir`. Git run anywhere else (the root, or an uninitialized submodule's
+ * empty directory) would act on the root checkout and move the commit being
+ * verified.
+ */
+async function initializedSubmodule(dir: string, path: string): Promise<string> {
+  const subDir = join(dir, path)
+  const toplevel = (await initializedSubmodules(dir)).some((s) => s.path === path)
+    ? (await run('git', ['rev-parse', '--show-toplevel'], { cwd: subDir }).catch(() => '')).trim()
+    : ''
+  if (!toplevel || realpathSync(toplevel) !== realpathSync(subDir)) {
+    throw new Error(`submodule override path ${path} is not an initialized submodule of this checkout`)
+  }
+  return subDir
+}
+
+/**
+ * Deinitialize every submodule not at the commit its parent records, except
+ * the override paths in `keep`, so the checkout holds what a fresh clone
+ * would. A nested update that fails (a gitlink upstream no longer serves)
+ * otherwise leaves whatever an earlier build checked out, and that would be
+ * compiled.
+ */
+async function dropDriftedSubmodules(dir: string, keep: ReadonlySet<string>): Promise<void> {
+  const all = await initializedSubmodules(dir)
+  const drifted = all.filter((s) => s.drifted && !keep.has(s.path)).map((s) => s.path)
+  for (const path of drifted.filter((p) => !drifted.some((q) => p.startsWith(`${q}/`)))) {
+    const parent = all
+      .map((s) => s.path)
+      .filter((q) => path.startsWith(`${q}/`))
+      .sort((a, b) => b.length - a.length)[0]
+    const cwd = parent ? join(dir, parent) : dir
+    await run('git', ['submodule', 'deinit', '--quiet', '--force', '--', parent ? path.slice(parent.length + 1) : path], {
+      cwd,
+      env: { ...process.env, GIT_LITERAL_PATHSPECS: '1' },
+    })
+  }
 }
 
 function profileEnv(profile: CompileProfile | 'native'): NodeJS.ProcessEnv {

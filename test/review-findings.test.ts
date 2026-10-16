@@ -324,3 +324,143 @@ describe('case-sensitive filesystems', () => {
     expect(unresolvedImporter('Error (2314): Expected \';\' but got identifier\n --> src/A.sol:3:1:')).toBeNull()
   })
 })
+
+describe('a submodule override cannot move the commit being verified', () => {
+  async function git(cwd: string, ...args: string[]) {
+    return (await execFileAsync('git', ['-c', 'protocol.file.allow=always', '-c', 'user.email=t@t', '-c', 'user.name=t', ...args], { cwd })).stdout.trim()
+  }
+
+  /** An engine clone at commit A with submodule lib/dep, a later root commit B, and a second dep commit. */
+  async function cloneWithSubmodule() {
+    const dep = tempDir('verifier-dep-')
+    await git(dep, 'init', '-q')
+    write(join(dep, 'Dep.sol'), 'contract Dep {}\n')
+    await git(dep, 'add', '.')
+    await git(dep, 'commit', '-qm', 'dep 1')
+    write(join(dep, 'Dep.sol'), 'contract Dep { uint256 x; }\n')
+    await git(dep, 'commit', '-qam', 'dep 2')
+    const depCommit = await git(dep, 'rev-parse', 'HEAD')
+    await git(dep, 'checkout', '-q', 'HEAD~1')
+
+    const upstream = tempDir('verifier-upstream-')
+    await git(upstream, 'init', '-q')
+    write(join(upstream, 'src', 'A.sol'), 'contract A {}\n')
+    await git(upstream, 'submodule', 'add', '-q', dep, 'lib/dep')
+    await git(upstream, 'add', '.')
+    await git(upstream, 'commit', '-qm', 'a')
+    const commitA = await git(upstream, 'rev-parse', 'HEAD')
+    write(join(upstream, 'src', 'B.sol'), 'contract B {}\n')
+    await git(upstream, 'add', '.')
+    await git(upstream, 'commit', '-qm', 'b')
+    const commitB = await git(upstream, 'rev-parse', 'HEAD')
+
+    const reposDir = tempDir('verifier-repos-')
+    const dir = join(reposDir, 'repo')
+    await git(reposDir, 'clone', '-q', upstream, dir)
+    await git(dir, 'remote', 'set-url', 'origin', 'https://github.com/euler-xyz/repo.git')
+    return { reposDir, dir, commitA, commitB, depCommit }
+  }
+
+  beforeEach(() => {
+    vi.stubEnv('GIT_CONFIG_COUNT', '1')
+    vi.stubEnv('GIT_CONFIG_KEY_0', 'protocol.file.allow')
+    vi.stubEnv('GIT_CONFIG_VALUE_0', 'always')
+  })
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('refuses the repository root and plain directories as override paths', async () => {
+    const { reposDir, dir, commitA, commitB } = await cloneWithSubmodule()
+    for (const path of ['.', 'src', 'lib/../.']) {
+      const checkout = ensureRepoCheckout({ repo: 'euler-xyz/repo', commit: commitA, reposDir, submoduleOverrides: [{ path, ref: commitB }] })
+      await expect(checkout).rejects.toThrow(`submodule override path ${path} is not an initialized submodule of this checkout`)
+      expect(await git(dir, 'rev-parse', 'HEAD')).toBe(commitA)
+      expect(existsSync(join(dir, 'src', 'B.sol'))).toBe(false)
+    }
+  })
+
+  it('moves a real submodule and keeps the root at its pin', async () => {
+    const { reposDir, dir, commitA, depCommit } = await cloneWithSubmodule()
+    await ensureRepoCheckout({ repo: 'euler-xyz/repo', commit: commitA, reposDir, submoduleOverrides: [{ path: 'lib/dep', ref: depCommit }] })
+    expect(await git(dir, 'rev-parse', 'HEAD')).toBe(commitA)
+    expect(await git(join(dir, 'lib', 'dep'), 'rev-parse', 'HEAD')).toBe(depCommit)
+  })
+
+  /** root -> "lib/my mid" (two commits, both recording inner@I1) -> lib/inner (I1, I2). */
+  async function nestedClone() {
+    const commitIn = async (repo: string, file: string, body: string) => {
+      write(join(repo, file), body)
+      await git(repo, 'add', '.')
+      await git(repo, 'commit', '-qm', file)
+      return git(repo, 'rev-parse', 'HEAD')
+    }
+    const inner = tempDir('verifier-inner-')
+    await git(inner, 'init', '-q')
+    const i1 = await commitIn(inner, 'Inner.sol', 'contract Inner {}\n')
+    const i2 = await commitIn(inner, 'Inner.sol', 'contract Inner { uint256 x; }\n')
+    await git(inner, 'checkout', '-q', i1)
+    const mid = tempDir('verifier-mid-')
+    await git(mid, 'init', '-q')
+    await git(mid, 'submodule', 'add', '-q', inner, 'lib/inner')
+    await commitIn(mid, 'Mid.sol', 'contract Mid {}\n')
+    const m2 = await commitIn(mid, 'Mid.sol', 'contract Mid { uint256 y; }\n')
+    const upstream = tempDir('verifier-upstream-')
+    await git(upstream, 'init', '-q')
+    await git(upstream, 'submodule', 'add', '-q', mid, 'lib/my mid')
+    const root = await commitIn(upstream, 'src/A.sol', 'contract A {}\n')
+    const reposDir = tempDir('verifier-repos-')
+    const dir = join(reposDir, 'repo')
+    await git(reposDir, 'clone', '-q', upstream, dir)
+    await git(dir, 'remote', 'set-url', 'origin', 'https://github.com/euler-xyz/repo.git')
+    return { reposDir, dir, root, m2, i1, i2 }
+  }
+
+  it('fails when a later parent override undoes a nested one', async () => {
+    const { reposDir, root, m2, i2 } = await nestedClone()
+    const submoduleOverrides = [
+      { path: 'lib/my mid/lib/inner', ref: i2 },
+      { path: 'lib/my mid', ref: m2 },
+    ]
+    await expect(ensureRepoCheckout({ repo: 'euler-xyz/repo', commit: root, reposDir, submoduleOverrides })).rejects.toThrow(
+      `submodule override lib/my mid/lib/inner is at`,
+    )
+    await ensureRepoCheckout({ repo: 'euler-xyz/repo', commit: root, reposDir, submoduleOverrides: [...submoduleOverrides].reverse() })
+  })
+
+  it('drops a nested submodule an earlier build left off its gitlink', async () => {
+    const { reposDir, dir, root, i2 } = await nestedClone()
+    await ensureRepoCheckout({ repo: 'euler-xyz/repo', commit: root, reposDir })
+    await git(join(dir, 'lib', 'my mid', 'lib', 'inner'), 'checkout', '-q', i2)
+    await ensureRepoCheckout({ repo: 'euler-xyz/repo', commit: root, reposDir, recursiveSubmodules: false })
+    expect(existsSync(join(dir, 'lib', 'my mid', 'lib', 'inner', 'Inner.sol'))).toBe(false)
+    expect(existsSync(join(dir, 'lib', 'my mid', 'Mid.sol'))).toBe(true)
+  })
+
+  it('validate-manifests rejects an override path outside the submodules', async () => {
+    const root = interfaces({}, {})
+    const evidence = { submoduleOverrides: [{ path: '.', ref: SHA('b') }] }
+    write(join(root, 'manifest.json'), { '8453': { swapVerifier: bytecodeEntry({ evidence }) } })
+    const validate = execFileAsync(TSX, ['src/validate-manifests.ts', '--manifest', join(root, 'manifest.json')], { cwd: ROOT, timeout: 60_000 })
+    await expect(validate).rejects.toMatchObject({ code: 1, stderr: expect.stringContaining('submodule override path "." is not a repo-relative submodule path') })
+  })
+
+  it('validate-manifests rejects a repeated override and a parent listed after a submodule inside it', async () => {
+    const root = interfaces({}, {})
+    const overrides = (...paths: string[]) => ({ evidence: { submoduleOverrides: paths.map((path) => ({ path, ref: SHA('b') })) } })
+    write(join(root, 'manifest.json'), {
+      '1': { swapVerifier: bytecodeEntry(overrides('lib/a', 'lib/a')) },
+      '8453': { swapVerifier: bytecodeEntry(overrides('lib/a/lib/b', 'lib/a')) },
+      '130': { swapVerifier: bytecodeEntry(overrides('lib/a', 'lib/a/lib/b', 'lib/c')) },
+    })
+    const { code, stderr } = await execFileAsync(TSX, ['src/validate-manifests.ts', '--manifest', join(root, 'manifest.json')], {
+      cwd: ROOT,
+      timeout: 60_000,
+    }).then(
+      () => ({ code: 0, stderr: '' }),
+      (err: { code: number; stderr: string }) => err,
+    )
+    expect(code).toBe(1)
+    expect(stderr).toMatch(/1\/swapVerifier: submodule override lib\/a is listed twice/)
+    expect(stderr).toMatch(/8453\/swapVerifier: submodule override lib\/a comes after lib\/a\/lib\/b inside it/)
+    expect(stderr).not.toMatch(/130\/swapVerifier/)
+  })
+})

@@ -137,6 +137,8 @@ the guarantee.
 | `NOT PROVEN` from `add-entries` | no candidate is the deployed commit + profile | pass the deploying checkout (`--candidates-from`) or the commit (`--candidate`) |
 | `not a full 40-hex commit SHA` | branch/tag pin in manifest, submodule pin or baseline | resolve to the SHA; pins are immutable by design |
 | `EulerChains.json addresses differ …` | `node chains.js` not run after an address change | run it in euler-interfaces and commit the result |
+| `submodule override path … is not an initialized submodule` | an override names the root, a plain folder or an uninitialized submodule | fix `evidence.submoduleOverrides` to name the submodule path |
+| `submodule override … is at …, not at …` | a later override of a parent reset a submodule inside it | list parents before the submodules inside them |
 | `… was proven at 0x…; regenerate it` | the contract was redeployed | `pnpm add-entries` (with `--candidate`/`--candidates-from` for a new commit) |
 | `has origin …, expected …` | an engine clone points elsewhere | delete that directory under `repos/engine`; the engine clones it again |
 | `EVault modules not verified` / `EulerSwap management not verified` | delegated-code verification failed (RPC or build) | fix the cause and rerun; the chain's report is not written until it passes |

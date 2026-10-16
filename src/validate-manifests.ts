@@ -8,12 +8,17 @@
  */
 import { parseArgs } from 'node:util'
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { posix, resolve } from 'node:path'
 
 const SHA_RE = /^[0-9a-f]{40}$/
+
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const REPO_RE = /^euler-xyz\/[\w.-]+$/
 const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/
+
+/** A path below the repository root, without `.`, `..` or empty segments. */
+const isSubmodulePath = (path: string) =>
+  !posix.isAbsolute(path) && path.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..')
 
 const errors: string[] = []
 const fail = (msg: string) => errors.push(msg)
@@ -50,8 +55,15 @@ function validateManifest(path: string): void {
       if (!profile?.evm_version) fail(`${where}: profile.evm_version missing`)
       if (e.verified !== 'bytecode') fail(`${where}: verified must be "bytecode" for non-waived entries`)
       const evidence = e.evidence as { submoduleOverrides?: Array<{ path?: string; ref?: string }>; address?: string } | undefined
+      const overridden = (evidence?.submoduleOverrides ?? []).map((o) => o.path ?? '')
+      overridden.forEach((path, i) => {
+        const inside = overridden.slice(0, i).find((earlier) => earlier.startsWith(`${path}/`))
+        if (overridden.indexOf(path) !== i) fail(`${where}: submodule override ${path} is listed twice`)
+        else if (inside) fail(`${where}: submodule override ${path} comes after ${inside} inside it; list parents first`)
+      })
       for (const o of evidence?.submoduleOverrides ?? []) {
         if (!o.path) fail(`${where}: submodule override without a path`)
+        else if (!isSubmodulePath(o.path)) fail(`${where}: submodule override path "${o.path}" is not a repo-relative submodule path`)
         if (!o.ref || !SHA_RE.test(o.ref)) fail(`${where}: submodule override ${o.path} ref "${o.ref}" is not a full 40-hex SHA`)
       }
       if (evidence?.address !== undefined && !ADDRESS_RE.test(evidence.address)) fail(`${where}: evidence.address is not an address`)
