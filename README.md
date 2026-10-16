@@ -150,8 +150,10 @@ pnpm tsx src/check-completeness.ts --manifest <manifest.json> --addresses <addre
 implementation. `validate-manifests` rejects address overrides and any pin
 that is not a full 40-hex SHA (manifest commits, submodule pins, baselines).
 `check-completeness` fails on contracts without an entry, entries proven at
-another address and an `EulerChains.json` that lags the address files, and
-prints the `pnpm add-entries` command to run.
+another address, entries for a chain without address files and an
+`EulerChains.json` that lags the address files, and prints the
+`pnpm add-entries` command to run. Chains are those with address files under
+`addresses/` or `config/addresses/`.
 
 ### Individual steps
 

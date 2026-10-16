@@ -28,7 +28,7 @@ import { verifyManifestModules } from '../src/verify-modules.js'
 import { verifyManifestSwapManagement } from '../src/verify-swap-management.js'
 import { verifyModules } from '../src/modules.js'
 import { verifySwapManagement } from '../src/swap-management.js'
-import { resolveAddress, staleRegistryChains } from '../src/addresses.js'
+import { addressChainIds, resolveAddress, staleRegistryChains } from '../src/addresses.js'
 import { ensureRepoCheckout } from '../src/compile.js'
 import { interfacesPaths, renderChains } from '../src/chain-render.js'
 import { findWork, staleEntries } from '../src/manifest-work.js'
@@ -462,5 +462,33 @@ describe('a submodule override cannot move the commit being verified', () => {
     expect(stderr).toMatch(/1\/swapVerifier: submodule override lib\/a is listed twice/)
     expect(stderr).toMatch(/8453\/swapVerifier: submodule override lib\/a comes after lib\/a\/lib\/b inside it/)
     expect(stderr).not.toMatch(/130\/swapVerifier/)
+  })
+})
+
+describe('a chain published only from config/addresses is covered', () => {
+  const files = { 'config/addresses/8453/PeripheryAddresses.json': { swapVerifier: SWAP_VERIFIER } }
+
+  it('is listed and its contracts are found', () => {
+    const root = interfaces({ ...files, 'addresses/1/TokenAddresses.json': { EUL } }, {})
+    expect(addressChainIds(join(root, 'addresses'))).toEqual([1, 8453])
+    expect(findWork({}, join(root, 'addresses'), [8453]).map((w) => [w.kind, w.key])).toEqual([['missing', 'swapVerifier']])
+  })
+
+  it('check-completeness reports its missing entries', async () => {
+    const root = interfaces(files, {})
+    const check = execFileAsync(TSX, ['src/check-completeness.ts', '--manifest', join(root, 'verify', 'manifest.json'), '--addresses', join(root, 'addresses')], {
+      cwd: ROOT,
+      timeout: 60_000,
+    })
+    await expect(check).rejects.toMatchObject({ code: 1, stderr: expect.stringContaining(`8453/swapVerifier (${SWAP_VERIFIER}): deployed but missing from manifest`) })
+  })
+
+  it('check-completeness reports manifest entries for a chain without address files', async () => {
+    const root = interfaces({}, { '8453': { swapVerifier: bytecodeEntry() } })
+    const check = execFileAsync(TSX, ['src/check-completeness.ts', '--manifest', join(root, 'verify', 'manifest.json'), '--addresses', join(root, 'addresses')], {
+      cwd: ROOT,
+      timeout: 60_000,
+    })
+    await expect(check).rejects.toMatchObject({ code: 1, stderr: expect.stringContaining('8453: manifest entries for a chain without address files') })
   })
 })

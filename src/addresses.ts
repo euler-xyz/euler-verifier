@@ -23,6 +23,13 @@ export function chainAddressFiles(addressesDir: string, chainId: number): Sectio
   return sections
 }
 
+/** Chains with address files under addresses/ or the config/addresses overlay; chains.js publishes either. */
+export function addressChainIds(addressesDir: string): number[] {
+  const dirs = [addressesDir, join(dirname(addressesDir), 'config', 'addresses')].filter((d) => existsSync(d))
+  const ids = dirs.flatMap((d) => readdirSync(d).filter((entry) => /^\d+$/.test(entry)))
+  return [...new Set(ids)].map(Number).sort((a, b) => a - b)
+}
+
 /** The effective address of `key` on `chainId`: the first non-zero value across the merged files, in file-name order. */
 export function resolveAddress(addressesDir: string, chainId: number, key: string): string | null {
   const sections = chainAddressFiles(addressesDir, chainId)

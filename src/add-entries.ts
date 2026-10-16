@@ -7,11 +7,11 @@
  *     [--candidates-from <deploying checkout>]... [--candidate <repo>@<sha>]... [--render]
  */
 import { parseArgs } from 'node:util'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { getAddress } from 'viem'
-import { assertRegistryCurrent } from './addresses.js'
+import { addressChainIds, assertRegistryCurrent } from './addresses.js'
 import { CANONICAL_EXCEPTIONS, CONTRACT_SPECS } from './contracts.js'
 import { loadNetworks } from './networks.js'
 import { BuildCache, proveTask, type ProveOutcome } from './prove.js'
@@ -21,7 +21,7 @@ import { interfacesPaths, renderChains } from './chain-render.js'
 import { checkoutCommits, explicitCandidates, manifestCandidates, parseCandidateArg, type Candidate, type ExplicitCommit } from './candidates.js'
 import { isEntrypoint } from './entrypoint.js'
 import { codeAddress } from './verify.js'
-import { deployedChains, findWork, type Work } from './manifest-work.js'
+import { findWork, type Work } from './manifest-work.js'
 import type { BytecodeEntry, Manifest, NetworkInfo, ProxyDeclaration } from './types.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -45,7 +45,7 @@ recorded are re-proven at their current address once and stamped.
 
 Options:
   --interfaces <dir>        euler-interfaces checkout. Required.
-  --chain <id>              Only this chain; repeatable (default: every chain under addresses/).
+  --chain <id>              Only this chain; repeatable (default: every chain with address files).
   --candidates-from <dir>   A deploying checkout (e.g. evk-periphery): its HEAD commit and its
                             submodule commits become candidates, built with its foundry profile.
                             Repeatable.
@@ -142,10 +142,11 @@ async function main(): Promise<number> {
   const cacheDir = values['cache-dir'] ? resolve(values['cache-dir']) : join(ROOT, 'repos', 'build-cache')
   const cache = new BuildCache(cacheDir, reposDir)
 
-  const chainIds = values.chain?.map(Number) ?? deployedChains(paths.addresses)
-  const unknown = chainIds.filter((id) => !existsSync(join(paths.addresses, String(id))))
+  const deployed = addressChainIds(paths.addresses)
+  const chainIds = values.chain?.map(Number) ?? deployed
+  const unknown = chainIds.filter((id) => !deployed.includes(id))
   if (unknown.length) {
-    console.error(`no addresses/<chainId>/ folder for chain(s) ${unknown.join(', ')}`)
+    console.error(`no addresses/<chainId>/ or config/addresses/<chainId>/ folder for chain(s) ${unknown.join(', ')}`)
     return 1
   }
 

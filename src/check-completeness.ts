@@ -8,10 +8,10 @@
  *   pnpm tsx src/check-completeness.ts --manifest <file> --addresses <dir>
  */
 import { parseArgs } from 'node:util'
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { CONTRACT_SPECS } from './contracts.js'
-import { resolveAddress, staleRegistryChains } from './addresses.js'
+import { addressChainIds, resolveAddress, staleRegistryChains } from './addresses.js'
 import { staleEntries } from './manifest-work.js'
 import type { Manifest } from './types.js'
 
@@ -26,6 +26,8 @@ if (!values.manifest || !values.addresses) {
 const manifest = JSON.parse(readFileSync(resolve(values.manifest), 'utf8')) as Manifest
 const addressesDir = resolve(values.addresses)
 
+const chains = addressChainIds(addressesDir).map(String)
+
 const problems: string[] = []
 const missingChains = new Set<string>()
 
@@ -36,7 +38,6 @@ for (const s of staleEntries(manifest, addressesDir)) {
   problems.push(`${s.chainId}/${s.key} (${s.address}): manifest entry was proven at ${s.proven}; regenerate it`)
   missingChains.add(String(s.chainId))
 }
-const chains = readdirSync(addressesDir).filter((d) => /^\d+$/.test(d) && existsSync(join(addressesDir, d)))
 
 for (const chain of chains) {
   for (const key of Object.keys(CONTRACT_SPECS)) {
@@ -58,6 +59,10 @@ for (const chain of chains) {
       problems.push(`${chain}/${key}: manifest entry without a deployed address`)
     }
   }
+}
+
+for (const chain of Object.keys(manifest).filter((c) => !chains.includes(c))) {
+  problems.push(`${chain}: manifest entries for a chain without address files`)
 }
 
 if (problems.length) {

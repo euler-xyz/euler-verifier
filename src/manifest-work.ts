@@ -1,4 +1,3 @@
-import { readdirSync } from 'node:fs'
 import { resolveAddress } from './addresses.js'
 import { CONTRACT_SPECS } from './contracts.js'
 import type { BytecodeEntry, Manifest } from './types.js'
@@ -16,13 +15,6 @@ export interface Work {
   key: string
   address: string
   entry?: BytecodeEntry
-}
-
-export function deployedChains(addressesDir: string): number[] {
-  return readdirSync(addressesDir)
-    .filter((d) => /^\d+$/.test(d))
-    .map(Number)
-    .sort((a, b) => a - b)
 }
 
 export function findWork(manifest: Manifest, addressesDir: string, chainIds: number[]): Work[] {
