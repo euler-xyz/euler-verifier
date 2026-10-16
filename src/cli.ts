@@ -82,9 +82,8 @@ async function main(): Promise<number> {
   const records: VerificationRecord[] = []
 
   for (const { chainId, key, entry } of iterateManifest(manifest, selection)) {
-    const override = 'address' in entry
-    const address = override ? null : resolveAddress(addressesDir, chainId, key)
-    if (!address) {
+    const located = addressOf(addressesDir, chainId, key, entry)
+    if ('error' in located) {
       const record: VerificationRecord = {
         chainId,
         key,
@@ -92,14 +91,13 @@ async function main(): Promise<number> {
         verdict: 'ERROR',
         repo: entry.repo,
         ...pinOf(entry),
-        error: override
-          ? 'manifest address overrides are not allowed: addresses come from euler-interfaces'
-          : `address for "${key}" not found under ${addressesDir}/${chainId}/ or its config/addresses overlay`,
+        error: located.error,
       }
       records.push(record)
       if (!values.json) printHuman(record)
       continue
     }
+    const { address } = located
 
     if (!values.json) {
       const against = entry.verified === 'canonical' ? `${entry.repo} (canonical)` : `${entry.repo}@${entry.commit.slice(0, 8)}`
@@ -134,6 +132,16 @@ async function main(): Promise<number> {
     console.log(`\nsummary: ${JSON.stringify(counts)} -> ${ok ? 'OK' : 'FAILED'}`)
   }
   return ok ? 0 : 1
+}
+
+function addressOf(addressesDir: string, chainId: number, key: string, entry: ManifestEntry): { address: string } | { error: string } {
+  if ('address' in entry) return { error: 'manifest address overrides are not allowed: addresses come from euler-interfaces' }
+  try {
+    const address = resolveAddress(addressesDir, chainId, key)
+    return address ? { address } : { error: `address for "${key}" not found under ${addressesDir}/${chainId}/ or its config/addresses overlay` }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : String(err) }
+  }
 }
 
 function printHuman(r: VerificationRecord): void {

@@ -30,14 +30,21 @@ export function addressChainIds(addressesDir: string): number[] {
   return [...new Set(ids)].map(Number).sort((a, b) => a - b)
 }
 
-/** The effective address of `key` on `chainId`: the first non-zero value across the merged files, in file-name order. */
+/**
+ * The address of `key` on `chainId` in the merged files. Consumers read each
+ * group separately (tokenAddrs.EUL), so a key whose groups hold different
+ * values, a zero address included, has no single published address and is
+ * rejected.
+ */
 export function resolveAddress(addressesDir: string, chainId: number, key: string): string | null {
-  const sections = chainAddressFiles(addressesDir, chainId)
-  for (const file of Object.keys(sections).sort()) {
-    const value = sections[file]![key]
-    if (typeof value === 'string' && value !== '' && value.toLowerCase() !== ZERO_ADDRESS) return value
+  const found = Object.entries(chainAddressFiles(addressesDir, chainId))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .flatMap(([file, values]) => (Object.hasOwn(values, key) ? [{ file, value: values[key] }] : []))
+  if (new Set(found.map((f) => String(f.value).toLowerCase())).size > 1) {
+    throw new Error(`${chainId}/${key} has different addresses in ${found.map((f) => `${f.file} (${f.value})`).join(', ')}; keep one`)
   }
-  return null
+  const value = found[0]?.value
+  return typeof value === 'string' && value !== '' && value.toLowerCase() !== ZERO_ADDRESS ? value : null
 }
 
 /** chains.js names each group by its file: CoreAddresses.json -> coreAddrs. */

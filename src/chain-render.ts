@@ -43,7 +43,7 @@ export interface ChainRenderRun {
   engineRef?: string
 }
 
-const message = (err: unknown) => (err instanceof Error ? err.message.split('\n')[0] : String(err))
+const message = (err: unknown): string => (err instanceof Error ? err.message.split('\n')[0]! : String(err))
 
 /**
  * Prove every entry of `chainId` at its own pin, with the same guards as
@@ -54,7 +54,12 @@ const message = (err: unknown) => (err instanceof Error ? err.message.split('\n'
 async function chainOutcomes(chainId: number, run: ChainRenderRun): Promise<Outcome[] | string> {
   const outcomes: Outcome[] = []
   for (const [key, entry] of Object.entries(run.manifest[String(chainId)] ?? {})) {
-    const address = resolveAddress(run.paths.addresses, chainId, key)
+    let address: string | null
+    try {
+      address = resolveAddress(run.paths.addresses, chainId, key)
+    } catch (err) {
+      return message(err)
+    }
     if (!address) return `${chainId}/${key}: no address under addresses/${chainId}/ or its config/addresses overlay`
     if (entry.verified === 'canonical') {
       const problem = canonicalProblem(chainId, key, address)

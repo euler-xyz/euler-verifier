@@ -129,8 +129,9 @@ export async function verifyDelegatedCode(
   const records: VerificationRecord[] = []
   const pinned = (key: string): { entry: BytecodeEntry; address: string } | null => {
     const entry = entries[key]
+    if (!entry || entry.verified === 'canonical' || !matched.has(key)) return null
     const address = resolveAddress(addressesDir, chainId, key)
-    return entry && entry.verified !== 'canonical' && matched.has(key) && address ? { entry, address } : null
+    return address ? { entry, address } : null
   }
   const failed = (key: string, err: unknown, entry: BytecodeEntry): VerificationRecord => ({
     chainId,

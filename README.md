@@ -25,7 +25,9 @@ The chains themselves come from euler-interfaces `EulerChains.json`.
 1. Resolve the address consumers receive: `addresses/<chainId>/` with the
    `config/addresses/<chainId>/` overlay applied, exactly as euler-interfaces
    `chains.js` merges them into `EulerChains.json`, which must be current.
-   Manifest address overrides are rejected.
+   A key whose address files disagree, a zero address included, is an error,
+   since consumers read each group separately. Manifest address overrides are
+   rejected.
 2. `eth_getCode` for the address, trying `DEPLOYMENT_RPC_URL_<chainId>` first
    if set, then viem's default public endpoints for the chain. The viem chain
    is the one `EulerChains.json` names (`viemName`, else the only viem chain
@@ -150,10 +152,10 @@ pnpm tsx src/check-completeness.ts --manifest <manifest.json> --addresses <addre
 implementation. `validate-manifests` rejects address overrides and any pin
 that is not a full 40-hex SHA (manifest commits, submodule pins, baselines).
 `check-completeness` fails on contracts without an entry, entries proven at
-another address, entries for a chain without address files and an
-`EulerChains.json` that lags the address files, and prints the
-`pnpm add-entries` command to run. Chains are those with address files under
-`addresses/` or `config/addresses/`.
+another address, entries for a chain without address files, a key whose
+address files disagree and an `EulerChains.json` that lags the address
+files, and prints the `pnpm add-entries` command to run. Chains are those
+with address files under `addresses/` or `config/addresses/`.
 
 ### Individual steps
 

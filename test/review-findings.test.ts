@@ -465,6 +465,47 @@ describe('a submodule override cannot move the commit being verified', () => {
   })
 })
 
+describe('an address key has one published address across groups', () => {
+  const conflicting = {
+    'addresses/1/TokenAddresses.json': { EUL: OTHER },
+    'addresses/1/BridgeAddresses.json': { EUL },
+  }
+
+  it('rejects different addresses for one key in two groups, and accepts the same one', () => {
+    const root = interfaces(conflicting, {})
+    expect(() => resolveAddress(join(root, 'addresses'), 1, 'EUL')).toThrow(/1\/EUL has different addresses in BridgeAddresses.json .* TokenAddresses.json/)
+    const agreeing = interfaces({ ...conflicting, 'addresses/1/TokenAddresses.json': { EUL: EUL.toLowerCase() } }, {})
+    expect(resolveAddress(join(agreeing, 'addresses'), 1, 'EUL')).toBe(EUL)
+  })
+
+  it('rejects a zero address in one group and an address in another', () => {
+    const zero = '0x0000000000000000000000000000000000000000'
+    const root = interfaces({ ...conflicting, 'addresses/1/TokenAddresses.json': { EUL: zero } }, {})
+    expect(() => resolveAddress(join(root, 'addresses'), 1, 'EUL')).toThrow(/1\/EUL has different addresses/)
+    const unset = interfaces({ 'addresses/1/TokenAddresses.json': { EUL: zero } }, {})
+    expect(resolveAddress(join(unset, 'addresses'), 1, 'EUL')).toBeNull()
+  })
+
+  it('the verify CLI fails the entry instead of verifying one of them', async () => {
+    const manifest = { '1': { EUL: { repo: 'euler-xyz/euler-governance', verified: 'canonical', note: 'n' } } }
+    const root = interfaces(conflicting, manifest as unknown as Manifest)
+    const cli = execFileAsync(TSX, ['src/cli.ts', '--manifest', join(root, 'verify', 'manifest.json'), '--addresses', join(root, 'addresses'), '--chain', '1', '--no-explorer'], {
+      cwd: ROOT,
+      timeout: 60_000,
+    })
+    await expect(cli).rejects.toMatchObject({ code: 1, stdout: expect.stringMatching(/ERROR\s+chain=1 EUL 1\/EUL has different addresses/) })
+  })
+
+  it('check-completeness lists the conflict', async () => {
+    const root = interfaces(conflicting, {})
+    const check = execFileAsync(TSX, ['src/check-completeness.ts', '--manifest', join(root, 'verify', 'manifest.json'), '--addresses', join(root, 'addresses')], {
+      cwd: ROOT,
+      timeout: 60_000,
+    })
+    await expect(check).rejects.toMatchObject({ code: 1, stderr: expect.stringContaining('1/EUL has different addresses') })
+  })
+})
+
 describe('a chain published only from config/addresses is covered', () => {
   const files = { 'config/addresses/8453/PeripheryAddresses.json': { swapVerifier: SWAP_VERIFIER } }
 

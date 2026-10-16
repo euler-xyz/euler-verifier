@@ -28,6 +28,23 @@ const addressesDir = resolve(values.addresses)
 
 const chains = addressChainIds(addressesDir).map(String)
 
+/** Keys with different addresses in two address groups; nothing else can be checked until they are fixed. */
+const ambiguous = chains.flatMap((chain) =>
+  [...new Set([...Object.keys(CONTRACT_SPECS), ...Object.keys(manifest[chain] ?? {})])].flatMap((key) => {
+    try {
+      resolveAddress(addressesDir, Number(chain), key)
+      return []
+    } catch (err) {
+      return [err instanceof Error ? err.message : String(err)]
+    }
+  }),
+)
+if (ambiguous.length) {
+  console.error(`${ambiguous.length} address(es) differ between address groups:`)
+  for (const p of ambiguous) console.error(`  - ${p}`)
+  process.exit(1)
+}
+
 const problems: string[] = []
 const missingChains = new Set<string>()
 
