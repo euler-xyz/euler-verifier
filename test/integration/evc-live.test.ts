@@ -40,7 +40,7 @@ const DEPLOYMENTS: Array<{ chainId: number; address: string; commitTag: keyof ty
 describe.skipIf(!RUN)('EVC live acceptance', () => {
   const reposDir = join(ROOT, 'repos', 'engine')
   const builds = new Map<string, Awaited<ReturnType<typeof buildAtCommit>>>()
-  const networks = loadNetworks(ROOT)
+  const networks = loadNetworks(join(FIXTURES, 'EulerChains.json'))
 
   it('builds both pinned commits and reproduces the recorded artifacts byte-for-byte', async () => {
     for (const [tag, commit] of Object.entries(COMMITS)) {

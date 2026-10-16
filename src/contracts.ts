@@ -47,7 +47,7 @@ export const CONTRACT_SPECS: Record<string, ContractSpec> = {
   EUL: { contractNames: ['ERC20BurnableMintable'], defaultRepo: 'euler-xyz/evk-periphery' },
 }
 
-/** Chains where a manifest key is documented as canonical/long-established instead of bytecode-proven. */
-export const CANONICAL_EXCEPTIONS: Record<string, number[]> = {
-  EUL: [1],
+/** Canonical addresses by manifest key and chain, documented instead of bytecode-proven. */
+export const CANONICAL_EXCEPTIONS: Record<string, Record<number, string>> = {
+  EUL: { 1: '0xd9Fcd98c322942075A5C3860693e9f4f03AAE07b' },
 }

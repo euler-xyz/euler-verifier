@@ -4,13 +4,13 @@
  * candidates), prove every entry with the bytecode engine, and emit
  * manifest fragments + failure diagnostics.
  *
- *   pnpm tsx src/build-manifest.ts --tasks tasks.json --out outdir [--chain N] [--resume]
+ *   pnpm tsx src/build-manifest.ts --tasks tasks.json --chains <EulerChains.json> --out outdir [--chain N] [--resume]
  */
 import { parseArgs } from 'node:util'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadNetworks } from './networks.js'
+import { chainsPathFor, loadNetworks } from './networks.js'
 import { BuildCache, proveTask, type ProveOutcome, type ProveTask } from './prove.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -19,6 +19,7 @@ async function main(): Promise<number> {
   const { values } = parseArgs({
     options: {
       tasks: { type: 'string' },
+      chains: { type: 'string' },
       out: { type: 'string' },
       chain: { type: 'string' },
       'repos-dir': { type: 'string' },
@@ -26,8 +27,8 @@ async function main(): Promise<number> {
       resume: { type: 'boolean', default: false },
     },
   })
-  if (!values.tasks || !values.out) {
-    console.error('usage: build-manifest --tasks <tasks.json> --out <dir> [--chain N] [--resume]')
+  if (!values.tasks || !values.chains || !values.out) {
+    console.error('usage: build-manifest --tasks <tasks.json> --chains <EulerChains.json> --out <dir> [--chain N] [--resume]')
     return 1
   }
 
@@ -37,7 +38,7 @@ async function main(): Promise<number> {
   const outDir = resolve(values.out)
   mkdirSync(outDir, { recursive: true })
 
-  const networks = loadNetworks(ROOT)
+  const networks = loadNetworks(chainsPathFor(values))
   const reposDir = values['repos-dir'] ? resolve(values['repos-dir']) : join(ROOT, 'repos', 'engine')
   const cacheDir = values['cache-dir'] ? resolve(values['cache-dir']) : join(ROOT, 'repos', 'build-cache')
   const cache = new BuildCache(cacheDir, reposDir)

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { splitMetadata, decodeCborInfo } from './metadata.js'
+import { splitMetadata, decodeCborInfo, trailerDigestRanges } from './metadata.js'
 import type { CompareEvidence, ImmutableRange } from './types.js'
 
 /**
@@ -28,38 +28,86 @@ export function sha256Hex(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')
 }
 
-// CBOR encodings inside solc metadata blobs:
-//   64 'ipfs'  58 22 12 20 <32-byte digest>   (ipfs multihash)
-//   65 'bzzr0' 58 20       <32-byte digest>   (legacy swarm)
-//   65 'bzzr1' 58 20       <32-byte digest>
-const EMBEDDED_DIGEST_MARKERS: Array<{ marker: number[]; digestLen: number }> = [
-  { marker: [0x64, 0x69, 0x70, 0x66, 0x73, 0x58, 0x22, 0x12, 0x20], digestLen: 32 },
-  { marker: [0x65, 0x62, 0x7a, 0x7a, 0x72, 0x30, 0x58, 0x20], digestLen: 32 },
-  { marker: [0x65, 0x62, 0x7a, 0x7a, 0x72, 0x31, 0x58, 0x20], digestLen: 32 },
-]
+/** A compiled contract and the contracts whose code it embeds, as the compiler reports them. */
+export interface CompiledContract {
+  creation?: Uint8Array
+  runtime?: Uint8Array
+  embeds: CompiledContract[]
+}
+
+/** Where `needle` occurs in `haystack`, or null unless it occurs exactly once. */
+function onlyOccurrence(haystack: Uint8Array | undefined, needle: Uint8Array | undefined): number | null {
+  if (!haystack || !needle || needle.length === 0 || needle.length >= haystack.length) return null
+  const h = Buffer.from(haystack.buffer, haystack.byteOffset, haystack.length)
+  const n = Buffer.from(needle.buffer, needle.byteOffset, needle.length)
+  const at = h.indexOf(n)
+  return at !== -1 && h.indexOf(n, at + 1) === -1 ? at : null
+}
+
+const shift = (ranges: ImmutableRange[], by: number | null): ImmutableRange[] =>
+  by === null ? [] : ranges.map((r) => ({ start: r.start + by, length: r.length }))
+
+type Memo = Map<CompiledContract, ImmutableRange[]>
+
+/** Digest ranges in `contract.creation`: its runtime's trailer and those of each child placed in it, recursively. */
+function creationDigests(contract: CompiledContract, memo: Memo): ImmutableRange[] {
+  const cached = memo.get(contract)
+  if (cached) return cached
+  const { creation, runtime } = contract
+  const ranges = creation
+    ? [
+        ...shift(runtime ? trailerDigestRanges(runtime) : [], onlyOccurrence(creation, runtime)),
+        ...contract.embeds.flatMap((child) => [
+          ...shift(creationDigests(child, memo), onlyOccurrence(creation, child.creation)),
+          ...shift(runtimeDigests(child, memo), onlyOccurrence(creation, child.runtime)),
+        ]),
+      ]
+    : []
+  memo.set(contract, ranges)
+  return ranges
+}
+
+/** The digest ranges of `contract.creation` that fall in its runtime, as runtime offsets. */
+function runtimeDigests(contract: CompiledContract, memo: Memo): ImmutableRange[] {
+  const at = onlyOccurrence(contract.creation, contract.runtime)
+  if (at === null) return []
+  const end = at + contract.runtime!.length
+  return shift(
+    creationDigests(contract, memo).filter((r) => r.start >= at && r.start + r.length <= end),
+    -at,
+  )
+}
 
 /**
- * Factories embed CHILD creation bytecode (e.g. GenericFactory embeds
- * BeaconProxy, IRM factories embed their IRMs) and that embedded code carries
- * its own metadata digest, which varies with source *paths* even when the
- * code is identical. Stripping the outer trailer cannot reach these. Zero
- * every embedded metadata DIGEST (the 32 hash bytes only — the embedded
- * child code itself remains fully compared).
+ * Factories embed CHILD code (e.g. GenericFactory embeds BeaconProxy), and the
+ * embedded code carries its own metadata digest, which varies with source
+ * *paths* even when the code is identical. Stripping the outer trailer cannot
+ * reach these.
+ *
+ * A digest is masked only where the compiler placed a child: a contract that
+ * `contract.embeds` lists, whose code occurs exactly once in the creation code
+ * of the contract embedding it. A creation code holds the constructor's
+ * children and the runtime alike, so any second copy (a constant equal to the
+ * child's code, or the child embedded by both) leaves the child unmasked.
+ * Returns ranges of `contract.runtime`, its own trailer excluded.
  */
-export function maskEmbeddedMetadataDigests(code: Uint8Array): { masked: Uint8Array; count: number } {
-  const out = new Uint8Array(code)
-  let count = 0
-  for (const { marker, digestLen } of EMBEDDED_DIGEST_MARKERS) {
-    outer: for (let i = 0; i + marker.length + digestLen <= out.length; i++) {
-      for (let j = 0; j < marker.length; j++) {
-        if (code[i + j] !== marker[j]) continue outer
-      }
-      out.fill(0, i + marker.length, i + marker.length + digestLen)
-      count++
-      i += marker.length + digestLen - 1
-    }
-  }
-  return { masked: out, count }
+export function embeddedMetadataRanges(contract: CompiledContract): ImmutableRange[] {
+  if (!contract.runtime) return []
+  const executable = splitMetadata(contract.runtime).runtime.length
+  const ranges = runtimeDigests(contract, new Map()).filter((r) => r.start + r.length <= executable)
+  const unique = new Map(ranges.map((r) => [`${r.start}:${r.length}`, r]))
+  return [...unique.values()].sort((a, b) => a.start - b.start)
+}
+
+/**
+ * The `ranges` of `code` with any byte different in `variant`, the same
+ * contract built with only its metadata settings changed. A digest the
+ * compiler placed changes; bytes that only equal a child's code, such as a
+ * constant, do not, so they are never masked.
+ */
+export function rangesChangedByMetadata(code: Uint8Array, variant: Uint8Array | undefined, ranges: ImmutableRange[]): ImmutableRange[] {
+  if (!variant || variant.length !== code.length) return []
+  return ranges.filter((r) => code.subarray(r.start, r.start + r.length).some((byte, i) => byte !== variant[r.start + i]))
 }
 
 export interface CompareResult {
@@ -68,13 +116,15 @@ export interface CompareResult {
 }
 
 /**
- * The core verification comparison:
- * mask immutables in both, strip CBOR metadata from both, byte-compare.
+ * The core verification comparison: strip the validated CBOR trailer from
+ * both, mask immutables and the given embedded metadata digests in both,
+ * byte-compare.
  */
 export function compareRuntime(
   chainCode: Uint8Array,
   artifactCode: Uint8Array,
   immutableReferences: Record<string, ImmutableRange[]> | undefined | null,
+  embeddedMetadata: ImmutableRange[] = [],
 ): CompareResult {
   const ranges = collectImmutableRanges(immutableReferences)
 
@@ -100,14 +150,12 @@ export function compareRuntime(
     return { match: false, evidence: { ...base, firstDivergence: null } }
   }
 
-  // Mask within the stripped runtime, retaining strict range bounds; then
-  // zero embedded child-metadata digests (factories embed child creation
-  // code whose metadata varies with source paths).
-  const chainEmbedded = maskEmbeddedMetadataDigests(maskRanges(chainSplit.runtime, ranges))
-  const artifactEmbedded = maskEmbeddedMetadataDigests(maskRanges(artifactSplit.runtime, ranges))
-  const chainStripped = chainEmbedded.masked
-  const artifactStripped = artifactEmbedded.masked
-  base.embeddedDigestsMasked = [chainEmbedded.count, artifactEmbedded.count]
+  // Mask immutables and the artifact-derived embedded child-metadata digests
+  // at the same offsets in both, retaining strict range bounds.
+  const masks = [...ranges, ...embeddedMetadata]
+  const chainStripped = maskRanges(chainSplit.runtime, masks)
+  const artifactStripped = maskRanges(artifactSplit.runtime, masks)
+  base.embeddedDigestsMasked = [embeddedMetadata.length, embeddedMetadata.length]
 
   const chainSha = sha256Hex(chainStripped)
   const artifactSha = sha256Hex(artifactStripped)

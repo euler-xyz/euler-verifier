@@ -1,8 +1,10 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { existsSync, rmSync, readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs'
-import { join, basename } from 'node:path'
+import { existsSync, rmSync, readFileSync, writeFileSync, mkdirSync, readdirSync, realpathSync, statSync } from 'node:fs'
+import { join, basename, relative } from 'node:path'
 import { fromHex } from './metadata.js'
+import { embeddedMetadataRanges, rangesChangedByMetadata } from './bytecode.js'
+import { compiledContract, readBuildIndex, usesLiteralContent, type BuildIndex, type ForgeArtifact } from './compiled-contracts.js'
 import type { CompileProfile, ImmutableRange } from './types.js'
 
 const execFileAsync = promisify(execFile)
@@ -18,6 +20,8 @@ export interface EffectiveProfile {
 export interface BuildResult {
   code: Uint8Array
   immutableReferences: Record<string, ImmutableRange[]>
+  /** Runtime offsets of embedded child-metadata digests, derived from the build's artifacts. */
+  embeddedMetadata: ImmutableRange[]
   artifactPath: string
   repoDir: string
   /** Settings the compiler actually used, parsed from the artifact metadata. */
@@ -50,7 +54,7 @@ export interface BuildRequest {
   submoduleOverrides?: Array<{ path: string; ref: string }>
 }
 
-async function run(cmd: string, args: string[], opts: { cwd?: string; env?: NodeJS.ProcessEnv; timeoutMs?: number }): Promise<string> {
+export async function run(cmd: string, args: string[], opts: { cwd?: string; env?: NodeJS.ProcessEnv; timeoutMs?: number }): Promise<string> {
   try {
     const { stdout } = await execFileAsync(cmd, args, {
       cwd: opts.cwd,
@@ -67,6 +71,39 @@ async function run(cmd: string, args: string[], opts: { cwd?: string; env?: Node
 }
 
 /**
+ * Clone `repo` under `reposDir` unless an engine-managed clone is already
+ * there; returns its directory. A reused clone must have the repo's GitHub
+ * origin.
+ */
+export async function ensureClone(reposDir: string, repo: string): Promise<string> {
+  mkdirSync(reposDir, { recursive: true })
+  const dir = join(reposDir, basename(repo))
+  const origin = `https://github.com/${repo}.git`
+  if (!existsSync(join(dir, '.git'))) {
+    await run('git', ['clone', '--quiet', origin, dir], { timeoutMs: 600_000 })
+    return dir
+  }
+  const actual = (await run('git', ['remote', 'get-url', 'origin'], { cwd: dir })).trim()
+  if (actual.replace(/\.git$/, '') !== origin.replace(/\.git$/, '')) {
+    throw new Error(`${dir} has origin ${actual}, expected ${origin}: remove it so the engine clones it again`)
+  }
+  return dir
+}
+
+/** Fetch `commit` into the clone at `dir` if it is not there yet. */
+export async function ensureCommit(dir: string, commit: string): Promise<void> {
+  const present = await run('git', ['cat-file', '-t', `${commit}^{commit}`], { cwd: dir }).then(
+    (t) => t.trim() === 'commit',
+    () => false,
+  )
+  if (!present) {
+    await run('git', ['fetch', '--quiet', 'origin', commit], { cwd: dir, timeoutMs: 600_000 }).catch(async () => {
+      await run('git', ['fetch', '--quiet', '--tags', 'origin'], { cwd: dir, timeoutMs: 600_000 })
+    })
+  }
+}
+
+/**
  * Clone (or reuse) an engine-managed checkout and pin it to the exact commit.
  * Engine clones live under `<reposDir>/` and are separate from any legacy
  * working copies. NOTE: checkouts mutate repo state — callers must not verify
@@ -77,24 +114,13 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
     throw new Error(`manifest pin "${req.commit}" is not a full 40-hex commit SHA — branch and tag pins are rejected by design`)
   }
 
-  mkdirSync(req.reposDir, { recursive: true })
-  const dir = join(req.reposDir, basename(req.repo))
+  const dir = await ensureClone(req.reposDir, req.repo)
+  await ensureCommit(dir, req.commit)
 
-  if (!existsSync(join(dir, '.git'))) {
-    await run('git', ['clone', '--quiet', `https://github.com/${req.repo}.git`, dir], { timeoutMs: 600_000 })
-  }
-
-  const present = await run('git', ['cat-file', '-t', `${req.commit}^{commit}`], { cwd: dir }).then(
-    (t) => t.trim() === 'commit',
-    () => false,
-  )
-  if (!present) {
-    await run('git', ['fetch', '--quiet', 'origin', req.commit], { cwd: dir, timeoutMs: 600_000 }).catch(async () => {
-      await run('git', ['fetch', '--quiet', '--tags', 'origin'], { cwd: dir, timeoutMs: 600_000 })
-    })
-  }
-
+  // A reused checkout may hold edits or untracked sources a build would pick up.
   await run('git', ['checkout', '--quiet', '--force', req.commit], { cwd: dir })
+  await run('git', ['reset', '--quiet', '--hard', req.commit], { cwd: dir })
+  await run('git', ['clean', '-ffdxq'], { cwd: dir })
   await run('git', ['submodule', 'sync', '--quiet', '--recursive'], { cwd: dir })
   // Recursive by default: builds (unlike text comparison) need the full
   // dependency tree — nested lib sources are compiled, not just read.
@@ -127,9 +153,15 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
     })
   }
 
-  for (const o of req.submoduleOverrides ?? []) {
-    const subDir = join(dir, o.path)
-    if (!existsSync(subDir)) throw new Error(`submodule override path missing: ${o.path}`)
+  await run('git', ['submodule', 'foreach', '--quiet', '--recursive', 'git reset --quiet --hard && git clean -ffdxq'], {
+    cwd: dir,
+    timeoutMs: 600_000,
+  })
+
+  await dropDriftedSubmodules(dir, new Set())
+  const overrides = req.submoduleOverrides ?? []
+  for (const o of overrides) {
+    const subDir = await initializedSubmodule(dir, o.path)
     const have = await run('git', ['cat-file', '-t', `${o.ref}^{commit}`], { cwd: subDir }).then(
       (t) => t.trim() === 'commit',
       () => false,
@@ -139,6 +171,7 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
       await run('git', ['fetch', '--quiet', 'origin', o.ref], { cwd: subDir, timeoutMs: 600_000 }).catch(() => {})
     }
     await run('git', ['checkout', '--quiet', '--force', o.ref], { cwd: subDir })
+    await run('git', ['clean', '-ffdxq'], { cwd: subDir })
     // The override's own dependency tree must follow it.
     await run('git', ['submodule', 'update', '--quiet', '--init', '--force', '--recursive', '--jobs', '4'], {
       cwd: subDir,
@@ -146,7 +179,71 @@ export async function ensureRepoCheckout(req: Pick<BuildRequest, 'repo' | 'commi
     }).catch(() => {})
   }
 
+  await dropDriftedSubmodules(dir, new Set(overrides.map((o) => o.path)))
+
+  const head = await revParse(dir, 'HEAD')
+  if (head !== req.commit) throw new Error(`${req.repo} checkout is at ${head}, not at its pin ${req.commit}`)
+  for (const o of overrides) {
+    const subDir = await initializedSubmodule(dir, o.path)
+    const [at, ref] = await Promise.all([revParse(subDir, 'HEAD'), revParse(subDir, `${o.ref}^{commit}`)])
+    if (at !== ref) throw new Error(`submodule override ${o.path} is at ${at}, not at ${o.ref}: list a parent before the submodules inside it`)
+  }
   return dir
+}
+
+const revParse = async (cwd: string, rev: string) => (await run('git', ['rev-parse', '--verify', '--quiet', rev], { cwd })).trim()
+
+/** Initialized submodules of the checkout at `dir`, nested ones included; `drifted` when not at the commit their parent records. */
+async function initializedSubmodules(dir: string): Promise<Array<{ path: string; drifted: boolean }>> {
+  const listed = await run(
+    'git',
+    ['submodule', 'foreach', '--quiet', '--recursive', 'printf "%s %s %s\\0" "$sha1" "$(git rev-parse HEAD)" "$displaypath"'],
+    { cwd: dir },
+  )
+  return listed.split('\0').flatMap((record) => {
+    const m = /^([0-9a-f]+) ([0-9a-f]+) (.+)$/s.exec(record)
+    return m ? [{ path: m[3]!, drifted: m[1] !== m[2] }] : []
+  })
+}
+
+/**
+ * The directory of the initialized submodule at `path` of the checkout at
+ * `dir`. Git run anywhere else (the root, or an uninitialized submodule's
+ * empty directory) would act on the root checkout and move the commit being
+ * verified.
+ */
+async function initializedSubmodule(dir: string, path: string): Promise<string> {
+  const subDir = join(dir, path)
+  const toplevel = (await initializedSubmodules(dir)).some((s) => s.path === path)
+    ? (await run('git', ['rev-parse', '--show-toplevel'], { cwd: subDir }).catch(() => '')).trim()
+    : ''
+  if (!toplevel || realpathSync(toplevel) !== realpathSync(subDir)) {
+    throw new Error(`submodule override path ${path} is not an initialized submodule of this checkout`)
+  }
+  return subDir
+}
+
+/**
+ * Deinitialize every submodule not at the commit its parent records, except
+ * the override paths in `keep`, so the checkout holds what a fresh clone
+ * would. A nested update that fails (a gitlink upstream no longer serves)
+ * otherwise leaves whatever an earlier build checked out, and that would be
+ * compiled.
+ */
+async function dropDriftedSubmodules(dir: string, keep: ReadonlySet<string>): Promise<void> {
+  const all = await initializedSubmodules(dir)
+  const drifted = all.filter((s) => s.drifted && !keep.has(s.path)).map((s) => s.path)
+  for (const path of drifted.filter((p) => !drifted.some((q) => p.startsWith(`${q}/`)))) {
+    const parent = all
+      .map((s) => s.path)
+      .filter((q) => path.startsWith(`${q}/`))
+      .sort((a, b) => b.length - a.length)[0]
+    const cwd = parent ? join(dir, parent) : dir
+    await run('git', ['submodule', 'deinit', '--quiet', '--force', '--', parent ? path.slice(parent.length + 1) : path], {
+      cwd,
+      env: { ...process.env, GIT_LITERAL_PATHSPECS: '1' },
+    })
+  }
 }
 
 function profileEnv(profile: CompileProfile | 'native'): NodeJS.ProcessEnv {
@@ -247,6 +344,46 @@ function findArtifacts(outDir: string, fileName: string): string[] {
   return hits.sort()
 }
 
+const buildIndexes = new Map<string, BuildIndex>()
+
+function buildIndex(outDir: string, signature: string): BuildIndex {
+  const index = buildIndexes.get(signature) ?? readBuildIndex(outDir)
+  buildIndexes.set(signature, index)
+  return index
+}
+
+const VARIANT_OUT = 'out-metadata-variant'
+const VARIANT_CACHE = 'cache-metadata-variant'
+/** Variant builds present, by checkout directory and build signature. */
+const variantBuilt = new Set<string>()
+
+/**
+ * The deployed code of the artifact at `artifactPath`, built again with only
+ * `useLiteralContent` flipped. That changes every metadata digest the
+ * compiler places and no other byte, so it tells the digests of embedded
+ * children from bytes that only equal them, such as a constant.
+ */
+async function metadataVariantCode(
+  repoDir: string,
+  profile: CompileProfile | 'native',
+  signature: string,
+  artifactPath: string,
+  artifact: ForgeArtifact,
+): Promise<Uint8Array | undefined> {
+  if (!variantBuilt.has(`${repoDir}|${signature}`)) {
+    await forgeBuild(repoDir, profile, {
+      FOUNDRY_OUT: VARIANT_OUT,
+      FOUNDRY_CACHE_PATH: VARIANT_CACHE,
+      FOUNDRY_USE_LITERAL_CONTENT: String(!usesLiteralContent(artifact)),
+    })
+    variantBuilt.add(`${repoDir}|${signature}`)
+  }
+  const variantPath = join(repoDir, VARIANT_OUT, relative(join(repoDir, 'out'), artifactPath))
+  if (!existsSync(variantPath)) return undefined
+  const hex = (JSON.parse(readFileSync(variantPath, 'utf8')) as ForgeArtifact).deployedBytecode?.object?.replace(/^0x/, '')
+  return hex && /^[0-9a-fA-F]+$/.test(hex) ? fromHex(hex) : undefined
+}
+
 /**
  * Different contracts from the same (repo, commit, profile) share one forge
  * build: track what each repo checkout currently holds and reuse `out/`
@@ -261,6 +398,40 @@ function buildSignature(req: BuildRequest): string {
   return `${req.repo}|${req.commit}|${p}|${ov}`
 }
 
+/** The source whose import solc couldn't resolve, from forge's error output. */
+export function unresolvedImporter(output: string): string | null {
+  if (!/Source "[^"]+" not found/.test(output)) return null
+  return /-->\s+([^\s:]+\.sol):\d+:\d+/.exec(output)?.[1] ?? null
+}
+
+/**
+ * Build only src/ and its transitive imports: repo and library test/script
+ * trees are irrelevant to deployed bytecode and dominate compile time.
+ * `--ast` adds each contract's contractDependencies to its artifact, which
+ * locate embedded children; it leaves the bytecode unchanged.
+ * Some pinned commits import a file under different letter case than its
+ * name, which resolves only on case-insensitive filesystems. Such a source is
+ * skipped and the build retried; if the contract under verification needs it,
+ * the build still fails.
+ */
+async function forgeBuild(repoDir: string, profile: CompileProfile | 'native', env: NodeJS.ProcessEnv = {}): Promise<void> {
+  const skipped: string[] = []
+  for (;;) {
+    try {
+      await run('forge', ['build', 'src', '--ast', '--skip', 'test', '--skip', 'script', ...skipped.flatMap((f) => ['--skip', f])], {
+        cwd: repoDir,
+        env: { ...profileEnv(profile), ...env },
+        timeoutMs: 900_000,
+      })
+      return
+    } catch (err) {
+      const importer = unresolvedImporter(err instanceof Error ? err.message : String(err))
+      if (!importer || skipped.includes(basename(importer)) || skipped.length >= 10) throw err
+      skipped.push(basename(importer))
+    }
+  }
+}
+
 /** Checkout `repo@commit`, build with the manifest profile, return the deployed-bytecode artifact. */
 export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
   const signature = buildSignature(req)
@@ -272,16 +443,10 @@ export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
     disableLintOnBuild(repoDir)
 
     // Stale artifacts from a previous profile would poison the comparison.
-    rmSync(join(repoDir, 'out'), { recursive: true, force: true })
-    rmSync(join(repoDir, 'cache'), { recursive: true, force: true })
+    for (const stale of ['out', 'cache', VARIANT_OUT, VARIANT_CACHE]) rmSync(join(repoDir, stale), { recursive: true, force: true })
+    variantBuilt.delete(`${repoDir}|${signature}`)
 
-    // Build only src/ and its transitive imports: repo and library test/script
-    // trees are irrelevant to deployed bytecode and dominate compile time.
-    await run('forge', ['build', 'src', '--skip', 'test', '--skip', 'script'], {
-      cwd: repoDir,
-      env: profileEnv(req.profile),
-      timeoutMs: 900_000,
-    })
+    await forgeBuild(repoDir, req.profile)
     currentBuildSignature.set(dirKey, signature)
   }
   const repoDir = dirKey
@@ -293,9 +458,8 @@ export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
   }
   const preferred = candidates.find((p) => p.includes(`${req.contractName}.sol`)) ?? candidates[0]!
 
-  const artifact = JSON.parse(readFileSync(preferred, 'utf8')) as {
+  const artifact = JSON.parse(readFileSync(preferred, 'utf8')) as ForgeArtifact & {
     deployedBytecode?: { object?: string; immutableReferences?: Record<string, ImmutableRange[]> }
-    metadata?: unknown
   }
   const object = artifact.deployedBytecode?.object
   if (!object || object === '0x') {
@@ -304,9 +468,15 @@ export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
 
   const { effective, sources } = parseArtifactMetadata(artifact.metadata)
 
+  const code = fromHex(object)
+  const located = embeddedMetadataRanges(compiledContract(buildIndex(join(repoDir, 'out'), signature), artifact))
+  const embeddedMetadata = located.length
+    ? rangesChangedByMetadata(code, await metadataVariantCode(repoDir, req.profile, signature, preferred, artifact), located)
+    : []
   return {
-    code: fromHex(object),
+    code,
     immutableReferences: artifact.deployedBytecode?.immutableReferences ?? {},
+    embeddedMetadata,
     artifactPath: preferred,
     repoDir,
     effectiveProfile: effective,

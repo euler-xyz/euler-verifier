@@ -10,19 +10,22 @@
  *
  *   pnpm tsx src/render-report.ts --manifest m.json --outcomes o.json \
  *     --baselines b.json --diffs component-diffs.json --modules mod.json \
- *     --swap-management sm.json --audits audits.json --notes n.json --out verify/
+ *     --swap-management sm.json --audits audits.json --notes n.json \
+ *     --chains EulerChains.json --out verify/ [--chain N]...
+ *
+ * With --chain, only those reports are written and only their rows in
+ * README.md change; the rest of README.md is kept as rendered before.
  */
 import { parseArgs } from 'node:util'
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { loadNetworks } from './networks.js'
 import { unitScopedDelta } from './unit-scope.js'
+import { isEntrypoint } from './entrypoint.js'
 import type { ComponentBaseline } from './run-baselines.js'
+import type { NetworkInfo } from './types.js'
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-
-interface Outcome {
+export interface Outcome {
   chainId: number
   key: string
   address: string
@@ -30,7 +33,7 @@ interface Outcome {
   matched?: { repo: string; commit: string; contractName: string; sources?: string[] }
   strippedSha256?: string
 }
-interface ManifestEntry {
+export interface ManifestEntry {
   repo: string
   commit?: string
   verified?: string
@@ -49,7 +52,7 @@ interface LibDiff {
   diffFile: string | null
   diffEmbeddable: boolean
 }
-interface PairDiff {
+export interface PairDiff {
   component: string
   repo: string
   pin: string
@@ -69,25 +72,25 @@ interface PairDiff {
   pinNote: { summary?: string; label?: string; naturalBaseline?: { auditId: string; justification: string } | null } | null
   libComponents: LibDiff[]
 }
-interface ModuleRec {
+export interface ModuleRec {
   module: string
   address: string
   verdict: string
   crossCheckedInImplementation: boolean
 }
-interface SwapMgmtRec {
+export interface SwapMgmtRec {
   managementAddress?: string
   verdict?: string
   crossCheckedInImplementation?: boolean
   error?: string
 }
-interface AuditEntry {
+export interface AuditEntry {
   id: string
   firm: string
   date: string | null
   report: string
 }
-interface Note {
+export interface Note {
   severity?: string
   /** Surface in the attention block as a neutral factual flag (no severity). */
   flag?: boolean
@@ -100,37 +103,33 @@ function short(sha?: string): string {
   return sha ? sha.slice(0, 8) : '—'
 }
 
-async function main(): Promise<number> {
-  const { values } = parseArgs({
-    options: {
-      manifest: { type: 'string' },
-      outcomes: { type: 'string' },
-      baselines: { type: 'string' },
-      diffs: { type: 'string' },
-      modules: { type: 'string' },
-      'swap-management': { type: 'string' },
-      audits: { type: 'string' },
-      notes: { type: 'string' },
-      out: { type: 'string' },
-      'engine-ref': { type: 'string' },
-    },
-  })
-  if (!values.manifest || !values.outcomes || !values.baselines || !values.diffs || !values.out) {
-    console.error('usage: render-report --manifest m --outcomes o --baselines b --diffs d --out dir [--modules m] [--swap-management s] [--audits a] [--notes n]')
-    return 1
-  }
+export interface RenderInputs {
+  manifest: Record<string, Record<string, ManifestEntry>>
+  outcomes: Outcome[]
+  components: ComponentBaseline[]
+  pairs: PairDiff[]
+  /** Directory holding the patch files named in `pairs`. */
+  diffsDir: string
+  modules: Record<string, { implementation?: string; modules?: ModuleRec[]; error?: string }>
+  swapMgmt: Record<string, SwapMgmtRec>
+  audits: AuditEntry[]
+  notes: Record<string, Record<string, Note>>
+  networks: Map<number, NetworkInfo>
+  engineRef?: string
+}
 
-  const read = <T>(p: string): T => JSON.parse(readFileSync(resolve(p), 'utf8')) as T
-  const manifest = read<Record<string, Record<string, ManifestEntry>>>(values.manifest)
-  const outcomes = read<Outcome[]>(values.outcomes)
-  const { components } = read<{ components: ComponentBaseline[] }>(values.baselines)
-  const pairs = read<PairDiff[]>(values.diffs)
-  const diffsDir = dirname(resolve(values.diffs))
-  const modules = values.modules ? read<Record<string, { implementation?: string; modules?: ModuleRec[] }>>(values.modules) : {}
-  const swapMgmt = values['swap-management'] ? read<Record<string, SwapMgmtRec>>(values['swap-management']) : {}
-  const audits = values.audits ? read<AuditEntry[]>(values.audits) : []
+export interface RenderedChain {
+  chainId: number
+  report: string
+  /** This chain's row in the README.md index table. */
+  row: string
+  proven: number
+  total: number
+}
+
+export function renderReports(inputs: RenderInputs): RenderedChain[] {
+  const { manifest, outcomes, components, pairs, diffsDir, modules, swapMgmt, audits, notes, networks } = inputs
   const auditById = new Map(audits.map((a) => [a.id, a]))
-  const notes = values.notes ? read<Record<string, Record<string, Note>>>(values.notes) : {}
 
   const noteFor = (chainId: number, key: string, commit?: string): Note | undefined => {
     const n = notes[String(chainId)]?.[key] ?? notes['all']?.[key]
@@ -154,14 +153,10 @@ async function main(): Promise<number> {
   const pairFor = (chainId: number, key: string, commit?: string): PairDiff | undefined =>
     pairs.find((p) => p.keys.includes(key) && p.chains.includes(String(chainId)) && (!commit || p.pin === commit))
 
-  const networks = loadNetworks(ROOT)
-  const outDir = resolve(values.out)
-  mkdirSync(outDir, { recursive: true })
-
   const byChain = new Map<number, Outcome[]>()
   for (const o of outcomes) byChain.set(o.chainId, [...(byChain.get(o.chainId) ?? []), o])
 
-  const indexRows: string[] = []
+  const rendered: RenderedChain[] = []
 
   for (const [chainId, rows] of [...byChain.entries()].sort((a, b) => a[0] - b[0])) {
     const net = networks.get(chainId)
@@ -178,13 +173,21 @@ async function main(): Promise<number> {
         `${waived ? ` · Waived: ${waived}` : ''}${canonical ? ` · Canonical: ${canonical}` : ''}`,
     )
     lines.push('')
-    lines.push('Verification = on-chain runtime bytecode ≡ compile(repo@commit, profile), metadata stripped, immutables masked, embedded child-metadata digests zeroed. The block explorer is never in the trust path. Each proven pin is then diffed against its component\'s audited baseline — the fixes-included state of the component\'s most recent audit — so every deployed source delta beyond audited code is shown below as a real diff. Re-run: see the repository README.')
+    lines.push('Verification = on-chain runtime bytecode ≡ compile(repo@commit, profile), with the metadata trailer stripped, immutables masked, and the metadata digests of embedded child contracts masked at the offsets the build locates. The block explorer is never in the trust path. This shows runtime correspondence under that normalization, not initialization, governance, immutable configuration or deployment safety. Each proven pin is then diffed against its component\'s audited baseline — the fixes-included state of the component\'s most recent audit — so every deployed source delta beyond audited code is shown below as a real diff. Re-run: see the repository README.')
     lines.push('')
 
     // ─── Attention first: unproven and waived entries ───
     const unprovenRows = rows.filter((r) => r.status !== 'PROVEN' && r.status !== 'CANONICAL' && !entryOf(r.key)?.waiver)
     const waivedRows = rows.filter((r) => entryOf(r.key)?.waiver)
-    if (unprovenRows.length || waivedRows.length) {
+    const mod = modules[String(chainId)]
+    const sm = swapMgmt[String(chainId)]
+    const delegatedIssues = [
+      ...(mod?.error ? [`**EVault modules** — verification INCOMPLETE: ${mod.error.split('\n')[0]}`] : []),
+      ...(mod?.modules ?? []).filter((m) => m.verdict !== 'MATCH' || !m.crossCheckedInImplementation).map((m) => `**EVault module ${m.module}** — FAILED (\`${m.verdict}\`).`),
+      ...(sm?.error ? [`**EulerSwapManagement** — verification INCOMPLETE: ${sm.error.split('\n')[0]}`] : []),
+      ...(sm?.managementAddress && (sm.verdict !== 'MATCH' || !sm.crossCheckedInImplementation) ? [`**EulerSwapManagement** — FAILED (\`${sm.verdict}\`).`] : []),
+    ]
+    if (unprovenRows.length || waivedRows.length || delegatedIssues.length) {
       lines.push('## ⚠️ Requires attention')
       lines.push('')
       for (const r of unprovenRows) {
@@ -198,6 +201,7 @@ async function main(): Promise<number> {
         const n = chainNoteFor(chainId, r.key)
         if (n) lines.push(...renderNote(n))
       }
+      for (const issue of delegatedIssues) lines.push(`- ${issue}`)
       lines.push('')
     } else {
       lines.push('**All contracts on this chain are bytecode-proven against their pinned commits.**')
@@ -279,7 +283,6 @@ async function main(): Promise<number> {
     }
 
     // ─── Unpacked implementations: EVault modules + EulerSwap management ───
-    const mod = modules[String(chainId)]
     if (mod?.modules?.length) {
       lines.push('')
       lines.push('## EVault modules (unpacked from the implementation)')
@@ -290,7 +293,6 @@ async function main(): Promise<number> {
         lines.push(`| ${m.module} | \`${m.address}\` | ${m.verdict === 'MATCH' ? '✅' : `❌ ${m.verdict}`} | ${m.crossCheckedInImplementation ? '✅' : '❌'} |`)
       }
     }
-    const sm = swapMgmt[String(chainId)]
     if (sm?.managementAddress) {
       lines.push('')
       lines.push('## EulerSwap V2 management implementation (unpacked from the implementation)')
@@ -379,16 +381,36 @@ async function main(): Promise<number> {
     }
 
     lines.push('')
-    lines.push(`_Generated by euler-verifier${values['engine-ref'] ? ` @ ${values['engine-ref']}` : ''}; inputs: verify/manifest.json, verify/audits.json, verify/baselines.json._`)
-    writeFileSync(join(outDir, `${chainId}.md`), lines.join('\n') + '\n')
-    indexRows.push(`| [${net?.name ?? chainId}](${chainId}.md) | ${chainId} | ${proven}/${rows.length}${waived ? ` (+${waived} waived)` : ''}${canonical ? ` (+${canonical} canonical)` : ''} |`)
-    console.log(`rendered ${chainId}.md (${proven}/${rows.length})`)
+    lines.push(`_Generated by euler-verifier${inputs.engineRef ? ` @ ${inputs.engineRef}` : ''}; inputs: verify/manifest.json, verify/audits.json, verify/baselines.json._`)
+    rendered.push({
+      chainId,
+      report: lines.join('\n') + '\n',
+      row: `| [${net?.name ?? chainId}](${chainId}.md) | ${chainId} | ${proven}/${rows.length}${waived ? ` (+${waived} waived)` : ''}${canonical ? ` (+${canonical} canonical)` : ''} |`,
+      proven,
+      total: rows.length,
+    })
   }
+  return rendered
+}
 
+const INDEX_ROW = /^\| \[[^\]]*\]\((\d+)\.md\) \| \d+ \|/
+
+/** The index rows of a rendered README.md, by chain id. */
+export function indexRowsOf(readme: string): Map<number, string> {
+  const rows = new Map<number, string>()
+  for (const line of readme.split('\n')) {
+    const m = INDEX_ROW.exec(line)
+    if (m) rows.set(Number(m[1]), line)
+  }
+  return rows
+}
+
+export function renderIndex(rows: Map<number, string>): string {
+  const indexRows = [...rows.entries()].sort((a, b) => a[0] - b[0]).map(([, row]) => row)
   const index = [
     '# Deployed Code Verification Reports',
     '',
-    'Bytecode-level verification of every allowlisted Euler contract: on-chain code is proven equal to a commit-pinned local build (metadata stripped, immutables masked) — the block explorer is never in the trust path — then each deployment is diffed against its component\'s audited baseline: the fixes-included state of the component\'s most recent audit. Reports lead with anything requiring attention and show every deployed source delta beyond audited code as a real diff. Reproducible by anyone.',
+    'Bytecode-level verification of every allowlisted Euler contract: on-chain runtime code is proven equal to a commit-pinned local build (metadata trailer stripped; immutables and build-located embedded metadata digests masked) — the block explorer is never in the trust path — then each deployment is diffed against its component\'s audited baseline: the fixes-included state of the component\'s most recent audit. Reports lead with anything requiring attention and show every deployed source delta beyond audited code as a real diff. Reproducible by anyone. The claim is runtime correspondence under this normalization, not initialization, governance, immutable configuration or deployment safety.',
     '',
     '| Network | Chain ID | Proven |',
     '|---------|----------|--------|',
@@ -396,14 +418,80 @@ async function main(): Promise<number> {
     '',
     '_Inputs: `manifest.json` (declared provenance, SHA-only), `audits.json` (audit registry), `baselines.json` (component baselines with derivations). Regenerated only when a PR changes those inputs or addresses._',
   ]
-  writeFileSync(join(outDir, 'README.md'), index.join('\n') + '\n')
-  return existsSync(outDir) ? 0 : 1
+  return index.join('\n') + '\n'
 }
 
-main().then(
-  (code) => process.exit(code),
-  (err) => {
-    console.error(err)
-    process.exit(1)
-  },
-)
+async function main(): Promise<number> {
+  const { values } = parseArgs({
+    options: {
+      manifest: { type: 'string' },
+      outcomes: { type: 'string' },
+      baselines: { type: 'string' },
+      diffs: { type: 'string' },
+      modules: { type: 'string' },
+      'swap-management': { type: 'string' },
+      audits: { type: 'string' },
+      notes: { type: 'string' },
+      chains: { type: 'string' },
+      chain: { type: 'string', multiple: true },
+      out: { type: 'string' },
+      'engine-ref': { type: 'string' },
+    },
+  })
+  if (!values.manifest || !values.outcomes || !values.baselines || !values.diffs || !values.chains || !values.out) {
+    console.error('usage: render-report --manifest m --outcomes o --baselines b --diffs d --chains EulerChains.json --out dir [--modules m] [--swap-management s] [--audits a] [--notes n] [--engine-ref r] [--chain N]...')
+    return 1
+  }
+
+  const read = <T>(p: string): T => JSON.parse(readFileSync(resolve(p), 'utf8')) as T
+  const rendered = renderReports({
+    manifest: read<RenderInputs['manifest']>(values.manifest),
+    outcomes: read<Outcome[]>(values.outcomes),
+    components: read<{ components: ComponentBaseline[] }>(values.baselines).components,
+    pairs: read<PairDiff[]>(values.diffs),
+    diffsDir: dirname(resolve(values.diffs)),
+    modules: values.modules ? read<RenderInputs['modules']>(values.modules) : {},
+    swapMgmt: values['swap-management'] ? read<RenderInputs['swapMgmt']>(values['swap-management']) : {},
+    audits: values.audits ? read<AuditEntry[]>(values.audits) : [],
+    notes: values.notes ? read<RenderInputs['notes']>(values.notes) : {},
+    networks: loadNetworks(resolve(values.chains)),
+    engineRef: values['engine-ref'],
+  })
+
+  const only = values.chain?.map(Number)
+  const missing = only?.filter((id) => !rendered.some((r) => r.chainId === id)) ?? []
+  if (missing.length) {
+    console.error(`no outcomes for chain(s) ${missing.join(', ')}`)
+    return 1
+  }
+
+  const outDir = resolve(values.out)
+  mkdirSync(outDir, { recursive: true })
+  writeChainReports(outDir, only ? rendered.filter((r) => only.includes(r.chainId)) : rendered, !only)
+  return 0
+}
+
+/**
+ * Write the reports and README.md. Unless `replaceIndex`, README.md keeps the
+ * rows of chains not rendered now, so it matches a full render.
+ */
+export function writeChainReports(outDir: string, rendered: RenderedChain[], replaceIndex: boolean): void {
+  const readmePath = join(outDir, 'README.md')
+  const kept = !replaceIndex && existsSync(readmePath) ? indexRowsOf(readFileSync(readmePath, 'utf8')) : new Map<number, string>()
+  const rows = new Map([...kept, ...rendered.map((r): [number, string] => [r.chainId, r.row])])
+  for (const r of rendered) {
+    writeFileSync(join(outDir, `${r.chainId}.md`), r.report)
+    console.log(`rendered ${r.chainId}.md (${r.proven}/${r.total})`)
+  }
+  writeFileSync(readmePath, renderIndex(rows))
+}
+
+if (isEntrypoint(import.meta.url)) {
+  main().then(
+    (code) => process.exit(code),
+    (err) => {
+      console.error(err)
+      process.exit(1)
+    },
+  )
+}

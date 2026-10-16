@@ -9,7 +9,6 @@ on:
       - 'pnpm-lock.yaml'
       - 'tsconfig.json'
       - 'vitest.config.ts'
-      - 'networks.json'
       - '.github/workflows/engine-ci.yml'
   push:
     branches:
@@ -21,7 +20,6 @@ on:
       - 'pnpm-lock.yaml'
       - 'tsconfig.json'
       - 'vitest.config.ts'
-      - 'networks.json'
       - '.github/workflows/engine-ci.yml'
   workflow_dispatch:
 
@@ -56,7 +54,7 @@ jobs:
 
   # P1 acceptance: freshly clones + builds ethereum-vault-connector at two pinned
   # commits and proves the EVC runtime bytecode on mainnet/base/arbitrum. Uses the
-  # public RPC defaults from networks.json, so no secrets are required.
+  # viem's public RPC defaults, so no secrets are required.
   prove-evc:
     runs-on: ubuntu-latest
     timeout-minutes: 30

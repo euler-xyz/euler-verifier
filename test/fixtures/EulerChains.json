@@ -1,0 +1,22 @@
+[
+  {
+    "chainId": 1,
+    "name": "ethereum",
+    "viemName": "mainnet",
+    "explorerUrl": "https://etherscan.io",
+    "verifier": { "type": "etherscan" }
+  },
+  {
+    "chainId": 8453,
+    "name": "base",
+    "viemName": "base",
+    "explorerUrl": "https://basescan.org",
+    "verifier": { "type": "etherscan" }
+  },
+  {
+    "chainId": 42161,
+    "name": "arbitrum",
+    "explorerUrl": "https://arbiscan.io",
+    "verifier": { "type": "etherscan" }
+  }
+]

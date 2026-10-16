@@ -87,6 +87,39 @@ export function isSolidityMetadataCbor(cbor: Uint8Array): boolean {
   return i === cbor.length
 }
 
+const DIGEST_KEYS = new Set(['ipfs', 'bzzr0', 'bzzr1'])
+
+/**
+ * Where the content digests (ipfs/bzzr0/bzzr1 values) of a code's validated
+ * metadata trailer sit, as absolute ranges in `code`. Empty when the trailer
+ * doesn't validate.
+ */
+export function trailerDigestRanges(code: Uint8Array): Array<{ start: number; length: number }> {
+  const { cbor } = splitMetadata(code)
+  if (!cbor) return []
+  const base = code.length - 2 - cbor.length
+  const ranges: Array<{ start: number; length: number }> = []
+  let i = 1
+  for (let e = 0; e < cbor[0]! - 0xa0; e++) {
+    const keyLen = cbor[i]! - 0x60
+    const key = Buffer.from(cbor.subarray(i + 1, i + 1 + keyLen)).toString('utf8')
+    i += 1 + keyLen
+    const h = cbor[i]!
+    if (h === 0xf4 || h === 0xf5) {
+      i += 1
+      continue
+    }
+    const [header, len] = h === 0x58 ? [2, cbor[i + 1]!] : [1, h - 0x40]
+    if (DIGEST_KEYS.has(key)) {
+      // An ipfs value is a multihash: 0x12 (sha2-256) 0x20 (32 bytes) then the digest; only the digest varies.
+      const multihash = key === 'ipfs' && len === 34 && cbor[i + header] === 0x12 && cbor[i + header + 1] === 0x20 ? 2 : 0
+      ranges.push({ start: base + i + header + multihash, length: len - multihash })
+    }
+    i += header + len
+  }
+  return ranges
+}
+
 /**
  * Minimal extraction of the fields we surface as evidence (full CBOR decoding
  * is unnecessary: the solidity blob is a one-level map with known keys).

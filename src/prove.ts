@@ -27,8 +27,10 @@ export interface ProveTask {
 }
 
 export interface CachedBuild {
+  format?: number
   codeHex: string
   immutableReferences: Record<string, ImmutableRange[]>
+  embeddedMetadata?: ImmutableRange[]
   effectiveProfile?: EffectiveProfile
   sources: string[]
   artifactPath: string
@@ -53,6 +55,9 @@ function candidateKey(c: Pick<ProveCandidate, 'repo' | 'commit' | 'contractName'
   return createHash('sha1').update(`${c.repo}|${c.commit}|${c.contractName}|${p}|${ov}`).digest('hex')
 }
 
+/** Masks are derived when an entry is built, so an entry of another format is rebuilt. */
+const CACHE_FORMAT = 4
+
 /**
  * Build-once cache across the whole sweep: distinct (repo, commit, contract,
  * profile) combinations build a single time; every chain then compares
@@ -76,8 +81,10 @@ export class BuildCache {
     const file = join(this.cacheDir, `${key}.json`)
     if (existsSync(file)) {
       const cached = JSON.parse(readFileSync(file, 'utf8')) as CachedBuild
-      this.mem.set(key, cached)
-      return cached
+      if (cached.format === CACHE_FORMAT) {
+        this.mem.set(key, cached)
+        return cached
+      }
     }
 
     let result: CachedBuild
@@ -93,16 +100,20 @@ export class BuildCache {
       }
       const built = await buildAtCommit(req)
       result = {
+        format: CACHE_FORMAT,
         codeHex: toHex(built.code),
         immutableReferences: built.immutableReferences,
+        embeddedMetadata: built.embeddedMetadata,
         effectiveProfile: built.effectiveProfile,
         sources: built.sources,
         artifactPath: built.artifactPath,
       }
     } catch (err) {
       result = {
+        format: CACHE_FORMAT,
         codeHex: '',
         immutableReferences: {},
+        embeddedMetadata: [],
         sources: [],
         artifactPath: '',
         error: err instanceof Error ? err.message.slice(0, 2000) : String(err),
@@ -150,7 +161,7 @@ export async function proveTask(task: ProveTask, cache: BuildCache, opts: ProveR
       continue
     }
     const artifactCode = fromHex(build.codeHex)
-    const { match, evidence } = compareRuntime(chainCode, artifactCode, build.immutableReferences)
+    const { match, evidence } = compareRuntime(chainCode, artifactCode, build.immutableReferences, build.embeddedMetadata)
     if (match) {
       log(`  PROVEN ${task.chainId}/${task.key} <- ${label} (${c.origin})`)
       return {

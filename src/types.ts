@@ -13,7 +13,23 @@ export interface Waiver {
   date: string
 }
 
-export interface ManifestEntry {
+export interface SubmoduleOverride {
+  /** Repo-relative submodule path, e.g. "lib/openzeppelin-contracts". */
+  path: string
+  /** Commit or tag checked out in that submodule. */
+  ref: string
+}
+
+export interface ProxyDeclaration {
+  /** The proxy address listed in euler-interfaces addresses/. */
+  address: string
+  /** The implementation the pin is proven against; must equal the proxy's EIP-1967 implementation slot. */
+  implementation: string
+  type?: string
+  note?: string
+}
+
+export interface BytecodeEntry {
   /** GitHub slug, e.g. "euler-xyz/ethereum-vault-connector". */
   repo: string
   /** Full 40-hex commit SHA. Branch or tag pins are rejected. */
@@ -21,13 +37,24 @@ export interface ManifestEntry {
   /** Solidity contract (artifact) name, e.g. "EthereumVaultConnector". */
   contractName: string
   profile: CompileProfile
+  verified?: 'bytecode'
   waiver?: Waiver | null
   /**
-   * Test/override only: explicit address. In production runs addresses come
-   * from euler-interfaces/addresses/<chainId>/ and this field must be absent.
+   * Deployments built with submodules moved off their gitlinks record the refs here; the build must reproduce them.
+   * `address` is the address the entry was proven at; a different current address means a redeploy.
    */
-  address?: string
+  evidence?: { address?: string; codeSize?: number; origin?: string; strippedSha256?: string; submoduleOverrides?: SubmoduleOverride[] }
+  proxy?: ProxyDeclaration
 }
+
+/** Long-established contract documented by a provenance note instead of a bytecode proof (see CANONICAL_EXCEPTIONS). */
+export interface CanonicalEntry {
+  repo: string
+  verified: 'canonical'
+  note: string
+}
+
+export type ManifestEntry = BytecodeEntry | CanonicalEntry
 
 /** chainId (as string) -> manifest key (e.g. "evc") -> entry */
 export type Manifest = Record<string, Record<string, ManifestEntry>>
@@ -59,7 +86,7 @@ export interface CompareEvidence {
   firstDivergence?: number | null
 }
 
-export type VerdictKind = 'MATCH' | 'MISMATCH' | 'WAIVED' | 'ERROR'
+export type VerdictKind = 'MATCH' | 'MISMATCH' | 'WAIVED' | 'CANONICAL' | 'ERROR'
 
 export interface ExplorerCrossCheck {
   status: 'verified' | 'unverified' | 'unavailable'
@@ -74,10 +101,13 @@ export interface VerificationRecord {
   address: string
   verdict: VerdictKind
   repo: string
-  commit: string
-  contractName: string
+  commit?: string
+  contractName?: string
+  /** For a declared proxy: the implementation whose code was compared. */
+  implementation?: string
   evidence?: CompareEvidence
   waiver?: Waiver
+  note?: string
   error?: string
   /** Secondary, untrusted signal. Never affects the verdict. */
   explorer?: ExplorerCrossCheck
@@ -85,14 +115,20 @@ export interface VerificationRecord {
   artifactPath?: string
 }
 
+/** An explorer as euler-interfaces EulerChains.json declares it for contract verification. */
+export interface ExplorerVerifier {
+  type: 'etherscan' | 'blockscout' | 'sourcify' | 'custom'
+  url?: string
+}
+
 export interface NetworkInfo {
-  key: string
+  /** The viem chain's name, used as the report title. */
   name: string
   chainId: number
-  status: string
   explorerUrl: string
-  explorerApi: string
-  apiType: string
-  /** Public default RPC endpoints; env DEPLOYMENT_RPC_URL_<chainId> takes precedence. */
+  verifier?: ExplorerVerifier
+  /** viem's default endpoints; env DEPLOYMENT_RPC_URL_<chainId> takes precedence. */
   rpc: string[]
+  /** Why viem supplied no endpoints, when it couldn't resolve the chain. */
+  viemProblem?: string
 }
