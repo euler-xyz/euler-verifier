@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { collectImmutableRanges, compareRuntime, embeddedMetadataRanges, maskRanges, sha256Hex } from '../src/bytecode.js'
+import { collectImmutableRanges, compareRuntime, embeddedMetadataRanges, maskRanges, rangesChangedByMetadata, sha256Hex } from '../src/bytecode.js'
+import { compiledContract, indexBuild, readBuildIndex, type ForgeArtifact } from '../src/compiled-contracts.js'
 import { fromHex } from '../src/metadata.js'
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), 'fixtures')
@@ -84,47 +86,112 @@ describe('compareRuntime', () => {
   })
 })
 
-// Compiled with solc 0.8.24 (forge 1.7.1, runs 200, cancun) from the same sources
-// under two source paths (2026-10-15): Factory embeds Child's creation code, and
-// BytesConstant returns a constant shaped like an ipfs metadata entry, with
-// 0xaa.. or 0xbb.. as the "digest".
+// Compiled with solc 0.8.24 (forge 1.7.1 --ast, runs 200, cancun) from the same sources
+// under two source paths (2026-10-16), ASTs trimmed to contract definitions; variantDeployedBytecode
+// is the same build with FOUNDRY_USE_LITERAL_CONTENT=true:
+// - Factory embeds Child's creation code; NestedFactory embeds Middle, which embeds Grandchild;
+// - BytesConstant returns a constant shaped like an ipfs metadata entry (digest 0xaa.. or 0xbb..);
+// - ChildLiteral returns a constant equal to Child's creation code of the same build;
+// - ConstructorFactory embeds Child in its constructor and returns that same constant;
+// - Flag lists Child as a dependency, but its `new Child()` is dead code: only the constant is placed.
 const BUILDS = JSON.parse(readFileSync(join(FIXTURES, 'embedded', 'artifacts.json'), 'utf8')) as Record<
   string,
-  { bytecode: string; deployedBytecode: string }
+  { bytecode: string; deployedBytecode: string; variantDeployedBytecode: string; metadata: unknown; ast: ForgeArtifact['ast'] }
 >
+const artifact = (id: string): ForgeArtifact => ({
+  bytecode: { object: BUILDS[id]!.bytecode },
+  deployedBytecode: { object: BUILDS[id]!.deployedBytecode },
+  metadata: BUILDS[id]!.metadata,
+  ast: BUILDS[id]!.ast,
+})
 const runtime = (id: string) => fromHex(BUILDS[id]!.deployedBytecode)
-const buildCodes = (v: 'a' | 'b') =>
-  Object.entries(BUILDS)
-    .filter(([id]) => id.startsWith(`${v}/`))
-    .flatMap(([, a]) => [fromHex(a.bytecode), fromHex(a.deployedBytecode)])
+const buildB = indexBuild(Object.keys(BUILDS).filter((id) => id.startsWith('b/')).map(artifact))
+const locatedIn = (name: string) => embeddedMetadataRanges(compiledContract(buildB, artifact(`b/${name}`)))
+const masksOf = (name: string) =>
+  rangesChangedByMetadata(runtime(`b/${name}`), fromHex(BUILDS[`b/${name}`]!.variantDeployedBytecode), locatedIn(name))
+const verdicts = (name: string) => ({
+  masked: compareRuntime(runtime(`a/${name}`), runtime(`b/${name}`), {}, masksOf(name)).match,
+  unmasked: compareRuntime(runtime(`a/${name}`), runtime(`b/${name}`), {}).match,
+})
 
-describe('embedded child metadata (factories embedding child creation code)', () => {
-  it('masks the embedded child digest at the offsets the build derives, so path-only differences MATCH', () => {
-    const ranges = embeddedMetadataRanges(runtime('b/Factory'), buildCodes('b'))
-    expect(ranges).toHaveLength(1)
-    const { match, evidence } = compareRuntime(runtime('a/Factory'), runtime('b/Factory'), {}, ranges)
-    expect(match).toBe(true)
+describe('embedded child metadata (factories embedding child code)', () => {
+  it('masks the embedded child digest the compiler placed, so path-only differences MATCH', () => {
+    expect(masksOf('Factory')).toHaveLength(1)
+    expect(verdicts('Factory')).toEqual({ masked: true, unmasked: false })
+    const { evidence } = compareRuntime(runtime('a/Factory'), runtime('b/Factory'), {}, masksOf('Factory'))
     expect(evidence.embeddedDigestsMasked).toEqual([1, 1])
   })
 
-  it('never masks a metadata-shaped constant: different returned bytes MISMATCH', () => {
-    const ranges = embeddedMetadataRanges(runtime('b/BytesConstant'), buildCodes('b'))
-    expect(ranges).toEqual([])
-    expect(compareRuntime(runtime('a/BytesConstant'), runtime('b/BytesConstant'), {}, ranges).match).toBe(false)
-    expect(compareRuntime(runtime('a/BytesConstant'), runtime('b/BytesConstant'), {}).match).toBe(false)
+  it('masks the digests of children embedded by children', () => {
+    expect(masksOf('NestedFactory')).toHaveLength(2)
+    expect(verdicts('NestedFactory')).toEqual({ masked: true, unmasked: false })
+  })
+
+  it('never masks a metadata-shaped constant', () => {
+    expect(masksOf('BytesConstant')).toEqual([])
+    expect(verdicts('BytesConstant')).toEqual({ masked: false, unmasked: false })
+  })
+
+  it('never masks a constant equal to another contract of the build: different returned bytes MISMATCH', () => {
+    const child = Buffer.from(fromHex(BUILDS['b/Child']!.bytecode))
+    expect(Buffer.from(runtime('b/ChildLiteral')).includes(child)).toBe(true)
+    expect(masksOf('ChildLiteral')).toEqual([])
+    expect(verdicts('ChildLiteral')).toEqual({ masked: false, unmasked: false })
+  })
+
+  it('masks nothing the compiler did not place: a dependency compiled out leaves only a constant', () => {
+    expect(locatedIn('Flag')).toHaveLength(1)
+    expect(masksOf('Flag')).toEqual([])
+    expect(verdicts('Flag')).toEqual({ masked: false, unmasked: false })
+  })
+
+  it('confirms a range only against a variant build of the same length', () => {
+    const ranges = locatedIn('Factory')
+    expect(rangesChangedByMetadata(runtime('b/Factory'), undefined, ranges)).toEqual([])
+    expect(rangesChangedByMetadata(runtime('b/Factory'), runtime('b/Factory'), ranges)).toEqual([])
+    expect(rangesChangedByMetadata(runtime('b/Factory'), runtime('b/Factory').subarray(1), ranges)).toEqual([])
+  })
+
+  it('leaves a child unmasked when its code occurs twice in the creation code', () => {
+    expect(masksOf('ConstructorFactory')).toEqual([])
+    expect(verdicts('ConstructorFactory')).toEqual({ masked: false, unmasked: false })
   })
 
   it('a semantic difference inside the embedded child code still MISMATCHes', () => {
-    const ranges = embeddedMetadataRanges(runtime('b/Factory'), buildCodes('b'))
     const tampered = runtime('a/Factory')
     const childAt = Buffer.from(tampered).indexOf(Buffer.from(fromHex(BUILDS['a/Child']!.bytecode)))
     tampered[childAt + 5] = tampered[childAt + 5]! ^ 0xff
-    expect(compareRuntime(tampered, runtime('b/Factory'), {}, ranges).match).toBe(false)
+    expect(compareRuntime(tampered, runtime('b/Factory'), {}, masksOf('Factory')).match).toBe(false)
   })
 
-  it('ignores candidate codes without a valid metadata trailer', () => {
-    const bare = fromHex('0x6080604052348015600e575f80fd5b50')
-    expect(embeddedMetadataRanges(Uint8Array.from([...bare, ...bare]), [bare])).toEqual([])
+  it('masks nothing for a dependency two artifacts of one compiler run disagree on', () => {
+    const builds = Object.keys(BUILDS).filter((id) => id.startsWith('b/')).map(artifact)
+    const child = builds.find((a) => a.ast?.nodes?.some((n) => n.name === 'Child') && a.deployedBytecode?.object === BUILDS['b/Child']!.deployedBytecode)!
+    const conflicting = { ...child, deployedBytecode: { object: BUILDS['b/Grandchild']!.deployedBytecode } }
+    const contract = compiledContract(indexBuild([...builds, conflicting]), artifact('b/Factory'))
+    expect(contract.embeds).toEqual([])
+    expect(embeddedMetadataRanges(contract)).toEqual([])
+  })
+
+  it('masks nothing without an AST', () => {
+    const bare = (id: string): ForgeArtifact => ({ ...artifact(id), ast: undefined })
+    const index = indexBuild(Object.keys(BUILDS).filter((id) => id.startsWith('b/')).map(bare))
+    expect(embeddedMetadataRanges(compiledContract(index, bare('b/Factory')))).toEqual([])
+  })
+
+  it('reads the index from a forge out/ directory, build-info excluded', () => {
+    const out = mkdtempSync(join(tmpdir(), 'verifier-out-'))
+    try {
+      for (const name of ['Factory', 'Child']) {
+        mkdirSync(join(out, 'Factory.sol'), { recursive: true })
+        writeFileSync(join(out, 'Factory.sol', `${name}.json`), JSON.stringify(artifact(`b/${name}`)))
+      }
+      mkdirSync(join(out, 'build-info'))
+      writeFileSync(join(out, 'build-info', 'x.json'), '{"id":"x"}')
+      expect(embeddedMetadataRanges(compiledContract(readBuildIndex(out), artifact('b/Factory')))).toEqual(locatedIn('Factory'))
+    } finally {
+      rmSync(out, { recursive: true, force: true })
+    }
   })
 })
 

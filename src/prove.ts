@@ -27,6 +27,7 @@ export interface ProveTask {
 }
 
 export interface CachedBuild {
+  format?: number
   codeHex: string
   immutableReferences: Record<string, ImmutableRange[]>
   embeddedMetadata?: ImmutableRange[]
@@ -54,6 +55,9 @@ function candidateKey(c: Pick<ProveCandidate, 'repo' | 'commit' | 'contractName'
   return createHash('sha1').update(`${c.repo}|${c.commit}|${c.contractName}|${p}|${ov}`).digest('hex')
 }
 
+/** Masks are derived when an entry is built, so an entry of another format is rebuilt. */
+const CACHE_FORMAT = 3
+
 /**
  * Build-once cache across the whole sweep: distinct (repo, commit, contract,
  * profile) combinations build a single time; every chain then compares
@@ -77,8 +81,7 @@ export class BuildCache {
     const file = join(this.cacheDir, `${key}.json`)
     if (existsSync(file)) {
       const cached = JSON.parse(readFileSync(file, 'utf8')) as CachedBuild
-      // Entries from before embedded digests were derived from the build lack them; rebuild those.
-      if (cached.error || cached.embeddedMetadata) {
+      if (cached.format === CACHE_FORMAT) {
         this.mem.set(key, cached)
         return cached
       }
@@ -97,6 +100,7 @@ export class BuildCache {
       }
       const built = await buildAtCommit(req)
       result = {
+        format: CACHE_FORMAT,
         codeHex: toHex(built.code),
         immutableReferences: built.immutableReferences,
         embeddedMetadata: built.embeddedMetadata,
@@ -106,6 +110,7 @@ export class BuildCache {
       }
     } catch (err) {
       result = {
+        format: CACHE_FORMAT,
         codeHex: '',
         immutableReferences: {},
         embeddedMetadata: [],

@@ -130,7 +130,7 @@ the guarantee.
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
 | `MISMATCH`, sizes differ | wrong commit or profile | check `profile.context`; try the deployment repo's settings |
-| `MISMATCH`, diverges mid-code | embedded child code genuinely differs | wrong commit; digests of embedded children the build produces are already masked, so a difference there is real — investigate, don't waive blindly |
+| `MISMATCH`, diverges mid-code | embedded child code genuinely differs | wrong commit; digests of embedded children the compiler places are already masked, so a difference there is real — investigate, don't waive blindly. A child whose code occurs twice in the creation code is left unmasked on purpose |
 | `build-error: submodule` | nested gitlink force-pushed away upstream | best-effort fallback handles it; if the missing dep is actually imported, pin a mirror |
 | `rpc: all endpoints failed` | endpoints unavailable | rotate per above |
 | `no RPC endpoint for chain …` | chain missing from `EulerChains.json`, or viem doesn't resolve it | add the chain to euler-interfaces, set `viemName`, bump viem, or set `DEPLOYMENT_RPC_URL_<chainId>` |

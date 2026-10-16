@@ -34,13 +34,18 @@ The chains themselves come from euler-interfaces `EulerChains.json`.
 3. Check out `repo@commit` in an engine-managed clone with the repo's GitHub
    origin, reset hard and cleaned of untracked files (submodules too), apply
    the recorded build profile and submodule pins (full 40-hex SHAs only),
-   `forge build`.
+   `forge build --ast`.
 4. Normalize both codes: strip the metadata trailer if it validates as
    Solidity CBOR, mask `immutableReferences`, and mask the metadata digests of
-   embedded child contracts at the offsets the build locates: each child
-   creation or runtime code of the same build found verbatim in the code
-   contributes its own validated trailer's digest positions. No byte pattern
-   is masked on its own.
+   embedded child contracts. Children are the contracts the compiler lists in
+   the AST's `contractDependencies`, recursively; a child's digest is masked
+   only where its code occurs exactly once in the creation code of the
+   contract embedding it, and only if its bytes change when the same commit
+   is built again with just `useLiteralContent` flipped. That second build
+   changes every digest the compiler places and no other byte, so a constant
+   equal to a child's code, or a child the compiler listed but never placed,
+   stays compared. A second copy (a constant equal to the child's code, or the
+   child embedded by both constructor and runtime) leaves it unmasked too.
 5. Byte-equality proves the pin; the sha256 of the normalized code is
    recorded as evidence.
 

@@ -28,44 +28,86 @@ export function sha256Hex(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')
 }
 
+/** A compiled contract and the contracts whose code it embeds, as the compiler reports them. */
+export interface CompiledContract {
+  creation?: Uint8Array
+  runtime?: Uint8Array
+  embeds: CompiledContract[]
+}
+
+/** Where `needle` occurs in `haystack`, or null unless it occurs exactly once. */
+function onlyOccurrence(haystack: Uint8Array | undefined, needle: Uint8Array | undefined): number | null {
+  if (!haystack || !needle || needle.length === 0 || needle.length >= haystack.length) return null
+  const h = Buffer.from(haystack.buffer, haystack.byteOffset, haystack.length)
+  const n = Buffer.from(needle.buffer, needle.byteOffset, needle.length)
+  const at = h.indexOf(n)
+  return at !== -1 && h.indexOf(n, at + 1) === -1 ? at : null
+}
+
+const shift = (ranges: ImmutableRange[], by: number | null): ImmutableRange[] =>
+  by === null ? [] : ranges.map((r) => ({ start: r.start + by, length: r.length }))
+
+type Memo = Map<CompiledContract, ImmutableRange[]>
+
+/** Digest ranges in `contract.creation`: its runtime's trailer and those of each child placed in it, recursively. */
+function creationDigests(contract: CompiledContract, memo: Memo): ImmutableRange[] {
+  const cached = memo.get(contract)
+  if (cached) return cached
+  const { creation, runtime } = contract
+  const ranges = creation
+    ? [
+        ...shift(runtime ? trailerDigestRanges(runtime) : [], onlyOccurrence(creation, runtime)),
+        ...contract.embeds.flatMap((child) => [
+          ...shift(creationDigests(child, memo), onlyOccurrence(creation, child.creation)),
+          ...shift(runtimeDigests(child, memo), onlyOccurrence(creation, child.runtime)),
+        ]),
+      ]
+    : []
+  memo.set(contract, ranges)
+  return ranges
+}
+
+/** The digest ranges of `contract.creation` that fall in its runtime, as runtime offsets. */
+function runtimeDigests(contract: CompiledContract, memo: Memo): ImmutableRange[] {
+  const at = onlyOccurrence(contract.creation, contract.runtime)
+  if (at === null) return []
+  const end = at + contract.runtime!.length
+  return shift(
+    creationDigests(contract, memo).filter((r) => r.start >= at && r.start + r.length <= end),
+    -at,
+  )
+}
+
 /**
- * Factories embed CHILD creation code (e.g. GenericFactory embeds
- * BeaconProxy), and the embedded code carries its own metadata digest, which
- * varies with source *paths* even when the code is identical. Stripping the
- * outer trailer cannot reach these.
+ * Factories embed CHILD code (e.g. GenericFactory embeds BeaconProxy), and the
+ * embedded code carries its own metadata digest, which varies with source
+ * *paths* even when the code is identical. Stripping the outer trailer cannot
+ * reach these.
  *
- * Locations come only from the build: every child code of the same build
- * (each artifact's creation and deployed bytecode) found verbatim in `code`
- * contributes the digests of its validated metadata trailer, recursively for
- * the children it embeds itself. A byte pattern that merely looks like
- * metadata (e.g. inside a bytes constant) is never masked.
+ * A digest is masked only where the compiler placed a child: a contract that
+ * `contract.embeds` lists, whose code occurs exactly once in the creation code
+ * of the contract embedding it. A creation code holds the constructor's
+ * children and the runtime alike, so any second copy (a constant equal to the
+ * child's code, or the child embedded by both) leaves the child unmasked.
+ * Returns ranges of `contract.runtime`, its own trailer excluded.
  */
-export function embeddedMetadataRanges(code: Uint8Array, childCodes: Uint8Array[]): ImmutableRange[] {
-  const children = childCodes.filter((c) => trailerDigestRanges(c).length > 0)
-  const memo = new Map<Uint8Array, ImmutableRange[]>()
-
-  const within = (outer: Uint8Array): ImmutableRange[] => {
-    const haystack = Buffer.from(outer.buffer, outer.byteOffset, outer.length)
-    const found: ImmutableRange[] = []
-    for (const child of children) {
-      if (child.length >= outer.length) continue
-      const needle = Buffer.from(child.buffer, child.byteOffset, child.length)
-      for (let at = haystack.indexOf(needle); at !== -1; at = haystack.indexOf(needle, at + 1)) {
-        for (const r of ownAndNested(child)) found.push({ start: at + r.start, length: r.length })
-      }
-    }
-    return found
-  }
-  const ownAndNested = (child: Uint8Array): ImmutableRange[] => {
-    const cached = memo.get(child)
-    if (cached) return cached
-    const ranges = [...trailerDigestRanges(child), ...within(child)]
-    memo.set(child, ranges)
-    return ranges
-  }
-
-  const unique = new Map(within(code).map((r) => [`${r.start}:${r.length}`, r]))
+export function embeddedMetadataRanges(contract: CompiledContract): ImmutableRange[] {
+  if (!contract.runtime) return []
+  const executable = splitMetadata(contract.runtime).runtime.length
+  const ranges = runtimeDigests(contract, new Map()).filter((r) => r.start + r.length <= executable)
+  const unique = new Map(ranges.map((r) => [`${r.start}:${r.length}`, r]))
   return [...unique.values()].sort((a, b) => a.start - b.start)
+}
+
+/**
+ * The `ranges` of `code` with any byte different in `variant`, the same
+ * contract built with only its metadata settings changed. A digest the
+ * compiler placed changes; bytes that only equal a child's code, such as a
+ * constant, do not, so they are never masked.
+ */
+export function rangesChangedByMetadata(code: Uint8Array, variant: Uint8Array | undefined, ranges: ImmutableRange[]): ImmutableRange[] {
+  if (!variant || variant.length !== code.length) return []
+  return ranges.filter((r) => code.subarray(r.start, r.start + r.length).some((byte, i) => byte !== variant[r.start + i]))
 }
 
 export interface CompareResult {

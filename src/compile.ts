@@ -1,9 +1,10 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { existsSync, rmSync, readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs'
-import { join, basename } from 'node:path'
+import { join, basename, relative } from 'node:path'
 import { fromHex } from './metadata.js'
-import { embeddedMetadataRanges } from './bytecode.js'
+import { embeddedMetadataRanges, rangesChangedByMetadata } from './bytecode.js'
+import { compiledContract, readBuildIndex, usesLiteralContent, type BuildIndex, type ForgeArtifact } from './compiled-contracts.js'
 import type { CompileProfile, ImmutableRange } from './types.js'
 
 const execFileAsync = promisify(execFile)
@@ -278,40 +279,44 @@ function findArtifacts(outDir: string, fileName: string): string[] {
   return hits.sort()
 }
 
-function allArtifacts(outDir: string): string[] {
-  const hits: string[] = []
-  if (!existsSync(outDir)) return hits
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir)) {
-      const p = join(dir, entry)
-      if (statSync(p).isDirectory()) {
-        if (entry !== 'build-info') walk(p)
-      } else if (entry.endsWith('.json')) hits.push(p)
-    }
-  }
-  walk(outDir)
-  return hits.sort()
+const buildIndexes = new Map<string, BuildIndex>()
+
+function buildIndex(outDir: string, signature: string): BuildIndex {
+  const index = buildIndexes.get(signature) ?? readBuildIndex(outDir)
+  buildIndexes.set(signature, index)
+  return index
 }
 
-/** Every creation and deployed bytecode of the build, as candidate embedded children. */
-const buildChildCodes = new Map<string, Uint8Array[]>()
+const VARIANT_OUT = 'out-metadata-variant'
+const VARIANT_CACHE = 'cache-metadata-variant'
+/** Variant builds present, by checkout directory and build signature. */
+const variantBuilt = new Set<string>()
 
-function childCodes(outDir: string, signature: string): Uint8Array[] {
-  const cached = buildChildCodes.get(signature)
-  if (cached) return cached
-  const seen = new Set<string>()
-  const codes: Uint8Array[] = []
-  for (const file of allArtifacts(outDir)) {
-    const a = JSON.parse(readFileSync(file, 'utf8')) as { bytecode?: { object?: string }; deployedBytecode?: { object?: string } }
-    for (const hex of [a.bytecode?.object, a.deployedBytecode?.object]) {
-      const clean = hex?.replace(/^0x/, '')
-      if (!clean || seen.has(clean) || /[^0-9a-fA-F]/.test(clean)) continue
-      seen.add(clean)
-      codes.push(fromHex(clean))
-    }
+/**
+ * The deployed code of the artifact at `artifactPath`, built again with only
+ * `useLiteralContent` flipped. That changes every metadata digest the
+ * compiler places and no other byte, so it tells the digests of embedded
+ * children from bytes that only equal them, such as a constant.
+ */
+async function metadataVariantCode(
+  repoDir: string,
+  profile: CompileProfile | 'native',
+  signature: string,
+  artifactPath: string,
+  artifact: ForgeArtifact,
+): Promise<Uint8Array | undefined> {
+  if (!variantBuilt.has(`${repoDir}|${signature}`)) {
+    await forgeBuild(repoDir, profile, {
+      FOUNDRY_OUT: VARIANT_OUT,
+      FOUNDRY_CACHE_PATH: VARIANT_CACHE,
+      FOUNDRY_USE_LITERAL_CONTENT: String(!usesLiteralContent(artifact)),
+    })
+    variantBuilt.add(`${repoDir}|${signature}`)
   }
-  buildChildCodes.set(signature, codes)
-  return codes
+  const variantPath = join(repoDir, VARIANT_OUT, relative(join(repoDir, 'out'), artifactPath))
+  if (!existsSync(variantPath)) return undefined
+  const hex = (JSON.parse(readFileSync(variantPath, 'utf8')) as ForgeArtifact).deployedBytecode?.object?.replace(/^0x/, '')
+  return hex && /^[0-9a-fA-F]+$/.test(hex) ? fromHex(hex) : undefined
 }
 
 /**
@@ -337,18 +342,20 @@ export function unresolvedImporter(output: string): string | null {
 /**
  * Build only src/ and its transitive imports: repo and library test/script
  * trees are irrelevant to deployed bytecode and dominate compile time.
+ * `--ast` adds each contract's contractDependencies to its artifact, which
+ * locate embedded children; it leaves the bytecode unchanged.
  * Some pinned commits import a file under different letter case than its
  * name, which resolves only on case-insensitive filesystems. Such a source is
  * skipped and the build retried; if the contract under verification needs it,
  * the build still fails.
  */
-async function forgeBuild(repoDir: string, profile: CompileProfile | 'native'): Promise<void> {
+async function forgeBuild(repoDir: string, profile: CompileProfile | 'native', env: NodeJS.ProcessEnv = {}): Promise<void> {
   const skipped: string[] = []
   for (;;) {
     try {
-      await run('forge', ['build', 'src', '--skip', 'test', '--skip', 'script', ...skipped.flatMap((f) => ['--skip', f])], {
+      await run('forge', ['build', 'src', '--ast', '--skip', 'test', '--skip', 'script', ...skipped.flatMap((f) => ['--skip', f])], {
         cwd: repoDir,
-        env: profileEnv(profile),
+        env: { ...profileEnv(profile), ...env },
         timeoutMs: 900_000,
       })
       return
@@ -371,8 +378,8 @@ export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
     disableLintOnBuild(repoDir)
 
     // Stale artifacts from a previous profile would poison the comparison.
-    rmSync(join(repoDir, 'out'), { recursive: true, force: true })
-    rmSync(join(repoDir, 'cache'), { recursive: true, force: true })
+    for (const stale of ['out', 'cache', VARIANT_OUT, VARIANT_CACHE]) rmSync(join(repoDir, stale), { recursive: true, force: true })
+    variantBuilt.delete(`${repoDir}|${signature}`)
 
     await forgeBuild(repoDir, req.profile)
     currentBuildSignature.set(dirKey, signature)
@@ -386,9 +393,8 @@ export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
   }
   const preferred = candidates.find((p) => p.includes(`${req.contractName}.sol`)) ?? candidates[0]!
 
-  const artifact = JSON.parse(readFileSync(preferred, 'utf8')) as {
+  const artifact = JSON.parse(readFileSync(preferred, 'utf8')) as ForgeArtifact & {
     deployedBytecode?: { object?: string; immutableReferences?: Record<string, ImmutableRange[]> }
-    metadata?: unknown
   }
   const object = artifact.deployedBytecode?.object
   if (!object || object === '0x') {
@@ -398,10 +404,14 @@ export async function buildAtCommit(req: BuildRequest): Promise<BuildResult> {
   const { effective, sources } = parseArtifactMetadata(artifact.metadata)
 
   const code = fromHex(object)
+  const located = embeddedMetadataRanges(compiledContract(buildIndex(join(repoDir, 'out'), signature), artifact))
+  const embeddedMetadata = located.length
+    ? rangesChangedByMetadata(code, await metadataVariantCode(repoDir, req.profile, signature, preferred, artifact), located)
+    : []
   return {
     code,
     immutableReferences: artifact.deployedBytecode?.immutableReferences ?? {},
-    embeddedMetadata: embeddedMetadataRanges(code, childCodes(join(repoDir, 'out'), signature)),
+    embeddedMetadata,
     artifactPath: preferred,
     repoDir,
     effectiveProfile: effective,
