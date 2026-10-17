@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 import { chainsPathFor, loadNetworks } from './networks.js'
 import { resolveAddress } from './addresses.js'
 import { verifyModules } from './modules.js'
-import { isEntrypoint } from './entrypoint.js'
+import { isEntrypoint, loadDotEnv } from './entrypoint.js'
 import type { CompileProfile, NetworkInfo, SubmoduleOverride } from './types.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -75,6 +75,7 @@ export async function verifyManifestModules(run: ModulesRun): Promise<{ results:
 }
 
 async function main(): Promise<number> {
+  loadDotEnv()
   const { values } = parseArgs({
     options: {
       manifest: { type: 'string' },

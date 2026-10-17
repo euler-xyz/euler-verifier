@@ -19,7 +19,7 @@ import { fetchEip1967Implementation, resolveRpcUrls } from './rpc.js'
 import { formatManifest } from './manifest-file.js'
 import { interfacesPaths, renderChains } from './chain-render.js'
 import { checkoutCommits, explicitCandidates, manifestCandidates, parseCandidateArg, type Candidate, type ExplicitCommit } from './candidates.js'
-import { isEntrypoint } from './entrypoint.js'
+import { isEntrypoint, loadDotEnv } from './entrypoint.js'
 import { codeAddress } from './verify.js'
 import { findWork, type Work } from './manifest-work.js'
 import type { BytecodeEntry, Manifest, NetworkInfo, ProxyDeclaration } from './types.js'
@@ -131,6 +131,7 @@ function ownCandidate(chainId: number, key: string, entry: BytecodeEntry): Candi
 }
 
 async function main(): Promise<number> {
+  loadDotEnv()
   const { values } = parseArgs({
     options: {
       interfaces: { type: 'string' },

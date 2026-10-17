@@ -12,10 +12,12 @@ import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chainsPathFor, loadNetworks } from './networks.js'
 import { BuildCache, proveTask, type ProveOutcome, type ProveTask } from './prove.js'
+import { loadDotEnv } from './entrypoint.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 async function main(): Promise<number> {
+  loadDotEnv()
   const { values } = parseArgs({
     options: {
       tasks: { type: 'string' },

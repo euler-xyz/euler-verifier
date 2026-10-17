@@ -7,6 +7,7 @@ import { chainsPathFor, loadNetworks } from './networks.js'
 import { assertRegistryCurrent, resolveAddress } from './addresses.js'
 import { iterateManifest, verifyDelegatedCode, verifyEntry } from './verify.js'
 import type { Manifest, ManifestEntry, VerdictKind, VerificationRecord } from './types.js'
+import { loadDotEnv } from './entrypoint.js'
 
 const ROOT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -47,6 +48,7 @@ Exit code: 0 if every selected entry and its delegated code is MATCH, WAIVED or
 CANONICAL (a listed canonical exception at its bound address); 1 otherwise.`
 
 async function main(): Promise<number> {
+  loadDotEnv()
   const { values } = parseArgs({
     options: {
       manifest: { type: 'string' },
