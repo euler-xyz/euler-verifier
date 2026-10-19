@@ -80,11 +80,14 @@ report title is the viem chain's name.
 ## Add an audit
 
 1. Append an entry to `verify/audits.json`:
-   - `commits.final` = the **last revision the auditors reviewed** (revision
-     table in the report; else the audit tag; else fix-PR merge commits —
-     see `manifests/AUDITS-REVIEW.md` for the pin-selection ladder).
+   - `commits.final` = the **last revision the auditors reviewed**. Take it,
+     in this order, from the report's revision table, else the audit tag,
+     else the fix-PR merge commits.
    - `scope` = the file list/prefixes as stated by the report.
-   - `confidence` per the ladder; `signed_off: true` only after human review.
+   - `confidence`: `high` when the report states the commit or a tag matches
+     it exactly, `medium` when it comes from tags or fix-PR history, `low`
+     when it is inferred from dates. `signed_off: true` only after human
+     review.
 2. Commit the PDF to the source repo's `audits/` and pin the `report` URL to
    a commit, not `master`.
 3. The frontier engine picks it up automatically; residuals it newly covers

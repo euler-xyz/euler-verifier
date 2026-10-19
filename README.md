@@ -200,7 +200,8 @@ pnpm test:integration  # clones + builds a pinned repo and proves EVC on public 
 
 Requirements: node + pnpm (version pinned in `package.json`), `git`, `forge` 1.7.1 (pinned in CI; other
 versions change the metadata hash, which breaks the integration tests' byte-for-byte fixture check).
-No secrets are required; see `.env.example` for the optional RPC variables.
+No secrets are required. For the optional RPC variables, copy `.env.example`
+to `.env`: every command loads it, and a variable already set in the shell wins.
 
 Operational procedures (adding a chain or contract, endpoint rotation,
 re-verification) are in [RUNBOOK.md](RUNBOOK.md).
