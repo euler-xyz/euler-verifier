@@ -16,13 +16,13 @@
     "add-entries": "tsx src/add-entries.ts"
   },
   "dependencies": {
-    "viem": "^2.57.4"
+    "viem": "^2.57.5"
   },
   "devDependencies": {
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.5",
     "tsx": "^4.23.15",
     "typescript": "^5.7.0",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.4"
   },
   "packageManager": "pnpm@10.1.0"
 }
