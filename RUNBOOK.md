@@ -92,6 +92,15 @@ report title is the viem chain's name.
    a commit, not `master`.
 3. The frontier engine picks it up automatically; residuals it newly covers
    collapse in the next report regeneration.
+4. If it is now the last audit of a component in `verify/baselines.json`,
+   move that component to it: `lastAudit` = the new entry's `id`, `date` and
+   `commits.final`; `baseline.commit` = the fixes-included state of that
+   audit (the final itself when it has no findings); rewrite
+   `baseline.derivation`; drop `pinNotes` the new baseline makes untrue.
+   Reports diff every pin against the component's baseline, so until this
+   step they keep showing the audited code as a diff.
+5. Re-render, adding `--chain <id>` for each chain that carries the
+   component's keys: `pnpm add-entries --interfaces <euler-interfaces> --render`.
 
 ## Handle a waiver
 
