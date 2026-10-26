@@ -11,7 +11,6 @@ function audit(id: string, finalCommit: string, scope: string[], date = '2024-06
     scope,
     report: '',
     confidence: 'high',
-    signed_off: false,
   }
 }
 

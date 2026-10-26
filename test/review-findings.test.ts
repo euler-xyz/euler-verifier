@@ -244,6 +244,14 @@ describe('finding 5: every pin is a full commit', () => {
     const validate = execFileAsync(TSX, ['src/validate-manifests.ts', '--baselines', join(root, 'baselines.json')], { cwd: ROOT, timeout: 60_000 })
     await expect(validate).rejects.toMatchObject({ code: 1, stderr: expect.stringContaining('baseline.commit "v1.0"') })
   })
+
+  it('validate-manifests accepts an audit entry with no sign-off field', async () => {
+    const root = interfaces({}, {})
+    const audit = { id: 'a', repo: 'euler-xyz/evc', firm: 'X', date: '2024-01-01', commits: { reviewed: SHA('a'), final: SHA('b') }, scope: [], report: '', confidence: 'high' }
+    write(join(root, 'audits.json'), [audit])
+    const validate = execFileAsync(TSX, ['src/validate-manifests.ts', '--audits', join(root, 'audits.json')], { cwd: ROOT, timeout: 60_000 })
+    await expect(validate).resolves.toMatchObject({ stdout: expect.stringContaining('manifests valid') })
+  })
 })
 
 describe('finding 6: reused checkouts are clean and from the expected origin', () => {

@@ -86,8 +86,7 @@ report title is the viem chain's name.
    - `scope` = the file list/prefixes as stated by the report.
    - `confidence`: `high` when the report states the commit or a tag matches
      it exactly, `medium` when it comes from tags or fix-PR history, `low`
-     when it is inferred from dates. `signed_off: true` only after human
-     review.
+     when it is inferred from dates.
 2. Commit the PDF to the source repo's `audits/` and pin the `report` URL to
    a commit, not `master`.
 3. The frontier engine picks it up automatically; residuals it newly covers
@@ -162,7 +161,6 @@ the guarantee.
 ## Ownership
 
 - Deploy-time manifest entries: the deployer, with `pnpm add-entries` (enforced by the required check).
-- audits.json sign-off: protocol security owner.
 - Toolchain (this repo): <owner — to be named at P5 handoff>.
 - Alerting: none by design. Verification is a required check on
   euler-interfaces PRs and there are no scheduled jobs, so every failure
