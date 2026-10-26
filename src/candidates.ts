@@ -131,7 +131,7 @@ function commitProfiles(manifest: Manifest, key: string, c: ExplicitCommit): Arr
   const unpinned = c.unpinnedSolc
     ? [...new Set(known.map((p) => p.solc))].map((solc): CompileProfile => ({ ...c.unpinnedSolc!, solc }))
     : []
-  const all = [...c.profiles, ...unpinned, ...(c.manifestProfiles ? known : [])]
+  const all = [...(CONTRACT_SPECS[key]?.deployProfiles ?? []), ...c.profiles, ...unpinned, ...(c.manifestProfiles ? known : [])]
   return all.filter((p, i) => all.findIndex((q) => buildFields(q) === buildFields(p)) === i)
 }
 

@@ -1,3 +1,5 @@
+import type { CompileProfile } from './types.js'
+
 /**
  * The verification allowlist (decision D1): manifest key -> where the source
  * lives and which Solidity contract (artifact) it is. `contractNames` are
@@ -9,6 +11,8 @@ export interface ContractSpec {
   defaultRepo: string
   /** euler-swap nests EVK/OZ; its builds need recursive submodule init. */
   recursiveSubmodules?: boolean
+  /** Builds the deploy script makes for this contract instead of the repo's profile; offered commits try them first. */
+  deployProfiles?: CompileProfile[]
 }
 
 export const CONTRACT_SPECS: Record<string, ContractSpec> = {
@@ -35,6 +39,18 @@ export const CONTRACT_SPECS: Record<string, ContractSpec> = {
   // not euler-price-oracle as the legacy mapping claimed.
   oracleRouterFactory: { contractNames: ['EulerRouterFactory'], defaultRepo: 'euler-xyz/evk-periphery' },
   swapVerifier: { contractNames: ['SwapVerifier'], defaultRepo: 'euler-xyz/evk-periphery' },
+  // The two V2 factories embed the creation code of what they deploy, so a factory proof covers every suite or vault it
+  // made. At evk-periphery's 20,000 runs they exceed the code size limit; interactiveDeployment.sh deploys 10,000-run builds.
+  governorAccessControlEmergencyFactoryV2: {
+    contractNames: ['GovernorAccessControlEmergencyFactoryV2'],
+    defaultRepo: 'euler-xyz/evk-periphery',
+    deployProfiles: [{ context: 'evk-periphery', solc: '0.8.24', optimizer_runs: 10000, evm_version: 'cancun' }],
+  },
+  securitizeFactoryV2: {
+    contractNames: ['ERC4626EVCCollateralSecuritizeFactoryV2'],
+    defaultRepo: 'euler-xyz/evk-periphery',
+    deployProfiles: [{ context: 'evk-periphery', solc: '0.8.24', optimizer_runs: 10000, evm_version: 'cancun' }],
+  },
 
   rEUL: { contractNames: ['RewardToken'], defaultRepo: 'euler-xyz/evk-periphery' },
   eulOFTAdapter: {
