@@ -81,6 +81,7 @@ describe('candidates from the manifest', () => {
 
   it.each([
     ['governorAccessControlEmergencyFactoryV2', 'GovernorAccessControlEmergencyFactoryV2'],
+    ['securitizeFactory', 'ERC4626EVCCollateralSecuritizeFactory'],
     ['securitizeFactoryV2', 'ERC4626EVCCollateralSecuritizeFactoryV2'],
   ])('tries the build a deploy script makes for %s before the commit profiles', (key, contractName) => {
     const offer = { repo: 'euler-xyz/evk-periphery', commit: sha('f'), profiles: ['native' as const], manifestProfiles: true, origin: 'candidate' }
