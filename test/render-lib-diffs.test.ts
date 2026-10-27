@@ -34,4 +34,10 @@ describe('embedded lib diffs in a chain report', () => {
     expect(out).toContain('**identical**')
     expect(out).not.toContain('```diff')
   })
+
+  it('says when the submodule predates the lib baseline', () => {
+    const out = renderLibDiffs([{ ...lib, relation: 'predates-baseline' }], 'rEUL', specs, new Map(), label, read).join('\n')
+    expect(out).toContain('predates its baseline')
+    expect(out).toContain('the diff reads submodule→baseline')
+  })
 })

@@ -197,7 +197,8 @@ export async function computeComponentDiffs(
       await ensureCommit(libDir, lib.baseline.commit)
       await ensureCommit(libDir, gitlink)
       const libRel = await relation(libDir, lib.baseline.commit, gitlink)
-      const libDiff = await diffPair(libDir, lib.baseline.commit, gitlink, lib.componentPaths)
+      const [libFrom, libTo] = libRel === 'predates-baseline' ? [gitlink, lib.baseline.commit] : [lib.baseline.commit, gitlink]
+      const libDiff = await diffPair(libDir, libFrom, libTo, lib.componentPaths)
       const libFile = libDiffFile(spec.component, pin, lib.repo)
       if (libDiff.diff) writeFileSync(join(outDir, libFile), libDiff.diff)
       libs.push({

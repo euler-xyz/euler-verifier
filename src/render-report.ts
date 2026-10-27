@@ -148,8 +148,12 @@ export function renderLibDiffs(
     if (first) return ['', header, '', `Same diff as under [${first}](#component-${first.toLowerCase()}).`]
     shown.set(key, component)
     const derivation = libSpecs.find((s) => s.repo === lib.repo)?.baseline.derivation
+    const predates =
+      lib.relation === 'predates-baseline'
+        ? ['', 'This submodule predates its baseline, so the diff reads submodule→baseline: it shows what the later version adds.']
+        : []
     const body = lib.diffFile && lib.diffEmbeddable ? ['', '```diff', readDiff(lib.diffFile).trimEnd(), '```'] : []
-    return ['', header, ...(derivation ? ['', `_${derivation}_`] : []), ...body]
+    return ['', header, ...(derivation ? ['', `_${derivation}_`] : []), ...predates, ...body]
   })
 }
 
