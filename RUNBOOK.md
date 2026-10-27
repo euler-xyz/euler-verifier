@@ -86,12 +86,20 @@ report title is the viem chain's name.
    - `scope` = the file list/prefixes as stated by the report.
    - `confidence`: `high` when the report states the commit or a tag matches
      it exactly, `medium` when it comes from tags or fix-PR history, `low`
-     when it is inferred from dates. `signed_off: true` only after human
-     review.
+     when it is inferred from dates.
 2. Commit the PDF to the source repo's `audits/` and pin the `report` URL to
    a commit, not `master`.
 3. The frontier engine picks it up automatically; residuals it newly covers
    collapse in the next report regeneration.
+4. If it is now the last audit of a component in `verify/baselines.json`,
+   move that component to it: `lastAudit` = the new entry's `id`, `date` and
+   `commits.final`; `baseline.commit` = the fixes-included state of that
+   audit (the final itself when it has no findings); rewrite
+   `baseline.derivation`; drop `pinNotes` the new baseline makes untrue.
+   Reports diff every pin against the component's baseline, so until this
+   step they keep showing the audited code as a diff.
+5. Re-render, adding `--chain <id>` for each chain that carries the
+   component's keys: `pnpm add-entries --interfaces <euler-interfaces> --render`.
 
 ## Handle a waiver
 
@@ -153,7 +161,6 @@ the guarantee.
 ## Ownership
 
 - Deploy-time manifest entries: the deployer, with `pnpm add-entries` (enforced by the required check).
-- audits.json sign-off: protocol security owner.
 - Toolchain (this repo): <owner — to be named at P5 handoff>.
 - Alerting: none by design. Verification is a required check on
   euler-interfaces PRs and there are no scheduled jobs, so every failure

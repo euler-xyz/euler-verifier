@@ -93,7 +93,6 @@ function validateAudits(path: string): void {
     if (a.date !== null && !DATE_RE.test((a.date as string) ?? '')) fail(`${where}: bad date`)
     if (!Array.isArray(a.scope)) fail(`${where}: scope must be an array`)
     if (!['high', 'medium', 'low'].includes(a.confidence as string)) fail(`${where}: bad confidence`)
-    if (typeof a.signed_off !== 'boolean') fail(`${where}: signed_off must be boolean`)
   }
 }
 

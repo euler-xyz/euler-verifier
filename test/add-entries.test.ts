@@ -79,6 +79,18 @@ describe('candidates from the manifest', () => {
     expect(c[0]!.profile).toBeUndefined()
   })
 
+  it.each([
+    ['governorAccessControlEmergencyFactoryV2', 'GovernorAccessControlEmergencyFactoryV2'],
+    ['securitizeFactory', 'ERC4626EVCCollateralSecuritizeFactory'],
+    ['securitizeFactoryV2', 'ERC4626EVCCollateralSecuritizeFactoryV2'],
+  ])('tries the build a deploy script makes for %s before the commit profiles', (key, contractName) => {
+    const offer = { repo: 'euler-xyz/evk-periphery', commit: sha('f'), profiles: ['native' as const], manifestProfiles: true, origin: 'candidate' }
+    const c = explicitCandidates({}, key, [offer])
+    expect(c.map((x) => x.prove.profile)).toEqual([{ ...CANCUN, optimizer_runs: 10000 }, 'native'])
+    expect(c[0]!.profile).toEqual({ ...CANCUN, optimizer_runs: 10000 })
+    expect(c.every((x) => x.prove.contractName === contractName)).toBe(true)
+  })
+
   it('tries a checkout that leaves solc unpinned with the solc versions the manifest knows', () => {
     const offer = {
       repo: 'euler-xyz/evk-periphery',
@@ -135,6 +147,28 @@ describe('check-completeness', () => {
       await expect(run).rejects.toMatchObject({
         code: 1,
         stderr: expect.stringContaining(`pnpm add-entries --interfaces ${dir} --chain 8453`),
+      })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('requires an entry for the V2 governor suite factory', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'verifier-completeness-'))
+    const factory = '0xece1042A1B06D994B90AB5D41F8c7898Ab96aeA0'
+    try {
+      mkdirSync(join(dir, 'addresses', '1'), { recursive: true })
+      writeFileSync(join(dir, 'addresses', '1', 'PeripheryAddresses.json'), JSON.stringify({ governorAccessControlEmergencyFactoryV2: factory }))
+      writeFileSync(join(dir, 'manifest.json'), '{}')
+      const tsx = join(ROOT, 'node_modules', '.bin', 'tsx')
+      const run = execFileAsync(tsx, ['src/check-completeness.ts', '--manifest', join(dir, 'manifest.json'), '--addresses', join(dir, 'addresses')], {
+        cwd: ROOT,
+        timeout: 60_000,
+        env: { ...process.env, GITHUB_ACTIONS: '' },
+      })
+      await expect(run).rejects.toMatchObject({
+        code: 1,
+        stderr: expect.stringContaining(`1/governorAccessControlEmergencyFactoryV2 (${factory}): deployed but missing from manifest`),
       })
     } finally {
       rmSync(dir, { recursive: true, force: true })

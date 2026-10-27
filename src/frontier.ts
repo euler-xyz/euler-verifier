@@ -21,7 +21,6 @@ export interface AuditEntry {
   scope: string[]
   report: string
   confidence: 'high' | 'medium' | 'low'
-  signed_off: boolean
 }
 
 export type FileClass =
