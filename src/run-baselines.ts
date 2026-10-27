@@ -129,6 +129,10 @@ export interface PairDiff {
   }>
 }
 
+export function libDiffFile(component: string, pin: string, libRepo: string): string {
+  return `diff-${component}-${pin.slice(0, 8)}-lib-${libRepo.split('/')[1]}.patch`
+}
+
 /**
  * Diff every distinct (component, pin) of `manifest` against the component's
  * baseline, writing the patch files into `outDir`. Clones and fetches what the
@@ -194,8 +198,8 @@ export async function computeComponentDiffs(
       await ensureCommit(libDir, gitlink)
       const libRel = await relation(libDir, lib.baseline.commit, gitlink)
       const libDiff = await diffPair(libDir, lib.baseline.commit, gitlink, lib.componentPaths)
-      const libDiffFile = `diff-${spec.component}-${pin.slice(0, 8)}-lib.patch`
-      if (libDiff.diff) writeFileSync(join(outDir, libDiffFile), libDiff.diff)
+      const libFile = libDiffFile(spec.component, pin, lib.repo)
+      if (libDiff.diff) writeFileSync(join(outDir, libFile), libDiff.diff)
       libs.push({
         repo: lib.repo,
         gitlinkPath: lib.gitlinkPath,
@@ -207,7 +211,7 @@ export async function computeComponentDiffs(
         insertions: libDiff.insertions,
         deletions: libDiff.deletions,
         numstat: libDiff.numstat,
-        diffFile: libDiff.diff ? libDiffFile : null,
+        diffFile: libDiff.diff ? libFile : null,
         diffEmbeddable: libDiff.diff !== '' && libDiff.diff.split('\n').length <= DIFF_EMBED_CAP,
       })
     }
