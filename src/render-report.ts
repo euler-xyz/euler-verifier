@@ -127,6 +127,32 @@ export interface RenderedChain {
   total: number
 }
 
+/**
+ * The embedded-lib lines of one component pin. A lib diff seen earlier in the
+ * same report (same repo, gitlink and baseline) points back to it instead of
+ * repeating it; the first one carries the lib's baseline derivation.
+ */
+export function renderLibDiffs(
+  libs: LibDiff[],
+  component: string,
+  libSpecs: ReadonlyArray<{ repo: string; baseline: { derivation: string } }>,
+  shown: Map<string, string>,
+  auditLabel: (id: string) => string,
+  readDiff: (file: string) => string,
+): string[] {
+  return libs.flatMap((lib) => {
+    const header = `Embedded \`${lib.repo.split('/')[1]}\` (submodule @ [\`${short(lib.gitlink)}\`](https://github.com/${lib.repo}/tree/${lib.gitlink})) vs its own baseline \`${short(lib.baseline)}\` (${auditLabel(lib.lastAudit.id)}): ${lib.files === 0 ? '**identical**' : `+${lib.insertions}/−${lib.deletions}`}`
+    if (lib.files === 0) return ['', header]
+    const key = `${lib.repo}@${lib.gitlink}@${lib.baseline}`
+    const first = shown.get(key)
+    if (first) return ['', header, '', `Same diff as under [${first}](#component-${first.toLowerCase()}).`]
+    shown.set(key, component)
+    const derivation = libSpecs.find((s) => s.repo === lib.repo)?.baseline.derivation
+    const body = lib.diffFile && lib.diffEmbeddable ? ['', '```diff', readDiff(lib.diffFile).trimEnd(), '```'] : []
+    return ['', header, ...(derivation ? ['', `_${derivation}_`] : []), ...body]
+  })
+}
+
 export function renderReports(inputs: RenderInputs): RenderedChain[] {
   const { manifest, outcomes, components, pairs, diffsDir, modules, swapMgmt, audits, notes, networks } = inputs
   const auditById = new Map(audits.map((a) => [a.id, a]))
@@ -165,6 +191,7 @@ export function renderReports(inputs: RenderInputs): RenderedChain[] {
     const canonical = rows.filter((r) => r.status === 'CANONICAL').length
     const waived = rows.filter((r) => entryOf(r.key)?.waiver).length
     const lines: string[] = []
+    const shownLibDiffs = new Map<string, string>()
 
     lines.push(`# ${net?.name ?? `Chain ${chainId}`} — Deployed Code Verification`)
     lines.push('')
@@ -355,16 +382,11 @@ export function renderReports(inputs: RenderInputs): RenderedChain[] {
           const pathspecs = spec.componentPaths.map((s) => (/[():]/.test(s) ? `'${s}'` : s)).join(' ')
           lines.push(`_Reproduce: \`git diff ${from.slice(0, 12)} ${to.slice(0, 12)} -- ${pathspecs}\` in ${p.repo}._`)
         }
-        for (const lib of p.libComponents) {
-          lines.push('')
-          lines.push(`Embedded \`${lib.repo.split('/')[1]}\` (submodule @ [\`${short(lib.gitlink)}\`](https://github.com/${lib.repo}/tree/${lib.gitlink})) vs its own baseline \`${short(lib.baseline)}\` (${auditLabel(lib.lastAudit.id)}): ${lib.files === 0 ? '**identical**' : `+${lib.insertions}/−${lib.deletions}`}`)
-          if (lib.diffFile && lib.diffEmbeddable) {
-            lines.push('')
-            lines.push('```diff')
-            lines.push(readFileSync(join(diffsDir, lib.diffFile), 'utf8').trimEnd())
-            lines.push('```')
-          }
-        }
+        lines.push(
+          ...renderLibDiffs(p.libComponents, p.component, spec.libComponents ?? [], shownLibDiffs, auditLabel, (file) =>
+            readFileSync(join(diffsDir, file), 'utf8'),
+          ),
+        )
       }
     }
 
