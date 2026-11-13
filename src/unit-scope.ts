@@ -77,3 +77,11 @@ export function unitScopedDelta(pair: ScopablePair, sources: string[] | undefine
     deletions: hits.reduce((sum, l) => sum + l.deletions, 0),
   }
 }
+
+/** The changed files compiled into a contract; every changed file when its sources are unknown. */
+export function unitFiles(numstat: string, sources: string[] | undefined): NumstatLine[] {
+  const lines = parseNumstat(numstat)
+  if (!sources?.length) return lines
+  const unit = new Set(sources)
+  return lines.filter((l) => l.paths.some((p) => unit.has(p)))
+}

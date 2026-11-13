@@ -22,11 +22,13 @@ const evcUtil = {
   componentPaths: ['src/utils/EVCUtil.sol'],
   lastAudit: { id: 'audit-evcutil', date: '2026-11-01', finalReviewedCommit: LIB_BASE },
   baseline: { commit: LIB_BASE, date: '2026-10-22', derivation: 'EVCUtil baseline text.', confidence: 'high' },
+  note: 'Not reachable from these contracts.',
 }
 
 const components: ComponentBaseline[] = [
   {
     component: 'evk',
+    name: 'Euler Vault Kit',
     repo: 'euler-xyz/euler-vault-kit',
     keys: ['eVaultFactory', 'eVaultImplementation', 'protocolConfig'],
     componentPaths: ['src/'],
@@ -169,49 +171,122 @@ function inputs(extra: Partial<RenderInputs> = {}): RenderInputs {
 
 const report = (extra: Partial<RenderInputs> = {}) => renderReports(inputs(extra))[0]!.report
 
-describe('chain report: correctness', () => {
-  it('attributes the EVault modules only to the pin that carries eVaultImplementation', () => {
+const rowOf = (r: string, key: string) => r.split('\n').find((l) => l.startsWith(`| [${key}]`) || l.startsWith(`| ${key} |`))!
+/** The text of the section whose heading carries `id`, up to the next section heading. */
+function section(r: string, id: string): string {
+  const start = r.indexOf(`<a id="${id}"></a>`)
+  const next = r.slice(start + 1).search(/\n#{2,3} /)
+  return next < 0 ? r.slice(start) : r.slice(start, start + 1 + next)
+}
+const IMPL = `component-evk-${PIN_IMPL.slice(0, 8)}`
+const CORE = `component-evk-${PIN_CORE.slice(0, 8)}`
+
+describe('chain report: links and sections', () => {
+  it('links each contract to the section of its own deployed commit', () => {
     const r = report()
-    const heading = (pin: string) => r.split('\n').find((l) => l.startsWith('#### ') && l.includes(`component-evk-${pin.slice(0, 8)}`))!
-    expect(heading(PIN_IMPL)).toContain('the 8 EVault modules')
-    expect(heading(PIN_CORE)).not.toContain('EVault modules')
+    expect(rowOf(r, 'protocolConfig')).toContain(`| [protocolConfig](#${CORE}) |`)
+    expect(rowOf(r, 'eVaultImplementation')).toContain(`| [eVaultImplementation](#${IMPL}) |`)
+    expect(r).not.toContain('id="component-evk"')
   })
 
-  it('renders one heading per component and one anchor per deployed pin', () => {
+  it('opens each commit section with the files changed in each of its contracts', () => {
+    const core = section(report(), CORE)
+    expect(core).toContain('Euler Vault Kit @ ')
+    expect(core).toContain('| protocolConfig | `src/ProtocolConfig.sol` +1/−1 | default fee share 10% → 50% |')
+    expect(core).toContain('| eVaultFactory | nothing | — |')
+  })
+
+  it('attributes the EVault modules only to the commit that carries eVaultImplementation', () => {
     const r = report()
-    expect(r.match(/id="component-evk"/g)).toHaveLength(1)
-    expect(r).toContain(`id="component-evk-${PIN_CORE.slice(0, 8)}"`)
-    expect(r).toContain(`id="component-evk-${PIN_IMPL.slice(0, 8)}"`)
+    expect(section(r, IMPL)).toContain('Deployed as: eVaultImplementation, and the 8 EVault modules.')
+    expect(section(r, CORE)).not.toContain('EVault modules')
   })
 
-  it('labels each contract with its own change, not the whole pin', () => {
-    const rowOf = (key: string) => report().split('\n').find((l) => l.startsWith(`| [${key}]`))!
-    expect(rowOf('protocolConfig')).toContain('default fee share 10% → 50%')
-    expect(rowOf('eVaultFactory')).toContain('≡ baseline (this contract)')
-    expect(rowOf('eVaultFactory')).not.toContain('visibility + fee')
+  it('gives each build of one commit its own anchor', () => {
+    const base = inputs()
+    const r = report({
+      manifest: { '1': { ...base.manifest['1'], protocolConfig: { repo: 'euler-xyz/euler-vault-kit', commit: PIN_CORE, evidence: { submoduleOverrides: [{ path: 'lib/x', ref: sha('3') }] } } } },
+      pairs: [
+        ...base.pairs.map((p) => (p.pin === PIN_CORE ? { ...p, keys: ['eVaultFactory'] } : p)),
+        pair({ keys: ['protocolConfig'], variant: 'abcd1234', overrides: [{ path: 'lib/x', ref: sha('3'), gitlink: sha('4') }] }),
+      ],
+    })
+    expect(r.match(new RegExp(`id="${CORE}"`, 'g'))).toHaveLength(1)
+    expect(r.match(new RegExp(`id="${CORE}-abcd1234"`, 'g'))).toHaveLength(1)
+    expect(rowOf(r, 'protocolConfig')).toContain(`(#${CORE}-abcd1234)`)
   })
 
-  it('keeps the final context line of an embedded diff', () => {
-    expect(report()).toContain('+uint16 share = 0.5e4;\n }\n```')
+  it('folds maintainer notes on the commit', () => {
+    const core = section(report(), CORE)
+    expect(core).toContain('<details><summary>Maintainer notes on this commit</summary>\n\nCore pin note.')
   })
 
-  it('diffs the lib the build compiled and names the override', () => {
+  it('folds the diff and the reasoning behind the audited version', () => {
+    const core = section(report(), CORE)
+    expect(core).toContain('<details><summary>Diff since the audited version (2 files, +3/−3)</summary>')
+    expect(core).toContain('+uint16 share = 0.5e4;\n }\n```')
+    expect(core).toMatch(/<details><summary>How the audited version was chosen<\/summary>\n\nEVK baseline text\./)
+  })
+})
+
+describe('chain report: plain language', () => {
+  it('uses plain column values', () => {
     const r = report()
-    expect(r).toContain('Built with submodule overrides')
-    expect(r).toContain(`\`lib/ethereum-vault-connector\` @ \`${LIB_SIDE.slice(0, 8)}\` in place of \`${LIB_OLD.slice(0, 8)}\``)
-    expect(r.split('\n').find((l) => l.startsWith('| [balanceTracker]'))).toContain('override')
+    expect(r).toContain('| Contract | Address | Source | Bytecode | Since audit | What changed |')
+    expect(rowOf(r, 'eVaultFactory')).toContain('| ✅ Matches | same as audited | — |')
+    expect(rowOf(r, 'protocolConfig')).toContain('| +1/−1 | default fee share 10% → 50% |')
   })
 
-  it('prints a lib diff once per content, listing every contract that compiles it', () => {
+  it('names audits by firm and month, keeping the registry id as the link title', () => {
+    expect(report()).toContain(`Audited version: [\`cccccccc\`](https://github.com/euler-xyz/euler-vault-kit/tree/${BASE}) — [yAudit, Jul 2024](https://example.com/evk.pdf "audit-evk").`)
+  })
+
+  it('does not print baseline confidence', () => {
+    expect(report().toLowerCase()).not.toContain('confidence')
+  })
+
+  it('labels maintainers notes as not an audit finding', () => {
     const r = report()
+    expect(r).toContain('**Euler note**')
+    expect(r).toContain('not an audit finding')
+  })
+
+  it('explains its terms', () => {
+    expect(report()).toContain('How to read this report')
+  })
+
+  it('never leaves two blank lines in a row', () => {
+    expect(report()).not.toContain('\n\n\n')
+  })
+})
+
+describe('chain report: shared libraries', () => {
+  it('shows a library version once, with every contract it is compiled into', () => {
+    const r = report()
+    expect(r).toContain('## Shared libraries')
     expect(r.match(/if \(msg\.sig == ERC1271\) revert/g)).toHaveLength(1)
-    expect(r).toContain('## Embedded libraries')
-    expect(r).toContain(`balanceTracker (\`${LIB_SIDE.slice(0, 8)}\`, override)`)
-    expect(r).toContain(`eVaultImplementation (\`${LIB_OLD.slice(0, 8)}\`)`)
+    expect(r).toContain(`Compiled into: balanceTracker (\`${LIB_SIDE.slice(0, 8)}\`, dependency at another commit), eVaultImplementation (\`${LIB_OLD.slice(0, 8)}\`).`)
   })
 
-  it('says when the compiled lib equals what the component baseline compiled', () => {
-    expect(report()).toContain("same EVCUtil as the component's audited baseline compiled")
+  it('shows the library note where readers see the library', () => {
+    expect(section(report(), 'lib-evcutil')).toContain('Not reachable from these contracts.')
+  })
+
+  it('marks a library only on contracts that compile it', () => {
+    const base = inputs()
+    const r = report({ pairs: base.pairs.map((p) => (p.pin === PIN_CORE ? { ...p, libComponents: [lib({})] } : p)) })
+    expect(rowOf(r, 'eVaultImplementation')).toContain('EVCUtil older than its audited version')
+    expect(rowOf(r, 'protocolConfig')).not.toContain('EVCUtil')
+  })
+
+  it('says when the compiled library is the version the audited code compiled', () => {
+    expect(report()).toContain('the same version the audited code compiled')
+  })
+
+  it('names the dependencies a build took at other commits', () => {
+    const r = report()
+    expect(r).toContain(`\`lib/ethereum-vault-connector\` at \`${LIB_SIDE.slice(0, 8)}\` instead of \`${LIB_OLD.slice(0, 8)}\``)
+    expect(rowOf(r, 'balanceTracker')).toContain('1 dependency at other commits')
   })
 })
 
@@ -224,26 +299,14 @@ describe('chain report: claims and provenance', () => {
     expect(r).toContain('eVaultFactoryGovernor')
   })
 
-  it('shows the proxy users hold and the implementation it proves', () => {
-    const row = report().split('\n').find((l) => l.startsWith('| [balanceTracker]'))!
-    expect(row).toContain('0x00000000…')
-    expect(row).toContain('proxy')
-    expect(row).toContain('impl')
+  it('shows the proxy users hold and the implementation that matches', () => {
+    const row = rowOf(report(), 'balanceTracker')
+    expect(row).toContain('(proxy)')
+    expect(row).toContain('implementation')
   })
 
-  it('labels maintainers notes as not an audit finding', () => {
-    const r = report()
-    expect(r).toContain('**Euler note**')
-    expect(r).toContain('not an audit finding')
-    expect(r).not.toContain('**Assessment**')
-  })
-
-  it('links the audits a pin note cites', () => {
-    expect(report()).toContain('[Electisec (`audit-x`)](https://example.com/x.pdf)')
-  })
-
-  it('prints the baseline confidence as its own field', () => {
-    expect(report()).toContain('Baseline confidence: **medium**')
+  it('links the later audits a commit note cites', () => {
+    expect(section(report(), CORE)).toContain('Later audits covering these changes: [Electisec, Feb 2025](https://example.com/x.pdf "audit-x").')
   })
 
   it('names the engine commit and every input in the footer', () => {
@@ -254,69 +317,26 @@ describe('chain report: claims and provenance', () => {
   })
 })
 
-describe('chain report: embedded libs per contract', () => {
-  it('marks a lib only on contracts that compile it, with its counts', () => {
-    const r = report({
-      pairs: inputs().pairs.map((p) => (p.pin === PIN_CORE ? { ...p, libComponents: [lib({})] } : p)),
-    })
-    const rowOf = (key: string) => r.split('\n').find((l) => l.startsWith(`| [${key}]`))!
-    expect(rowOf('eVaultImplementation')).toContain('EVCUtil predates its audit (lacks +24/−9)')
-    expect(rowOf('protocolConfig')).not.toContain('EVCUtil')
-    expect(r).not.toContain('protocolConfig (`')
-  })
-})
-
-describe('chain report: readability', () => {
-  it('never leaves two blank lines in a row', () => {
-    expect(report()).not.toContain('\n\n\n')
-  })
-
-  it('folds long diffs', () => {
-    expect(report()).toMatch(/<details><summary>[^<]*60 lines[^<]*<\/summary>\n\n```diff\n line 0/)
-  })
-
-  it('links each contract row to its component section', () => {
-    expect(report()).toContain('| [protocolConfig](#component-evk) |')
-  })
-
-  it('explains its terms', () => {
-    expect(report()).toContain('How to read this report')
-  })
-})
-
 describe('chain report: attention, counts and edge cases', () => {
   const base = inputs()
   const withEntry = (key: string, entry: ManifestEntry) => ({ '1': { ...base.manifest['1'], [key]: entry } })
 
-  it('gives each build of one pin on a chain its own anchor', () => {
-    const r = report({
-      manifest: withEntry('protocolConfig', { repo: 'euler-xyz/euler-vault-kit', commit: PIN_CORE, evidence: { submoduleOverrides: [{ path: 'lib/x', ref: sha('3') }] } }),
-      pairs: [
-        ...base.pairs.map((p) => (p.pin === PIN_CORE ? { ...p, keys: ['eVaultFactory'] } : p)),
-        pair({ keys: ['protocolConfig'], variant: 'abcd1234', overrides: [{ path: 'lib/x', ref: sha('3'), gitlink: sha('4') }] }),
-      ],
-    })
-    expect(r.match(/id="component-evk-bbbbbbbb"/g)).toHaveLength(1)
-    expect(r.match(/id="component-evk-bbbbbbbb-abcd1234"/g)).toHaveLength(1)
-  })
-
   it('says when the commit an override replaces could not be resolved', () => {
     const r = report({ pairs: base.pairs.map((p) => (p.component === 'reward-streams' ? { ...p, overrides: [{ ...p.overrides[0]!, gitlink: null }] } : p)) })
     expect(r).toContain('could not be resolved')
-    expect(r).not.toContain('in place of `—`')
   })
 
-  it('leads with unproven, waived and delegated failures, counted once each', () => {
+  it('leads with mismatches, waivers and delegated failures, counted once each', () => {
     const r = report({
       outcomes: base.outcomes.map((o) => (o.key === 'protocolConfig' ? { ...o, status: 'MISMATCH', matched: undefined } : o.key === 'balanceTracker' ? { ...o, status: 'WAIVED', matched: undefined } : o)),
       manifest: withEntry('balanceTracker', { ...base.manifest['1']!.balanceTracker!, waiver: { reason: 'size-fit variant', signed_by: 'ops' } }),
       modules: { '1': { modules: [{ module: 'Governance', address: '0x0000000000000000000000000000000000000009', verdict: 'MISMATCH', crossCheckedInImplementation: true }] } },
     })
     expect(r).toContain('## ⚠️ Requires attention')
-    expect(r).toContain('**protocolConfig** — bytecode NOT proven (`MISMATCH`)')
+    expect(r).toContain('**protocolConfig** — the deployed bytecode does NOT match its source commit (`MISMATCH`)')
     expect(r).toContain('**balanceTracker** — waived: size-fit variant')
     expect(r).toContain('**EVault module Governance** — FAILED')
-    expect(r).toContain('Waived: 1 · Not proven: **1**')
+    expect(r).toContain('Waived: 1 · Not matching: **1**')
     expect(r).toContain('| balanceTracker |')
   })
 
@@ -325,27 +345,27 @@ describe('chain report: attention, counts and edge cases', () => {
       outcomes: [...base.outcomes, { chainId: 1, key: 'EUL', address: '0x00000000000000000000000000000000000000EE', status: 'CANONICAL' }],
       manifest: withEntry('EUL', { repo: 'euler-xyz/euler-governance', verified: 'canonical', note: 'Canonical note.', waiver: { reason: 'x', signed_by: 'y' } }),
     })
-    expect(r).toContain('Canonical (documented, not re-proven): 1')
+    expect(r).toContain('Canonical (documented, not rebuilt): 1')
     expect(r).not.toContain('Waived')
-    expect(r).not.toContain('Not proven')
+    expect(r).not.toContain('Not matching')
     expect(r).toContain('<a id="canonical-contracts"></a>Canonical contracts')
     expect(r).toContain('| [EUL](#canonical-contracts) |')
   })
 
-  it('shows a flagged note once, above the table, linked to its pin', () => {
+  it('shows a flagged note once, above the table, linked to its commit', () => {
     const r = report({ notes: { all: { eVaultImplementation: { assessment: 'Flagged fact.', flag: true } } } })
-    expect(r).toContain('**eVaultImplementation** — post-audit functionality change ([diff below](#component-evk-aaaaaaaa))')
+    expect(r).toContain(`**eVaultImplementation** — changed after its audit ([see the changes](#${IMPL}))`)
     expect(r.match(/Flagged fact\./g)).toHaveLength(1)
   })
 
-  it('explains a pin that predates its baseline with its own audited anchor', () => {
+  it('explains a deployment older than its audited version', () => {
     const r = report({
       pairs: base.pairs.map((p) =>
         p.pin === PIN_IMPL ? { ...p, predatesBaseline: true, relation: 'predates-baseline', pinNote: { naturalBaseline: { auditId: 'audit-x', justification: 'Older audited state.' } } } : p,
       ),
     })
-    expect(r).toContain('This deployment predates the component baseline.')
-    expect(r).toContain('[Electisec (`audit-x`)](https://example.com/x.pdf): Older audited state.')
+    expect(rowOf(r, 'eVaultImplementation')).toContain('older than the audited version')
+    expect(r).toContain('This deployment is older than the audited version. It matches the code audited by [Electisec, Feb 2025](https://example.com/x.pdf "audit-x"): Older audited state.')
   })
 
   it('says so when every other address is a multisig', () => {
@@ -354,12 +374,12 @@ describe('chain report: attention, counts and edge cases', () => {
 
   it('treats an empty source list as unknown, not as compiling nothing', () => {
     const r = report({ outcomes: base.outcomes.map((o) => (o.key === 'eVaultImplementation' ? { ...o, matched: { ...o.matched!, sources: [] } } : o)) })
-    expect(r.split('\n').find((l) => l.startsWith('| [eVaultImplementation]'))).toContain('EVCUtil predates its audit')
+    expect(rowOf(r, 'eVaultImplementation')).toContain('EVCUtil older than its audited version')
   })
 
   it('escapes a pipe in a label', () => {
     const r = report({ pairs: base.pairs.map((p) => (p.pin === PIN_IMPL ? { ...p, pinNote: { label: 'a | b' } } : p)) })
-    expect(r.split('\n').find((l) => l.startsWith('| [eVaultImplementation]'))).toContain('a \\| b')
+    expect(rowOf(r, 'eVaultImplementation')).toContain('a \\| b')
   })
 
   it('gives long diffs a reproduce command and a direct GitHub compare', () => {

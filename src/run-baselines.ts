@@ -42,10 +42,14 @@ export interface LibComponent {
   componentPaths: string[]
   lastAudit: { id: string; date: string; finalReviewedCommit: string }
   baseline: { commit: string; date: string; derivation: string; confidence: string }
+  /** Shown to readers under the library's heading, e.g. whether an older version is reachable. */
+  note?: string
 }
 
 export interface ComponentBaseline {
   component: string
+  /** Product name shown in reports; the component id otherwise. */
+  name?: string
   repo: string
   keys: string[]
   componentPaths: string[]

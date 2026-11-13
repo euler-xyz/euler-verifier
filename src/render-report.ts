@@ -124,11 +124,11 @@ export function renderIndex(rows: Map<number, string>): string {
     '',
     INDEX_INTRO,
     '',
-    '| Network | Chain ID | Bytecode-proven (of contracts in scope) |',
-    '|---------|----------|-----------------------------------------|',
+    '| Network | Chain ID | Bytecode matches (of contracts in scope) |',
+    '|---------|----------|------------------------------------------|',
     ...indexRows,
     '',
-    '_Inputs: `manifest.json` (declared provenance, SHA-only), `audits.json` (audit registry), `baselines.json` (component baselines with derivations), and euler-verifier `manifests/attention-notes.json`. Regenerated only when a PR changes those inputs or addresses._',
+    '_Inputs: `manifest.json` (the source commit of each contract), `audits.json` (the audits), `baselines.json` (the audited version of each product and library), and euler-verifier `manifests/attention-notes.json` (Euler notes). Regenerated only when a PR changes those inputs or the addresses._',
   ]
   return index.join('\n') + '\n'
 }

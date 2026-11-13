@@ -2,18 +2,6 @@ import { short } from './render-md.js'
 
 const VERIFIER = 'https://github.com/euler-xyz/euler-verifier'
 
-export const CONFIDENCE_MEANING: Record<string, string> = {
-  high: 'the audit report states the commit, or a tag matches it',
-  medium: 'derived from tags or fix-PR history',
-  low: 'inferred from dates',
-}
-
-export function confidenceLine(confidence: string | undefined): string {
-  if (!confidence) return ''
-  const meaning = CONFIDENCE_MEANING[confidence]
-  return `Baseline confidence: **${confidence}**${meaning ? ` (${meaning})` : ''}.`
-}
-
 export function introLines(inScope: number, uncovered: string[] | undefined): string[] {
   const notCovered = !uncovered
     ? ' Other contracts in the euler-interfaces address files are not covered.'
@@ -21,11 +9,11 @@ export function introLines(inScope: number, uncovered: string[] | undefined): st
       ? ` Not covered: ${uncovered.map((k) => `\`${k}\``).join(', ')} (multisig Safes are not listed).`
       : ' Every other non-zero address in the euler-interfaces address files is a multisig Safe.'
   return [
-    "**What a proof shows.** Each contract in scope runs the code built from a pinned commit: its on-chain runtime bytecode equals a local build of `repo@commit` with the deployment's compiler settings, after stripping the metadata trailer and masking immutables and the metadata digests of embedded child contracts. Block explorers are not trusted. This is runtime correspondence only: it says nothing about initialization, governance, immutable configuration or deployment safety.",
+    "**What a match shows.** For each contract in scope, the code deployed on-chain was rebuilt from the commit in the Source column and compared byte for byte, leaving out what a rebuild cannot reproduce: the compiler's metadata trailer, values set at deployment, and the metadata of contracts a factory deploys. Block explorers are not trusted. A match shows the deployed code is that commit's code. It says nothing about how the contract was initialised or configured, or who controls it.",
     '',
-    "**What is compared with audited code.** Each proven commit is diffed against its component's audited baseline: the fixes-included state of the last audit that reviewed the whole component. Narrower later reviews are linked where they cover a change. Compared: the component's own source paths and the Euler libraries compiled into it (see Embedded libraries). Not compared: third-party dependencies such as OpenZeppelin, LayerZero and Uniswap. Diffs over 400 lines are summarised per file, with a command and a link to see them in full.",
+    "**What is compared with audited code.** Each deployed commit is compared with the audited version of its code: the code as of the last audit that covered the whole product, with the fixes that audit reviewed. Later, narrower audits are linked where they cover a change. Euler's shared libraries compiled into a contract are compared with their own audited versions. Third-party libraries such as OpenZeppelin, LayerZero and Uniswap are not compared.",
     '',
-    `**Scope.** ${inScope} contract${inScope === 1 ? '' : 's'} on this chain ${inScope === 1 ? 'is' : 'are'} on the verifier's allowlist.${notCovered}`,
+    `**Scope.** ${inScope} contract${inScope === 1 ? '' : 's'} on this chain ${inScope === 1 ? 'is' : 'are'} covered.${notCovered}`,
   ]
 }
 
@@ -33,15 +21,12 @@ export function legendLines(): string[] {
   return [
     '<details><summary>How to read this report</summary>',
     '',
-    '- **Pin**: the commit a contract was built from and proven against.',
-    `- **Baseline**: the audited commit a component is compared with. **Baseline confidence** says how that commit was established: high = ${CONFIDENCE_MEANING.high}; medium = ${CONFIDENCE_MEANING.medium}; low = ${CONFIDENCE_MEANING.low}.`,
-    "- **≡ baseline**: the deployed source equals the baseline on the component's paths. **≡ baseline (this contract)**: the component changed, but none of the changed files is compiled into this contract.",
-    "- **+N/−M vs baseline**: lines added and removed since the baseline in the files compiled into this contract.",
-    '- **predates**: the deployed commit is older than the baseline. Its diff shows what the newer audited code adds: `+` lines are code the deployment does not have.',
-    "- **Embedded library**: Euler library code compiled into a contract from a git submodule, compared with the library's own audited baseline.",
-    '- **Submodule override**: the build that matches the deployment used a different commit for a submodule than the pin records. The report compares what was compiled.',
-    '- **Bytecode proof**: the first 8 hex characters of the sha256 of the normalized runtime code. It is not a commit.',
-    '- **Euler note**: a plain-fact summary of a change written by Euler maintainers. It is not an audit finding.',
+    '- **✅ Matches**: the deployed bytecode equals a rebuild of the commit in the Source column.',
+    '- **Since audit**: lines added and removed since the audited version, counting only the files compiled into that contract. **Same as audited**: no change in those files.',
+    '- **Older than the audited version**: the deployed commit comes before the audited version. Its diff shows what the audited version adds.',
+    "- **Shared library**: Euler library code compiled into several contracts (EVCUtil, SafeERC20Permit2Lib, EulerRouter), compared with the library's own audited version.",
+    '- **Dependencies at other commits**: the build that matches the deployment used dependency commits other than the ones the source commit records. The report compares what was actually compiled.',
+    '- **Euler note**: a summary of a change written by Euler maintainers. It is not an audit finding.',
     '',
     '</details>',
   ]
@@ -63,4 +48,4 @@ export function footerLine(engineRef?: string): string {
 }
 
 export const INDEX_INTRO =
-  "Bytecode-level verification of the contracts on the euler-verifier allowlist: on-chain runtime code is proven equal to a commit-pinned local build (metadata trailer stripped; immutables and build-located embedded metadata digests masked), and block explorers are not trusted. Each deployment is then diffed against its component's audited baseline, the fixes-included state of the last audit that reviewed the whole component, and against the audited baselines of the Euler libraries compiled into it. Third-party dependencies are not compared. The claim is runtime correspondence under this normalization, not initialization, governance, immutable configuration or deployment safety."
+  "Each report shows whether the code deployed on a chain is the code built from a specific commit, and how that code differs from its audited version. Matches are byte-for-byte rebuilds; block explorers are not trusted. Euler's shared libraries are compared with their own audited versions; third-party libraries are not compared. A match says nothing about how a contract was initialised or configured, or who controls it."
