@@ -21,6 +21,7 @@ import { interfacesPaths, renderChains } from './chain-render.js'
 import { checkoutCommits, explicitCandidates, manifestCandidates, parseCandidateArg, type Candidate, type ExplicitCommit } from './candidates.js'
 import { isEntrypoint, loadDotEnv } from './entrypoint.js'
 import { codeAddress } from './verify.js'
+import { engineRef } from './engine-ref.js'
 import { findWork, type Work } from './manifest-work.js'
 import type { BytecodeEntry, Manifest, NetworkInfo, ProxyDeclaration } from './types.js'
 
@@ -55,7 +56,7 @@ Options:
   --cache-dir <dir>         Build cache (default: <repo>/repos/build-cache).
   --render                  Also render the selected chains that miss nothing. Without --chain this
                             is a full render: every report and all of verify/README.md.
-  --engine-ref <label>      Footer label of rendered reports (default: master).
+  --engine-ref <label>      Footer label of rendered reports (default: this engine checkout's commit, marked -dirty with uncommitted changes).
 
 Exit code: 0 if every entry was added, regenerated or stamped and its chain rendered; 1 otherwise.`
 
@@ -141,7 +142,7 @@ async function main(): Promise<number> {
       'repos-dir': { type: 'string' },
       'cache-dir': { type: 'string' },
       render: { type: 'boolean', default: false },
-      'engine-ref': { type: 'string', default: 'master' },
+      'engine-ref': { type: 'string' },
       help: { type: 'boolean', default: false },
     },
   })
@@ -239,7 +240,7 @@ async function main(): Promise<number> {
         cache,
         cacheDir,
         notesPath: join(ROOT, 'manifests', 'attention-notes.json'),
-        engineRef: values['engine-ref'],
+        engineRef: values['engine-ref'] ?? engineRef(ROOT),
       })
     : { rendered: [], problems: [] }
   const unrendered = added.filter((m) => !render.rendered.includes(m.chainId))

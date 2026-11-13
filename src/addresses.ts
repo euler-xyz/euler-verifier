@@ -30,6 +30,16 @@ export function addressChainIds(addressesDir: string): number[] {
   return [...new Set(ids)].map(Number).sort((a, b) => a - b)
 }
 
+/** Keys with a non-zero address on `chainId` that are not in `inScope`; multisig Safes are not Euler code and are skipped. */
+export function uncoveredKeys(addressesDir: string, chainId: number, inScope: Set<string>): string[] {
+  const keys = Object.entries(chainAddressFiles(addressesDir, chainId))
+    .filter(([file]) => file !== 'MultisigAddresses.json')
+    .flatMap(([, values]) => Object.entries(values))
+    .filter(([key, value]) => typeof value === 'string' && /^0x[0-9a-fA-F]{40}$/.test(value) && value !== ZERO_ADDRESS && !inScope.has(key))
+    .map(([key]) => key)
+  return [...new Set(keys)].sort((a, b) => a.localeCompare(b))
+}
+
 /**
  * The address of `key` on `chainId` in the merged files. Consumers read each
  * group separately (tokenAddrs.EUL), so a key whose groups hold different

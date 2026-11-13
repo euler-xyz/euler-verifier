@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { resolveAddress } from './addresses.js'
+import { resolveAddress, uncoveredKeys } from './addresses.js'
 import { BuildCache, proveTask } from './prove.js'
 import { resolveRpcUrls } from './rpc.js'
 import { canonicalProblem, codeAddress } from './verify.js'
@@ -179,6 +179,9 @@ export async function renderChains(
       notes: read<Record<string, Record<string, Note>>>(run.notesPath),
       networks: run.networks,
       engineRef: run.engineRef,
+      uncovered: Object.fromEntries(
+        rendered.map((id) => [String(id), uncoveredKeys(run.paths.addresses, id, new Set(Object.keys(run.manifest[String(id)] ?? {})))]),
+      ),
     })
     writeChainReports(run.paths.verifyDir, reports, replaceIndex)
   } finally {
