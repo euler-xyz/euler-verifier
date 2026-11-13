@@ -2,23 +2,24 @@
  "all": {
   "eulerSwapV2ProtocolFeeConfig": {
    "flag": true,
-   "assessment": "The deployed V2 release (tag eulerswap-2.0) post-dates the September 2025 Cantina review baseline. Within that delta, protocol-fee handling was redesigned: the reviewed model (fee parameters fixed into each pool at install, 10\u201325% bounds, permissionless enablement after one year) was replaced by the EulerSwapProtocolFeeConfig singleton, which pools query live on every swap. The fee-config admin can set a default fee and per-pool overrides taking effect immediately, up to MAX_PROTOCOL_FEE = 15% of the LP fee amount (lower than the previously reviewed 25% maximum); zero is allowed. Pre-release hardening is included: the admin and fee recipients may not be known EVC sub-accounts, and configuration events are emitted. Curve and quote math are unchanged by this mechanism."
+   "assessment": "The deployed V2 release (tag eulerswap-2.0) post-dates the September 2025 Cantina review baseline. Within that delta, protocol-fee handling was redesigned: the reviewed model (fee parameters fixed into each pool at install, 10\u201325% bounds, permissionless enablement after one year) was replaced by the EulerSwapProtocolFeeConfig singleton, which pools query live on every swap. The fee-config admin can set a default fee and per-pool overrides taking effect immediately, up to MAX_PROTOCOL_FEE = 15% of the LP fee amount (lower than the previously reviewed 25% maximum); zero is allowed. Pre-release hardening is included: the fee-config admin may not be a known EVC sub-account, a non-zero default fee needs a non-zero default recipient, and configuration events are emitted. Per-pool overrides are checked only against the fee bound; an override with a zero recipient pays the default recipient. A pool's own LP fee recipient may not be a known EVC sub-account (checked when the pool is activated, in EulerSwapManagement). Curve and quote math are unchanged by this mechanism."
   },
   "eulerSwapV2Implementation": {
-   "assessment": "Beyond the fee mechanism, the post-baseline delta is an EIP-170 code-size refactor that moved management functions into EulerSwapManagement \u2014 a separate delegatecall implementation whose address is a public immutable of EulerSwap. Its deployed bytecode is verified in this report from the same euler-swap pin, with the getter value cross-checked against the implementation\u2019s embedded immutable words. The delta also includes ZeroShares handling for EulerEarn-style vaults and pre-release hardening (pool kept locked during activate), landed at the eulerswap-2.0 release merge."
+   "flag": true,
+   "assessment": "Beyond the fee mechanism, the post-baseline delta is an EIP-170 code-size refactor that moved management functions into EulerSwapManagement \u2014 a separate delegatecall implementation whose address is a public immutable of EulerSwap. Its deployed bytecode is verified in this report from the same euler-swap pin, with the getter value cross-checked against the implementation\u2019s embedded immutable words. The delta also includes ZeroShares handling for EulerEarn-style vaults, and pre-release hardening (pool kept locked during activate) that landed at the eulerswap-2.0 release merge."
   },
   "balanceTracker": {
-   "assessment": "The deployed pin adds one source change to the baseline: PR #26, which made enableReward/disableReward return bool, updateReward/claimReward return the claimed amount, and added the isRewardEnabled view. Interface and return values only, no accounting change. The pin also moves the EVC submodule to v1.0.0."
+   "assessment": "The deployed pin adds one source change to the baseline: PR #26, which made enableReward/disableReward return bool, updateReward/claimReward return the claimed amount, and added the isRewardEnabled view. Interface and return values only, no accounting change. PR #27 (this pin's merge) moves the EVC submodule gitlink to v1.0.0; a deployment built with an EVC submodule override compiles that override's EVCUtil instead."
   },
   "evc": {
    "pins": [
     "a7d3c29ef7e4964736e47675e0588630d6afbfd7",
     "912b301f51301e586e5a7f09e48cf52bd52e9a0e"
    ],
-   "assessment": "The multichain pin (and Polygon's set-size descendant) includes PRs #178/#179: isSignerValid excludes the EIP-7587 precompile range and the 0x42 predeploy address space from acting as message signers. Restrictive-only hardening (five lines) added ahead of the Nov-2024 multichain deployment."
+   "assessment": "This pin includes PRs #178/#179: isSignerValid excludes the EIP-7587 precompile range and the 0x42 predeploy address space from acting as message signers. Restrictive-only hardening (five lines) added ahead of the Nov-2024 multichain deployment."
   },
   "oracleRouterFactory": {
-   "assessment": "All four deployed pins share one factory-shell delta vs the baseline: the EVC address threaded through the factory constructor into each deployed EulerRouter (+10/\u22121). It mirrors the router-side EVC integration from the Cantina finding 443 fix, approved by the yAudit fixes review. The embedded EulerRouter source has been frozen since Aug 2024 and is byte-identical across all deployed gitlinks modulo import-path cosmetics."
+   "assessment": "Every deployed pin shares one factory-shell delta vs the baseline: the EVC address threaded through the factory constructor into each deployed EulerRouter (+10/\u22121). It mirrors the router-side EVC integration from the Cantina finding 443 fix, which the yAudit fixes review approved on the oracle side. The embedded EulerRouter source has been frozen since Aug 2024 and is byte-identical across all deployed gitlinks modulo import-path cosmetics."
   }
  }
 }
