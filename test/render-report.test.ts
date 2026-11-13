@@ -390,3 +390,34 @@ describe('chain report: attention, counts and edge cases', () => {
     expect(r).toContain(`Reproduce: \`git diff ${LIB_OLD.slice(0, 12)} ${LIB_BASE.slice(0, 12)} -- src/utils/EVCUtil.sol\``)
   })
 })
+
+describe('chain report: failures are not called mismatches', () => {
+  const base = inputs()
+  const withStatus = (statuses: Record<string, string>) =>
+    report({ outcomes: base.outcomes.map((o) => (statuses[o.key] ? { ...o, status: statuses[o.key]!, matched: undefined } : o)) })
+
+  it('calls only a compared, differing build a mismatch', () => {
+    const r = withStatus({ protocolConfig: 'MISMATCH', eVaultFactory: 'RPC_ERROR', balanceTracker: 'UNPROVEN' })
+    expect(r).toContain('**protocolConfig** — the deployed bytecode does NOT match its source commit (`MISMATCH`)')
+    expect(r).toContain('**eVaultFactory** — verification incomplete (`RPC_ERROR`)')
+    expect(r).toContain('**balanceTracker** — not proven (`UNPROVEN`)')
+    expect(r).toContain('Not matching: **1** · Not proven: **2**')
+    expect(rowOf(r, 'eVaultFactory')).toContain('⚠️ Verification incomplete')
+    expect(rowOf(r, 'protocolConfig')).toContain('❌ Does not match')
+  })
+
+  it('does not call an RPC failure a mismatch anywhere', () => {
+    const r = withStatus({ eVaultFactory: 'RPC_ERROR' })
+    expect(r).not.toContain('does NOT match')
+    expect(r).not.toContain('Not matching')
+  })
+})
+
+describe('chain report: module scope', () => {
+  it('describes the modules of the checked implementation only', () => {
+    const r = report()
+    expect(r).not.toContain('Every EVault')
+    expect(r).toContain('These are the modules of the EVault implementation checked above')
+    expect(r).toContain('A non-upgradeable vault keeps the implementation it was created with')
+  })
+})

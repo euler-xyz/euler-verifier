@@ -56,10 +56,23 @@ function sourceCell(r: RowOutcome, c: RowContext): string {
   return c.waived ? '—' : '?'
 }
 
+/**
+ * Why a contract is not proven. Only MISMATCH means a build was compared and
+ * differed; RPC_ERROR and ERROR stopped before any comparison; UNPROVEN means
+ * no build matched, which covers failed builds as well as differing bytes.
+ */
+export function failureKind(status: string): 'mismatch' | 'incomplete' | 'unproven' {
+  if (status === 'MISMATCH') return 'mismatch'
+  if (status === 'RPC_ERROR' || status === 'ERROR') return 'incomplete'
+  return 'unproven'
+}
+
 function verdictCell(r: RowOutcome, waived: boolean): string {
   if (r.status === 'PROVEN') return '✅ Matches'
   if (r.status === 'CANONICAL') return '🏛 canonical'
-  return waived ? '⚪ waived' : `❌ ${r.status}`
+  if (waived) return '⚪ waived'
+  const kind = failureKind(r.status)
+  return kind === 'mismatch' ? '❌ Does not match' : `⚠️ ${kind === 'incomplete' ? 'Verification incomplete' : 'Not proven'} (\`${r.status}\`)`
 }
 
 function deltaCells(r: RowOutcome, c: RowContext): [string, string] {
@@ -98,7 +111,7 @@ export function modulesSection(explorerUrl: string | undefined, implementation: 
     '',
     '## EVault modules',
     '',
-    `Every EVault delegates to these modules. Their addresses are read from the EVault implementation${impl} and confirmed in its code, and they are built from the implementation's commit ([its changes since audit](#${implSection})).`,
+    `These are the modules of the EVault implementation checked above${impl}: their addresses are read from it and confirmed in its code, and they are built from its commit ([its changes since audit](#${implSection})). A non-upgradeable vault keeps the implementation it was created with, which may be an earlier one with other modules; this report does not check those.`,
     '',
     '| Module | Address | Bytecode | Address confirmed in the implementation |',
     '|--------|---------|----------|------------------------------------------|',
@@ -116,7 +129,7 @@ export function managementSection(
     '',
     '## EulerSwap V2 management contract',
     '',
-    `EulerSwap pools run their management functions in a separate contract, whose address is stored in the EulerSwap implementation. It is built from the implementation's commit ([its changes since audit](#${implSection})).`,
+    `The EulerSwap V2 implementation checked above runs its management functions in a separate contract, whose address is stored in that implementation. It is built from the implementation's commit ([its changes since audit](#${implSection})). Pools created from another EulerSwap implementation are not checked here.`,
     '',
     '| Contract | Address | Bytecode | Address confirmed in the implementation |',
     '|----------|---------|----------|------------------------------------------|',

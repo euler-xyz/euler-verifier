@@ -21,7 +21,7 @@ export function legendLines(): string[] {
   return [
     '<details><summary>How to read this report</summary>',
     '',
-    '- **✅ Matches**: the deployed bytecode equals a rebuild of the commit in the Source column.',
+    '- **✅ Matches**: the deployed bytecode equals a rebuild of the commit in the Source column. **❌ Does not match**: a rebuild was compared and differs. **⚠️ Verification incomplete**: the deployed code could not be fetched or checked. **⚠️ Not proven**: no build of the source commit matched, because a build failed or the bytes differ.',
     '- **Since audit**: lines added and removed since the audited version, counting only the files compiled into that contract. **Same as audited**: no change in those files.',
     '- **Older than the audited version**: the deployed commit comes before the audited version. Its diff shows what the audited version adds.',
     "- **Shared library**: Euler library code compiled into several contracts (EVCUtil, SafeERC20Permit2Lib, EulerRouter), compared with the library's own audited version.",

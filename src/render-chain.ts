@@ -4,7 +4,7 @@ import type { ComponentBaseline, LibComponent, LibDiff, PairDiff } from './run-b
 import type { NetworkInfo } from './types.js'
 import type { ManifestEntry, Note, Outcome, RenderedChain, RenderInputs, SwapMgmtRec } from './render-report.js'
 import { footerLine, introLines, legendLines, noteLines } from './render-text.js'
-import { contractRow, managementSection, modulesSection, TABLE_HEADER } from './render-table.js'
+import { contractRow, failureKind, managementSection, modulesSection, TABLE_HEADER } from './render-table.js'
 import { changeSections, pinAnchor } from './render-components.js'
 import { compiles, groupLibs, sharedLibrariesSection, type LibUse } from './render-libs.js'
 import { collapseBlankLines, monthYear } from './render-md.js'
@@ -19,16 +19,19 @@ interface Counts {
   proven: number
   canonical: number
   waived: number
+  notMatching: number
   notProven: number
 }
 
 function countsOf(rows: Outcome[], waived: (key: string) => boolean): Counts {
   const isWaived = (r: Outcome) => r.status !== 'CANONICAL' && waived(r.key)
+  const failing = rows.filter((r) => r.status !== 'PROVEN' && r.status !== 'CANONICAL' && !isWaived(r))
   return {
     proven: rows.filter((r) => r.status === 'PROVEN').length,
     canonical: rows.filter((r) => r.status === 'CANONICAL').length,
     waived: rows.filter(isWaived).length,
-    notProven: rows.filter((r) => r.status !== 'PROVEN' && r.status !== 'CANONICAL' && !isWaived(r)).length,
+    notMatching: failing.filter((r) => failureKind(r.status) === 'mismatch').length,
+    notProven: failing.filter((r) => failureKind(r.status) !== 'mismatch').length,
   }
 }
 
@@ -44,7 +47,7 @@ function delegatedIssues(mod: RenderInputs['modules'][string] | undefined, sm: S
 function attentionLines(v: ChainView): string[] {
   const { chainId, rows, inputs, counts } = v
   const delegated = delegatedIssues(inputs.modules[String(chainId)], inputs.swapMgmt[String(chainId)])
-  if (!counts.notProven && !counts.waived && !delegated.length) {
+  if (!counts.notMatching && !counts.notProven && !counts.waived && !delegated.length) {
     if (!counts.canonical) return [`**The deployed bytecode of all ${counts.proven} contracts in scope matches their source commits.**`]
     return [`**The deployed bytecode of all ${counts.proven} contracts built from a source commit matches it.** ${counts.canonical} canonical contract${counts.canonical === 1 ? ' is' : 's are'} documented instead of rebuilt (see [Canonical contracts](#canonical-contracts)).`]
   }
@@ -54,7 +57,7 @@ function attentionLines(v: ChainView): string[] {
   }
   const lines = ['## ⚠️ Requires attention', '']
   for (const r of rows.filter((x) => x.status !== 'PROVEN' && x.status !== 'CANONICAL' && !v.entryOf(x.key)?.waiver)) {
-    lines.push(`- **${r.key}** — the deployed bytecode does NOT match its source commit (\`${r.status}\`). Until it matches or is waived, treat the deployed code as unverified.`, ...chainNote(r.key))
+    lines.push(`- **${r.key}** — ${FAILURE_TEXT[failureKind(r.status)](r.status)}`, ...chainNote(r.key))
   }
   for (const r of rows.filter((x) => x.status !== 'CANONICAL' && v.entryOf(x.key)?.waiver)) {
     const w = v.entryOf(r.key)!.waiver!
@@ -63,10 +66,16 @@ function attentionLines(v: ChainView): string[] {
   return [...lines, ...delegated.map((d) => `- ${d}`)]
 }
 
+const FAILURE_TEXT: Record<ReturnType<typeof failureKind>, (status: string) => string> = {
+  mismatch: (s) => `the deployed bytecode does NOT match its source commit (\`${s}\`). Until it matches or is waived, treat the deployed code as unverified.`,
+  incomplete: (s) => `verification incomplete (\`${s}\`): the deployed code could not be fetched or checked, so it was not compared with its source commit. Treat it as unverified until verification completes.`,
+  unproven: (s) => `not proven (\`${s}\`): no build of its source commit matched the deployed bytecode, because a build failed or the bytes differ. Treat it as unverified until it is proven or waived.`,
+}
+
 function headerLine(chainId: number, rows: Outcome[], c: Counts): string {
   return (
     `Chain ID: ${chainId} · Contracts in scope: ${rows.length} · Bytecode matches: **${c.proven}**` +
-    `${c.canonical ? ` · Canonical (documented, not rebuilt): ${c.canonical}` : ''}${c.waived ? ` · Waived: ${c.waived}` : ''}${c.notProven ? ` · Not matching: **${c.notProven}**` : ''}`
+    `${c.canonical ? ` · Canonical (documented, not rebuilt): ${c.canonical}` : ''}${c.waived ? ` · Waived: ${c.waived}` : ''}${c.notMatching ? ` · Not matching: **${c.notMatching}**` : ''}${c.notProven ? ` · Not proven: **${c.notProven}**` : ''}`
   )
 }
 
