@@ -74,8 +74,10 @@ and every chain when the verifier pin, workflow, baselines or audits change.
 
 If viem's default RPC for the chain is unusable, set
 `DEPLOYMENT_RPC_URL_<chainId>` for local runs. For CI, bump viem in this repo
-to a release whose default works, then move the euler-interfaces CI pin. The
-report title is the viem chain's name.
+to a release whose default works, then move the euler-interfaces CI pin; if no
+release has a working keyless endpoint, set the variable in the euler-interfaces
+workflow instead (see "Rotate or fix an RPC endpoint"). The report title is the
+viem chain's name.
 
 ## Add an audit
 
@@ -98,8 +100,15 @@ report title is the viem chain's name.
    `baseline.derivation`; drop `pinNotes` the new baseline makes untrue.
    Reports diff every pin against the component's baseline, so until this
    step they keep showing the audited code as a diff.
+   - A lib in `libComponents` (EVCUtil, SafeERC20Permit2Lib) moves the same
+     way, in every component that lists it: they share one baseline.
+   - An audit of a diff moves a baseline only if its base equals the current
+     baseline within `componentPaths`, or the code between them is otherwise
+     audited or cosmetic. Otherwise leave the baseline and say why in its
+     derivation.
 5. Re-render, adding `--chain <id>` for each chain that carries the
    component's keys: `pnpm add-entries --interfaces <euler-interfaces> --render`.
+   A moved lib baseline usually reaches every chain: render without `--chain`.
 
 ## Handle a waiver
 
@@ -121,6 +130,10 @@ an exemption — prefer reconstructing and tagging the real source.
   broken endpoint only degrades that chain. Locally, `DEPLOYMENT_RPC_URL_<chainId>`
   goes first. If viem's default stays broken, bump viem to a release that fixes
   it (curl-verify `eth_chainId` first), then move the euler-interfaces CI pin.
+- If no viem release has a working keyless endpoint for the chain, set
+  `DEPLOYMENT_RPC_URL_<chainId>` to one (curl-verified the same way) in the env
+  of the euler-interfaces workflow's bytecode-verify step, with a comment naming
+  the dead default. Remove it once a viem release fixes the default.
 
 ## Re-run everything from scratch (integrator instructions)
 

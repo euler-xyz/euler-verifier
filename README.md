@@ -186,7 +186,8 @@ The chains and their explorers come from euler-interfaces `EulerChains.json`.
 Each chain's name (the report title) and RPC endpoints come from the viem chain
 it resolves to. If viem's default endpoint for a chain is unusable, set
 `DEPLOYMENT_RPC_URL_<chainId>` for a local run, or bump viem once a release
-fixes it. The explorer cross-check follows each chain's `verifier`: Etherscan V2 for
+fixes it; until one does, euler-interfaces CI sets the same variable in its
+workflow. The explorer cross-check follows each chain's `verifier`: Etherscan V2 for
 `etherscan` (with `ETHERSCAN_API_KEY`), the Etherscan-compatible API at the url
 for `blockscout` and `custom`, and the Sourcify v2 API at the url (default
 sourcify.dev) for `sourcify`. It is informational and never decides a verdict.
