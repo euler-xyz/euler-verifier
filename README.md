@@ -126,7 +126,7 @@ written `evidence.origin` says where the proven pin came from:
 | `--render` | Also render the selected chains that miss nothing. Without `--chain`, a full render of every report and `verify/README.md`. |
 | `--repos-dir <dir>` | Source checkouts (default `repos/engine`). |
 | `--cache-dir <dir>` | Build cache (default `repos/build-cache`). |
-| `--engine-ref <label>` | Report footer label (default `master`). |
+| `--engine-ref <label>` | Report footer label (default: this checkout's commit, marked `-dirty` when it has uncommitted changes; render from a pushed, clean commit so the footer link resolves). |
 
 Only the reports of the chains it touched change, and only their rows in
 `verify/README.md`; they are the same bytes a full render produces. A chain
