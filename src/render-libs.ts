@@ -1,6 +1,5 @@
 import type { LibComponent, LibDiff } from './run-baselines.js'
-import { anchor, diffBlock, numstatTable, short } from './render-md.js'
-import { confidenceLine } from './render-text.js'
+import { anchor, commitLink, diffBlock, folded, numstatTable, short } from './render-md.js'
 
 export interface LibUse {
   key: string
@@ -34,7 +33,7 @@ export function libName(paths: string[]): string {
 const groupKey = (lib: LibDiff) => `${lib.repo}|${lib.gitlinkPath}|${lib.baseline}`
 
 /**
- * Group the libs compiled on one chain by library and baseline, then by
+ * Group the libs compiled on one chain by library and audited version, then by
  * content, so each distinct version is shown once with every contract that
  * compiles it.
  */
@@ -42,8 +41,7 @@ export function groupLibs(uses: LibUse[], specs: LibComponent[]): { groups: LibG
   const groups = new Map<string, LibGroup>()
   for (const use of uses) {
     const spec = specs.find((s) => s.repo === use.lib.repo && s.gitlinkPath === use.lib.gitlinkPath && s.baseline.commit === use.lib.baseline)
-    const name = libName(spec?.componentPaths ?? [use.lib.gitlinkPath])
-    const g = groups.get(groupKey(use.lib)) ?? { anchor: '', name, spec, lib: use.lib, versions: [] }
+    const g = groups.get(groupKey(use.lib)) ?? { anchor: '', name: libName(use.lib.componentPaths), spec, lib: use.lib, versions: [] }
     const v = g.versions.find((x) => x.lib.contentKey === use.lib.contentKey)
     if (v) v.uses.push(use)
     else g.versions.push({ anchor: '', lib: use.lib, uses: [use] })
@@ -60,70 +58,70 @@ export function groupLibs(uses: LibUse[], specs: LibComponent[]): { groups: LibG
   return { groups: list, anchorOf }
 }
 
+const counts = (lib: Pick<LibDiff, 'insertions' | 'deletions'>) => `+${lib.insertions}/−${lib.deletions}`
+
 function versionStatus(lib: LibDiff): string {
-  if (lib.files === 0) return 'identical to the baseline'
-  if (lib.relation === 'predates-baseline') return `predates the baseline (lacks +${lib.insertions}/−${lib.deletions})`
-  return `+${lib.insertions}/−${lib.deletions} vs the baseline`
+  if (lib.files === 0) return 'same as the audited version'
+  if (lib.relation === 'predates-baseline') return `older than the audited version (lacks ${counts(lib)})`
+  return `${counts(lib)} since the audited version`
 }
 
-export function embeddedLibrariesSection(groups: LibGroup[], auditLabel: (id: string) => string, readDiff: (file: string) => string): string[] {
+function versionDiff(lib: LibDiff, readDiff: (file: string) => string): string[] {
+  const summary = lib.relation === 'predates-baseline' ? `What the audited version adds (${counts(lib)})` : `Diff since the audited version (${counts(lib)})`
+  if (lib.diffFile && lib.diffEmbeddable) return diffBlock(readDiff(lib.diffFile), summary)
+  const [from, to] = lib.relation === 'predates-baseline' ? [lib.ref, lib.baseline] : [lib.baseline, lib.ref]
+  return folded(summary, [...numstatTable(lib.numstat), '', `Reproduce: \`git diff ${from.slice(0, 12)} ${to.slice(0, 12)} -- ${lib.componentPaths.join(' ')}\` in ${lib.repo}.`])
+}
+
+export function sharedLibrariesSection(groups: LibGroup[], auditLabel: (id: string) => string, readDiff: (file: string) => string): string[] {
   if (!groups.length) return []
   const lines = [
     '',
-    '## Embedded libraries',
+    '## Shared libraries',
     '',
-    "Euler library code compiled into the contracts above from git submodules, compared with each library's own audited baseline. Each distinct compiled version appears once. When a version predates the baseline its diff reads version→baseline, so `+` lines are code that version lacks.",
+    "Euler library code compiled into the contracts above, compared with the library's own audited version. Each distinct version appears once, with the contracts it is compiled into.",
   ]
   for (const g of groups) {
-    const paths = (g.spec?.componentPaths ?? []).map((p) => `\`${p}\``).join(', ')
-    lines.push('', `### <a id="${g.anchor}"></a>${g.name} — ${paths} in ${g.lib.repo}, baseline \`${short(g.lib.baseline)}\` (${auditLabel(g.lib.lastAudit.id)})`)
-    if (g.spec?.baseline.derivation) lines.push('', `_${g.spec.baseline.derivation}_`)
-    const conf = confidenceLine(g.spec?.baseline.confidence)
-    if (conf) lines.push('', conf)
+    lines.push('', `### <a id="${g.anchor}"></a>${g.name}`, '')
+    lines.push(`Audited version: ${commitLink(g.lib.repo, g.lib.baseline)} — ${auditLabel(g.lib.lastAudit.id)}. Source: ${g.lib.componentPaths.map((p) => `\`${p}\``).join(', ')} in ${g.lib.repo}.`)
+    if (g.spec?.note) lines.push('', g.spec.note)
+    if (g.spec?.baseline.derivation) lines.push('', ...folded('How the audited version was chosen', [g.spec.baseline.derivation]))
     g.versions.forEach((v, i) => {
-      const users = v.uses.map((u) => `${u.key} (\`${short(u.lib.ref)}\`${u.lib.refSource === 'override' ? ', override' : ''})`).join(', ')
-      lines.push('', `#### <a id="${v.anchor}"></a>Version ${i + 1} — ${versionStatus(v.lib)}`, '', `Compiled by: ${users}`)
-      if (v.lib.files === 0) return
-      if (v.lib.diffFile && v.lib.diffEmbeddable) lines.push('', ...diffBlock(readDiff(v.lib.diffFile), `Diff, +${v.lib.insertions}/−${v.lib.deletions}`))
-      else {
-        const [from, to] = v.lib.relation === 'predates-baseline' ? [v.lib.ref, v.lib.baseline] : [v.lib.baseline, v.lib.ref]
-        lines.push('', ...numstatTable(v.lib.numstat), '', `Reproduce: \`git diff ${from.slice(0, 12)} ${to.slice(0, 12)} -- ${v.lib.componentPaths.join(' ')}\` in ${v.lib.repo}.`)
-      }
+      const users = v.uses.map((u) => `${u.key} (\`${short(u.lib.ref)}\`${u.lib.refSource === 'override' ? ', dependency at another commit' : ''})`).join(', ')
+      lines.push('', `#### <a id="${v.anchor}"></a>${g.name} version ${i + 1}: ${versionStatus(v.lib)}`, '', `Compiled into: ${users}.`)
+      if (v.lib.files > 0) lines.push('', ...versionDiff(v.lib, readDiff))
     })
   }
   return lines
 }
 
-function vsComponentClause(lib: LibDiff, name: string): string {
+function vsOwnAudit(lib: LibDiff, href: string): string {
+  if (lib.files === 0) return 'the audited version'
+  if (lib.relation === 'predates-baseline') return `older than its audited version${href ? ` ([what it lacks](#${href}))` : ''}`
+  return `${counts(lib)} since its audited version${href ? ` ([diff](#${href}))` : ''}`
+}
+
+function vsAuditedCode(lib: LibDiff): string {
   const v = lib.vsComponentBaseline
   if (!v) return ''
-  if (v.files === 0) return `same ${name} as the component's audited baseline compiled (\`${short(v.ref)}\`); `
-  return `+${v.insertions}/−${v.deletions} vs the ${name} the component's audited baseline compiled (\`${short(v.ref)}\`); `
+  return v.files === 0 ? '; the same version the audited code compiled' : `; ${counts(v)} against the version the audited code compiled`
 }
 
-function vsOwnClause(lib: LibDiff, name: string, href: string): string {
-  if (lib.files === 0) return `identical to ${name}'s own audited baseline \`${short(lib.baseline)}\``
-  const link = href ? ` → [version](#${href})` : ''
-  if (lib.relation === 'predates-baseline') return `predates ${name}'s own audited baseline \`${short(lib.baseline)}\` by +${lib.insertions}/−${lib.deletions}, code this build lacks${link}`
-  return `+${lib.insertions}/−${lib.deletions} vs ${name}'s own audited baseline \`${short(lib.baseline)}\`${link}`
-}
-
-export function libSummaryLines(libs: LibDiff[], specs: LibComponent[], anchorOf: (lib: LibDiff) => string): string[] {
+export function libSummaryLines(libs: LibDiff[], anchorOf: (lib: LibDiff) => string): string[] {
   if (!libs.length) return []
   const lines = libs.map((lib) => {
-    const name = libName(specs.find((s) => s.repo === lib.repo && s.gitlinkPath === lib.gitlinkPath)?.componentPaths ?? [lib.gitlinkPath])
-    const from = lib.refSource === 'override' ? 'submodule override' : 'submodule'
-    return `- **${name}** (\`${lib.repo.split('/')[1]}\` @ \`${short(lib.ref)}\`, ${from}): ${vsComponentClause(lib, name)}${vsOwnClause(lib, name, anchorOf(lib))}.`
+    const at = `at \`${short(lib.ref)}\`${lib.refSource === 'override' ? ' (dependency at another commit)' : ''}`
+    return `- **${libName(lib.componentPaths)}** ${at}: ${vsOwnAudit(lib, anchorOf(lib))}${vsAuditedCode(lib)}.`
   })
-  return ['', 'Embedded libraries:', '', ...lines]
+  return ['', 'Shared libraries compiled in:', '', ...lines]
 }
 
-export function libMarker(libs: LibDiff[], specs: LibComponent[], anchorOf: (lib: LibDiff) => string): string {
+export function libMarker(libs: LibDiff[], anchorOf: (lib: LibDiff) => string): string {
   const differing = libs.filter((l) => l.files > 0)
   if (!differing.length) return ''
   const parts = differing.map((lib) => {
-    const name = libName(specs.find((s) => s.repo === lib.repo && s.gitlinkPath === lib.gitlinkPath)?.componentPaths ?? [lib.gitlinkPath])
-    const status = lib.relation === 'predates-baseline' ? `predates its audit (lacks +${lib.insertions}/−${lib.deletions})` : `+${lib.insertions}/−${lib.deletions} vs its audit`
+    const name = libName(lib.componentPaths)
+    const status = lib.relation === 'predates-baseline' ? 'older than its audited version' : `${counts(lib)} since its audit`
     return `[${name} ${status}](#${anchorOf(lib)})`
   })
   return ` · ${parts.join(', ')}`

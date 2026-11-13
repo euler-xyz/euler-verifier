@@ -1,6 +1,6 @@
-import type { ComponentBaseline, LibComponent, LibDiff, PairDiff } from './run-baselines.js'
+import type { LibDiff, PairDiff } from './run-baselines.js'
 import { unitScopedDelta } from './unit-scope.js'
-import { addressLink, anchor, cell, commitLink, short } from './render-md.js'
+import { addressLink, cell, commitLink, short } from './render-md.js'
 import { compiles, libMarker } from './render-libs.js'
 
 export interface ProxyInfo {
@@ -19,61 +19,80 @@ export interface RowOutcome {
 
 export interface RowContext {
   explorerUrl: string | undefined
-  component: ComponentBaseline | undefined
-  /** Whether this report has a section for the row's component to link to. */
-  sectionExists: boolean
+  /** The anchor of the section that shows this row's changes, when the report has one. */
+  sectionAnchor: string | undefined
   pair: PairDiff | undefined
   proxy: ProxyInfo | undefined
   waived: boolean
   canonicalRepo: string | undefined
-  libSpecs: LibComponent[]
   libAnchorOf: (lib: LibDiff) => string
+}
+
+/** The "What changed" text for one contract of a pin. */
+export function changeLabel(pair: PairDiff, key: string, sources: string[] | undefined): string {
+  const unit = unitScopedDelta(pair, sources)
+  if (pair.files === 0 || unit?.files === 0) return '—'
+  const narrower = unit && (unit.files !== pair.files || unit.insertions !== pair.insertions || unit.deletions !== pair.deletions)
+  return cell(pair.pinNote?.labels?.[key] ?? (narrower ? undefined : pair.pinNote?.label) ?? 'see diff')
+}
+
+/** The "Since audit" text for one contract of a pin, without library markers. */
+export function sinceAudit(pair: PairDiff, sources: string[] | undefined): string {
+  if (pair.predatesBaseline) return 'older than the audited version'
+  const unit = unitScopedDelta(pair, sources)
+  if (pair.files === 0 || unit?.files === 0) return 'same as audited'
+  const { insertions, deletions } = unit ?? pair
+  return `+${insertions}/−${deletions}`
 }
 
 function sourceCell(r: RowOutcome, c: RowContext): string {
   if (r.matched) {
     const overrides = c.pair?.overrides.length ?? 0
-    const extra = overrides ? ` + ${overrides} submodule override${overrides === 1 ? '' : 's'}` : ''
-    const impl = c.proxy ? ` · impl ${addressLink(c.explorerUrl, r.address)}` : ''
-    return `${commitLink(r.matched.repo, r.matched.commit, `${r.matched.repo.split('/')[1]}@${short(r.matched.commit)}`)}${extra}${impl}`
+    const deps = overrides ? ` · ${overrides} ${overrides === 1 ? 'dependency' : 'dependencies'} at other commits` : ''
+    const impl = c.proxy ? ` · implementation ${addressLink(c.explorerUrl, r.address)}` : ''
+    return `${commitLink(r.matched.repo, r.matched.commit, `${r.matched.repo.split('/')[1]} @ ${short(r.matched.commit)}`)}${deps}${impl}`
   }
   if (r.status === 'CANONICAL') return `[\`${c.canonicalRepo?.split('/')[1] ?? '—'}\`](https://github.com/${c.canonicalRepo})`
   return c.waived ? '—' : '?'
 }
 
+/**
+ * Why a contract is not proven. Only MISMATCH means a build was compared and
+ * differed; RPC_ERROR and ERROR stopped before any comparison; UNPROVEN means
+ * no build matched, which covers failed builds as well as differing bytes.
+ */
+export function failureKind(status: string): 'mismatch' | 'incomplete' | 'unproven' {
+  if (status === 'MISMATCH') return 'mismatch'
+  if (status === 'RPC_ERROR' || status === 'ERROR') return 'incomplete'
+  return 'unproven'
+}
+
 function verdictCell(r: RowOutcome, waived: boolean): string {
-  if (r.status === 'PROVEN') return `✅ \`${short(r.strippedSha256)}\``
+  if (r.status === 'PROVEN') return '✅ Matches'
   if (r.status === 'CANONICAL') return '🏛 canonical'
-  return waived ? '⚪ waived' : `❌ ${r.status}`
+  if (waived) return '⚪ waived'
+  const kind = failureKind(r.status)
+  return kind === 'mismatch' ? '❌ Does not match' : `⚠️ ${kind === 'incomplete' ? 'Verification incomplete' : 'Not proven'} (\`${r.status}\`)`
 }
 
 function deltaCells(r: RowOutcome, c: RowContext): [string, string] {
   if (r.status === 'CANONICAL') return ['long-established (see Canonical contracts)', 'canonical 2021 token']
   const pair = c.pair
   if (r.status !== 'PROVEN' || !pair) return ['—', '—']
-  const unit = unitScopedDelta(pair, r.matched?.sources)
-  const libs = libMarker(pair.libComponents.filter((l) => compiles(r.matched?.sources, l)), c.libSpecs, c.libAnchorOf)
-  if (pair.files === 0) return [`≡ baseline${libs}`, '—']
-  if (unit?.files === 0) return [`≡ baseline (this contract)${libs}`, '—']
-  const delta = pair.predatesBaseline
-    ? `predates (+${pair.insertions}/−${pair.deletions} audited later)`
-    : `+${(unit ?? pair).insertions}/−${(unit ?? pair).deletions} vs baseline`
-  const narrower = unit && (unit.files !== pair.files || unit.insertions !== pair.insertions || unit.deletions !== pair.deletions)
-  const label = pair.pinNote?.labels?.[r.key] ?? (narrower ? undefined : pair.pinNote?.label) ?? 'see diff below'
-  return [`${delta}${libs}`, cell(label)]
+  const libs = libMarker(pair.libComponents.filter((l) => compiles(r.matched?.sources, l)), c.libAnchorOf)
+  return [`${sinceAudit(pair, r.matched?.sources)}${libs}`, changeLabel(pair, r.key, r.matched?.sources)]
 }
 
 export function contractRow(r: RowOutcome, c: RowContext): string {
-  const contract =
-    r.status === 'CANONICAL' ? `[${r.key}](#canonical-contracts)` : c.component && c.sectionExists ? `[${r.key}](#${anchor('component', c.component.component)})` : r.key
+  const contract = r.status === 'CANONICAL' ? `[${r.key}](#canonical-contracts)` : c.sectionAnchor ? `[${r.key}](#${c.sectionAnchor})` : r.key
   const address = c.proxy ? `${addressLink(c.explorerUrl, c.proxy.address)} (proxy)` : addressLink(c.explorerUrl, r.address)
-  const [baseline, changed] = deltaCells(r, c)
-  return `| ${contract} | ${address} | ${sourceCell(r, c)} | ${verdictCell(r, c.waived)} | ${baseline} | ${changed} |`
+  const [since, changed] = deltaCells(r, c)
+  return `| ${contract} | ${address} | ${sourceCell(r, c)} | ${verdictCell(r, c.waived)} | ${since} | ${changed} |`
 }
 
 export const TABLE_HEADER = [
-  '| Contract | Address | Source | Bytecode proof | vs audited baseline | What changed |',
-  '|----------|---------|--------|----------------|---------------------|--------------|',
+  '| Contract | Address | Source | Bytecode | Since audit | What changed |',
+  '|----------|---------|--------|----------|-------------|--------------|',
 ]
 
 interface ModuleRec {
@@ -83,35 +102,37 @@ interface ModuleRec {
   crossCheckedInImplementation: boolean
 }
 
-export function modulesSection(explorerUrl: string | undefined, implementation: string | undefined, implPinAnchor: string, mods: ModuleRec[]): string[] {
+const matchCell = (verdict: string | undefined) => (verdict === 'MATCH' ? '✅ Matches' : `❌ ${verdict}`)
+
+export function modulesSection(explorerUrl: string | undefined, implementation: string | undefined, implSection: string, mods: ModuleRec[]): string[] {
   if (!mods.length) return []
-  const from = implementation ? ` (${addressLink(explorerUrl, implementation)})` : ''
+  const impl = implementation ? ` (${addressLink(explorerUrl, implementation)})` : ''
   return [
     '',
     '## EVault modules',
     '',
-    `Unpacked from the eVaultImplementation${from} and proven from its pin; see [its section](#${implPinAnchor}).`,
+    `These are the modules of the EVault implementation checked above${impl}: their addresses are read from it and confirmed in its code, and they are built from its commit ([its changes since audit](#${implSection})). A non-upgradeable vault keeps the implementation it was created with, which may be an earlier one with other modules; this report does not check those.`,
     '',
-    '| Module | Address | Bytecode | Address embedded in the implementation |',
-    '|--------|---------|----------|-----------------------------------------|',
-    ...mods.map((m) => `| ${m.module} | ${addressLink(explorerUrl, m.address)} | ${m.verdict === 'MATCH' ? '✅' : `❌ ${m.verdict}`} | ${m.crossCheckedInImplementation ? '✅' : '❌'} |`),
+    '| Module | Address | Bytecode | Address confirmed in the implementation |',
+    '|--------|---------|----------|------------------------------------------|',
+    ...mods.map((m) => `| ${m.module} | ${addressLink(explorerUrl, m.address)} | ${matchCell(m.verdict)} | ${m.crossCheckedInImplementation ? '✅' : '❌'} |`),
   ]
 }
 
 export function managementSection(
   explorerUrl: string | undefined,
   sm: { managementAddress?: string; verdict?: string; crossCheckedInImplementation?: boolean },
-  implPinAnchor: string,
+  implSection: string,
 ): string[] {
   if (!sm.managementAddress) return []
   return [
     '',
-    '## EulerSwap V2 management implementation',
+    '## EulerSwap V2 management contract',
     '',
-    `EulerSwap delegatecalls management functions into a separate contract whose address is the public immutable \`managementImpl\`. It is proven from the eulerSwapV2Implementation pin; its source changes since the audited baseline are in [that section](#${implPinAnchor}).`,
+    `The EulerSwap V2 implementation checked above runs its management functions in a separate contract, whose address is stored in that implementation. It is built from the implementation's commit ([its changes since audit](#${implSection})). Pools created from another EulerSwap implementation are not checked here.`,
     '',
-    '| Contract | Address | Bytecode | Address embedded in the implementation |',
-    '|----------|---------|----------|-----------------------------------------|',
-    `| EulerSwapManagement | ${addressLink(explorerUrl, sm.managementAddress)} | ${sm.verdict === 'MATCH' ? '✅' : `❌ ${sm.verdict}`} | ${sm.crossCheckedInImplementation ? '✅' : '❌'} |`,
+    '| Contract | Address | Bytecode | Address confirmed in the implementation |',
+    '|----------|---------|----------|------------------------------------------|',
+    `| EulerSwapManagement | ${addressLink(explorerUrl, sm.managementAddress)} | ${matchCell(sm.verdict)} | ${sm.crossCheckedInImplementation ? '✅' : '❌'} |`,
   ]
 }

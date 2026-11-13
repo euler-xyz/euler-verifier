@@ -4,10 +4,10 @@ import type { ComponentBaseline, LibComponent, LibDiff, PairDiff } from './run-b
 import type { NetworkInfo } from './types.js'
 import type { ManifestEntry, Note, Outcome, RenderedChain, RenderInputs, SwapMgmtRec } from './render-report.js'
 import { footerLine, introLines, legendLines, noteLines } from './render-text.js'
-import { contractRow, managementSection, modulesSection, TABLE_HEADER } from './render-table.js'
-import { componentSections, pinAnchor } from './render-components.js'
-import { compiles, embeddedLibrariesSection, groupLibs, type LibUse } from './render-libs.js'
-import { collapseBlankLines } from './render-md.js'
+import { contractRow, failureKind, managementSection, modulesSection, TABLE_HEADER } from './render-table.js'
+import { changeSections, pinAnchor } from './render-components.js'
+import { compiles, groupLibs, sharedLibrariesSection, type LibUse } from './render-libs.js'
+import { collapseBlankLines, monthYear } from './render-md.js'
 
 const GROUPS = ['Core lending protocol', 'Euler Earn', 'EulerSwap'] as const
 const groupOf = (key: string) => (key.startsWith('eulerEarn') ? GROUPS[1] : key.startsWith('eulerSwap') ? GROUPS[2] : GROUPS[0])
@@ -19,16 +19,19 @@ interface Counts {
   proven: number
   canonical: number
   waived: number
+  notMatching: number
   notProven: number
 }
 
 function countsOf(rows: Outcome[], waived: (key: string) => boolean): Counts {
   const isWaived = (r: Outcome) => r.status !== 'CANONICAL' && waived(r.key)
+  const failing = rows.filter((r) => r.status !== 'PROVEN' && r.status !== 'CANONICAL' && !isWaived(r))
   return {
     proven: rows.filter((r) => r.status === 'PROVEN').length,
     canonical: rows.filter((r) => r.status === 'CANONICAL').length,
     waived: rows.filter(isWaived).length,
-    notProven: rows.filter((r) => r.status !== 'PROVEN' && r.status !== 'CANONICAL' && !isWaived(r)).length,
+    notMatching: failing.filter((r) => failureKind(r.status) === 'mismatch').length,
+    notProven: failing.filter((r) => failureKind(r.status) !== 'mismatch').length,
   }
 }
 
@@ -44,9 +47,9 @@ function delegatedIssues(mod: RenderInputs['modules'][string] | undefined, sm: S
 function attentionLines(v: ChainView): string[] {
   const { chainId, rows, inputs, counts } = v
   const delegated = delegatedIssues(inputs.modules[String(chainId)], inputs.swapMgmt[String(chainId)])
-  if (!counts.notProven && !counts.waived && !delegated.length) {
-    if (!counts.canonical) return [`**All ${counts.proven} contracts in scope are bytecode-proven against their pinned commits.**`]
-    return [`**All ${counts.proven} contracts in scope that are built from a pinned commit are bytecode-proven.** ${counts.canonical} canonical contract${counts.canonical === 1 ? ' is' : 's are'} documented, not re-proven (see [Canonical contracts](#canonical-contracts)).`]
+  if (!counts.notMatching && !counts.notProven && !counts.waived && !delegated.length) {
+    if (!counts.canonical) return [`**The deployed bytecode of all ${counts.proven} contracts in scope matches their source commits.**`]
+    return [`**The deployed bytecode of all ${counts.proven} contracts built from a source commit matches it.** ${counts.canonical} canonical contract${counts.canonical === 1 ? ' is' : 's are'} documented instead of rebuilt (see [Canonical contracts](#canonical-contracts)).`]
   }
   const chainNote = (key: string) => {
     const n = inputs.notes[String(chainId)]?.[key]
@@ -54,7 +57,7 @@ function attentionLines(v: ChainView): string[] {
   }
   const lines = ['## ⚠️ Requires attention', '']
   for (const r of rows.filter((x) => x.status !== 'PROVEN' && x.status !== 'CANONICAL' && !v.entryOf(x.key)?.waiver)) {
-    lines.push(`- **${r.key}** — bytecode NOT proven (\`${r.status}\`). Until proven or waived, treat the deployed code as unverified.`, ...chainNote(r.key))
+    lines.push(`- **${r.key}** — ${FAILURE_TEXT[failureKind(r.status)](r.status)}`, ...chainNote(r.key))
   }
   for (const r of rows.filter((x) => x.status !== 'CANONICAL' && v.entryOf(x.key)?.waiver)) {
     const w = v.entryOf(r.key)!.waiver!
@@ -63,10 +66,16 @@ function attentionLines(v: ChainView): string[] {
   return [...lines, ...delegated.map((d) => `- ${d}`)]
 }
 
+const FAILURE_TEXT: Record<ReturnType<typeof failureKind>, (status: string) => string> = {
+  mismatch: (s) => `the deployed bytecode does NOT match its source commit (\`${s}\`). Until it matches or is waived, treat the deployed code as unverified.`,
+  incomplete: (s) => `verification incomplete (\`${s}\`): the deployed code could not be fetched or checked, so it was not compared with its source commit. Treat it as unverified until verification completes.`,
+  unproven: (s) => `not proven (\`${s}\`): no build of its source commit matched the deployed bytecode, because a build failed or the bytes differ. Treat it as unverified until it is proven or waived.`,
+}
+
 function headerLine(chainId: number, rows: Outcome[], c: Counts): string {
   return (
-    `Chain ID: ${chainId} · Contracts in scope: ${rows.length} · Bytecode-proven: **${c.proven}**` +
-    `${c.canonical ? ` · Canonical (documented, not re-proven): ${c.canonical}` : ''}${c.waived ? ` · Waived: ${c.waived}` : ''}${c.notProven ? ` · Not proven: **${c.notProven}**` : ''}`
+    `Chain ID: ${chainId} · Contracts in scope: ${rows.length} · Bytecode matches: **${c.proven}**` +
+    `${c.canonical ? ` · Canonical (documented, not rebuilt): ${c.canonical}` : ''}${c.waived ? ` · Waived: ${c.waived}` : ''}${c.notMatching ? ` · Not matching: **${c.notMatching}**` : ''}${c.notProven ? ` · Not proven: **${c.notProven}**` : ''}`
   )
 }
 
@@ -115,7 +124,8 @@ function chainView(chainId: number, rows: Outcome[], inputs: RenderInputs): Chai
     entryOf,
     auditLabel: (id) => {
       const a = auditById.get(id)
-      return a ? `[${a.firm} (\`${id}\`)](${a.report})` : `\`${id}\``
+      const when = monthYear(a?.date)
+      return a ? `[${a.firm}${when ? `, ${when}` : ''}](${a.report} "${id}")` : `\`${id}\``
     },
     noteFor: (key, commit) => {
       const n = notes[String(chainId)]?.[key] ?? notes['all']?.[key]
@@ -141,22 +151,20 @@ function groupTableLines(v: ChainView, group: (typeof GROUPS)[number]): string[]
   for (const r of groupRows.filter((x) => x.status === 'PROVEN' && v.isFlagged(v.noteFor(x.key, v.entryOf(x.key)?.commit)))) {
     const n = v.noteFor(r.key, v.entryOf(r.key)?.commit)!
     const pair = v.pairFor(r.key)
-    lines.push(`- **${r.key}** — post-audit functionality change ([diff below](#${pair ? pinAnchor(pair) : ''})):`, ...noteLines(n.assessment, n.severity), '')
+    lines.push(`- **${r.key}** — changed after its audit ([see the changes](#${pair ? pinAnchor(pair) : ''})):`, ...noteLines(n.assessment, n.severity), '')
   }
   lines.push(...TABLE_HEADER)
   for (const r of groupRows) {
     const e = v.entryOf(r.key)
-    const component = v.componentOf(r.key)
+    const pair = r.status === 'PROVEN' ? v.pairFor(r.key) : undefined
     lines.push(
       contractRow(r, {
         explorerUrl: v.net?.explorerUrl,
-        component,
-        sectionExists: !!component && v.order.includes(component.component),
-        pair: r.status === 'PROVEN' ? v.pairFor(r.key) : undefined,
+        sectionAnchor: pair ? pinAnchor(pair) : undefined,
+        pair,
         proxy: e?.proxy,
         waived: !!e?.waiver,
         canonicalRepo: e?.repo,
-        libSpecs: v.libSpecs,
         libAnchorOf: v.libs.anchorOf,
       }),
     )
@@ -171,8 +179,9 @@ function deltaSectionLines(v: ChainView): string[] {
   return [
     ...modulesSection(v.net?.explorerUrl, mod?.implementation, implPair ? pinAnchor(implPair) : '', mod?.modules ?? []),
     ...managementSection(v.net?.explorerUrl, v.inputs.swapMgmt[String(v.chainId)] ?? {}, swapPair ? pinAnchor(swapPair) : ''),
-    ...componentSections(v.order, v.chainPairs, v.inputs.components, {
+    ...changeSections(v.order, v.chainPairs, v.inputs.components, {
       keysOf: (p) => p.keys.filter((k) => v.pairFor(k) === p),
+      sourcesOf: (key) => v.rows.find((r) => r.key === key)?.matched?.sources,
       auditLabel: v.auditLabel,
       notesFor: (key, pin) => {
         const n = v.noteFor(key, pin)
@@ -182,7 +191,7 @@ function deltaSectionLines(v: ChainView): string[] {
       libAnchorOf: v.libs.anchorOf,
       libsOf: v.libsOf,
     }),
-    ...embeddedLibrariesSection(v.libs.groups, v.auditLabel, v.readDiff),
+    ...sharedLibrariesSection(v.libs.groups, v.auditLabel, v.readDiff),
   ]
 }
 

@@ -1,6 +1,3 @@
-/** Diffs longer than this many lines render folded inside <details>. */
-export const FOLD_LINES = 30
-
 export function short(sha?: string | null): string {
   return sha ? sha.slice(0, 8) : '—'
 }
@@ -10,11 +7,20 @@ export function withoutTrailingNewlines(text: string): string {
   return text.replace(/\n+$/, '')
 }
 
+export function folded(summary: string, body: string[]): string[] {
+  return [`<details><summary>${summary}</summary>`, '', ...body, '', '</details>']
+}
+
 export function diffBlock(diff: string, summary: string): string[] {
-  const body = withoutTrailingNewlines(diff)
-  const lines = body.split('\n').length
-  const fence = ['```diff', body, '```']
-  return lines <= FOLD_LINES ? fence : [`<details><summary>${summary} (${lines} lines)</summary>`, '', ...fence, '', '</details>']
+  return folded(summary, ['```diff', withoutTrailingNewlines(diff), '```'])
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** `2024-07-31` → `Jul 2024`. */
+export function monthYear(date: string | null | undefined): string {
+  const m = /^(\d{4})-(\d{2})/.exec(date ?? '')
+  return m ? `${MONTHS[Number(m[2]) - 1]} ${m[1]}` : ''
 }
 
 export function collapseBlankLines(lines: string[]): string[] {
