@@ -13,6 +13,20 @@ export interface ContractSpec {
   recursiveSubmodules?: boolean
   /** Builds the deploy script makes for this contract instead of the repo's profile; offered commits try them first. */
   deployProfiles?: CompileProfile[]
+  /**
+   * Submodules the deploy build may resolve to the deploying checkout's copy at the same path. A submodule commit
+   * offered by `--candidates-from` tries each deploy profile as is, then with the checkout's pins for them, so an
+   * entry records an override only when its bytecode needs it.
+   */
+  deployerSubmodules?: string[]
+}
+
+// interactiveDeployment.sh builds lib/euler-earn/src inside evk-periphery at 100 runs: at euler-earn's 200 the factory
+// exceeds the code size limit. euler-earn's openzeppelin-contracts imports may resolve to evk-periphery's copy through
+// its unscoped remapping (forge 1.8.6 does) or to euler-earn's own.
+const EULER_EARN_DEPLOY_BUILD: Pick<ContractSpec, 'deployProfiles' | 'deployerSubmodules'> = {
+  deployProfiles: [{ context: 'evk-periphery', solc: '0.8.26', optimizer_runs: 100, evm_version: 'cancun' }],
+  deployerSubmodules: ['lib/openzeppelin-contracts'],
 }
 
 export const CONTRACT_SPECS: Record<string, ContractSpec> = {
@@ -23,8 +37,8 @@ export const CONTRACT_SPECS: Record<string, ContractSpec> = {
   sequenceRegistry: { contractNames: ['SequenceRegistry'], defaultRepo: 'euler-xyz/euler-vault-kit' },
   balanceTracker: { contractNames: ['TrackingRewardStreams'], defaultRepo: 'euler-xyz/reward-streams' },
 
-  eulerEarnFactory: { contractNames: ['EulerEarnFactory'], defaultRepo: 'euler-xyz/euler-earn' },
-  eulerEarnPublicAllocator: { contractNames: ['PublicAllocator'], defaultRepo: 'euler-xyz/euler-earn' },
+  eulerEarnFactory: { contractNames: ['EulerEarnFactory'], defaultRepo: 'euler-xyz/euler-earn', ...EULER_EARN_DEPLOY_BUILD },
+  eulerEarnPublicAllocator: { contractNames: ['PublicAllocator'], defaultRepo: 'euler-xyz/euler-earn', ...EULER_EARN_DEPLOY_BUILD },
 
   eulerSwapV1Factory: { contractNames: ['EulerSwapFactory'], defaultRepo: 'euler-xyz/euler-swap', recursiveSubmodules: true },
   eulerSwapV1Implementation: { contractNames: ['EulerSwap'], defaultRepo: 'euler-xyz/euler-swap', recursiveSubmodules: true },

@@ -6,7 +6,7 @@ import { join, dirname, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { fileURLToPath } from 'node:url'
 import { formatManifest } from '../src/manifest-file.js'
-import { explicitCandidates, githubSlug, manifestCandidates, parseCandidateArg } from '../src/candidates.js'
+import { deployerPins, explicitCandidates, githubSlug, manifestCandidates, parseCandidateArg } from '../src/candidates.js'
 import { indexRowsOf, renderIndex, writeChainReports } from '../src/render-report.js'
 import type { BytecodeEntry, CompileProfile, Manifest } from '../src/types.js'
 
@@ -89,6 +89,55 @@ describe('candidates from the manifest', () => {
     expect(c.map((x) => x.prove.profile)).toEqual([{ ...CANCUN, optimizer_runs: 10000 }, 'native'])
     expect(c[0]!.profile).toEqual({ ...CANCUN, optimizer_runs: 10000 })
     expect(c.every((x) => x.prove.contractName === contractName)).toBe(true)
+  })
+
+  const EARN_DEPLOY: CompileProfile = { context: 'evk-periphery', solc: '0.8.26', optimizer_runs: 100, evm_version: 'cancun' }
+  const OZ = 'lib/openzeppelin-contracts'
+
+  it.each([
+    ['eulerEarnFactory', 'EulerEarnFactory'],
+    ['eulerEarnPublicAllocator', 'PublicAllocator'],
+  ])('tries the deploy build of %s as is, then with the deploying checkout openzeppelin pin', (key, contractName) => {
+    const offer = {
+      repo: 'euler-xyz/euler-earn',
+      commit: sha('f'),
+      profiles: ['native' as const],
+      deployerPins: { [OZ]: sha('d'), 'lib/ethereum-vault-connector': sha('e') },
+      origin: 'candidates-from:euler-xyz/evk-periphery@ffffffff',
+    }
+    const c = explicitCandidates({}, key, [offer])
+    expect(c.map((x) => [x.prove.profile, x.prove.submoduleOverrides])).toEqual([
+      [EARN_DEPLOY, undefined],
+      [EARN_DEPLOY, [{ path: OZ, ref: sha('d') }]],
+      ['native', undefined],
+    ])
+    expect(c[0]!.profile).toEqual(EARN_DEPLOY)
+    expect(c.every((x) => x.prove.contractName === contractName)).toBe(true)
+  })
+
+  it('offers no deployer override without a differing pin from a deploying checkout', () => {
+    const offer = { repo: 'euler-xyz/euler-earn', commit: sha('f'), profiles: ['native' as const], origin: 'candidate' }
+    const c = explicitCandidates({}, 'eulerEarnFactory', [offer, { ...offer, deployerPins: { 'lib/forge-std': sha('d') } }])
+    expect(c.map((x) => [x.prove.profile, x.prove.submoduleOverrides])).toEqual([
+      [EARN_DEPLOY, undefined],
+      ['native', undefined],
+      [EARN_DEPLOY, undefined],
+      ['native', undefined],
+    ])
+  })
+
+  it('keeps the deploying checkout pins a submodule also pins at another commit', () => {
+    const checkout = new Map([
+      [OZ, sha('a')],
+      ['lib/forge-std', sha('b')],
+      ['lib/euler-earn', sha('c')],
+    ])
+    const submodule = new Map([
+      [OZ, sha('d')],
+      ['lib/forge-std', sha('b')],
+      ['lib/erc4626-tests', sha('e')],
+    ])
+    expect(deployerPins(checkout, submodule)).toEqual({ [OZ]: sha('a') })
   })
 
   it('tries a checkout that leaves solc unpinned with the solc versions the manifest knows', () => {
