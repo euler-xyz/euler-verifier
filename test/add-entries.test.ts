@@ -115,6 +115,24 @@ describe('candidates from the manifest', () => {
     expect(c.every((x) => x.prove.contractName === contractName)).toBe(true)
   })
 
+  it('tries the evk-periphery build of balanceTracker as is, then with the deploying checkout EVC and openzeppelin pins', () => {
+    const EVC = 'lib/ethereum-vault-connector'
+    const offer = {
+      repo: 'euler-xyz/reward-streams',
+      commit: sha('f'),
+      profiles: [CANCUN, 'native' as const],
+      deployerPins: { [OZ]: sha('d'), [EVC]: sha('e'), 'lib/forge-std': sha('a') },
+      origin: 'candidates-from:euler-xyz/evk-periphery@ffffffff',
+    }
+    const c = explicitCandidates({}, 'balanceTracker', [offer])
+    expect(c.map((x) => [x.prove.profile, x.prove.submoduleOverrides])).toEqual([
+      [CANCUN, undefined],
+      [CANCUN, [{ path: EVC, ref: sha('e') }, { path: OZ, ref: sha('d') }]],
+      ['native', undefined],
+    ])
+    expect(c.every((x) => x.prove.contractName === 'TrackingRewardStreams')).toBe(true)
+  })
+
   it('offers no deployer override without a differing pin from a deploying checkout', () => {
     const offer = { repo: 'euler-xyz/euler-earn', commit: sha('f'), profiles: ['native' as const], origin: 'candidate' }
     const c = explicitCandidates({}, 'eulerEarnFactory', [offer, { ...offer, deployerPins: { 'lib/forge-std': sha('d') } }])

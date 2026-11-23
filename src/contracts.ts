@@ -35,7 +35,14 @@ export const CONTRACT_SPECS: Record<string, ContractSpec> = {
   eVaultImplementation: { contractNames: ['EVault'], defaultRepo: 'euler-xyz/euler-vault-kit' },
   protocolConfig: { contractNames: ['ProtocolConfig'], defaultRepo: 'euler-xyz/euler-vault-kit' },
   sequenceRegistry: { contractNames: ['SequenceRegistry'], defaultRepo: 'euler-xyz/euler-vault-kit' },
-  balanceTracker: { contractNames: ['TrackingRewardStreams'], defaultRepo: 'euler-xyz/reward-streams' },
+  // 01_Integrations.s.sol builds it inside evk-periphery, whose evc/ and openzeppelin-contracts/ remappings point at its
+  // own lib copies, not reward-streams' submodules.
+  balanceTracker: {
+    contractNames: ['TrackingRewardStreams'],
+    defaultRepo: 'euler-xyz/reward-streams',
+    deployProfiles: [{ context: 'evk-periphery', solc: '0.8.24', optimizer_runs: 20000, evm_version: 'cancun' }],
+    deployerSubmodules: ['lib/ethereum-vault-connector', 'lib/openzeppelin-contracts'],
+  },
 
   eulerEarnFactory: { contractNames: ['EulerEarnFactory'], defaultRepo: 'euler-xyz/euler-earn', ...EULER_EARN_DEPLOY_BUILD },
   eulerEarnPublicAllocator: { contractNames: ['PublicAllocator'], defaultRepo: 'euler-xyz/euler-earn', ...EULER_EARN_DEPLOY_BUILD },

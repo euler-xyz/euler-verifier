@@ -105,13 +105,14 @@ the first that proves is written:
   then the checkout's foundry profile, each submodule's own, and every profile
   the manifest uses for that contract. Where the deploy build can take a
   library from the checkout instead of the submodule's own copy
-  (`deployerSubmodules`, e.g. OpenZeppelin for euler-earn), it is also tried
+  (`deployerSubmodules`, e.g. OpenZeppelin for euler-earn, EVC and
+  OpenZeppelin for reward-streams), it is also tried
   with the checkout's pin, and a proof records it in
   `evidence.submoduleOverrides`. Repeatable.
 - `--candidate <repo>@<sha>`: any other commit, e.g.
   `euler-xyz/euler-earn@<sha>` (owner defaults to `euler-xyz`). It is built
-  with the repo's own profile and every profile the manifest uses for that
-  contract. Repeatable.
+  with the contract's deploy build first, if it has one, then the repo's own
+  profile and every profile the manifest uses for that contract. Repeatable.
 - For a redeploy, the entry's own pin next.
 - Then the pins other chains use for the same contract, with their profiles,
   declared submodule pins and proxy declarations. A pin this chain already
