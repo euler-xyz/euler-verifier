@@ -105,7 +105,8 @@ the first that proves is written:
   then the checkout's foundry profile, each submodule's own, and every profile
   the manifest uses for that contract. Where the deploy build can take a
   library from the checkout instead of the submodule's own copy
-  (`deployerSubmodules`, e.g. OpenZeppelin for euler-earn), it is also tried
+  (`deployerSubmodules`, e.g. OpenZeppelin for euler-earn, EVC and
+  OpenZeppelin for reward-streams), it is also tried
   with the checkout's pin, and a proof records it in
   `evidence.submoduleOverrides`. Repeatable.
 - `--candidate <repo>@<sha>`: any other commit, e.g.
