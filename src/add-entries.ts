@@ -48,8 +48,9 @@ Options:
   --interfaces <dir>        euler-interfaces checkout. Required.
   --chain <id>              Only this chain; repeatable (default: every chain with address files).
   --candidates-from <dir>   A deploying checkout (e.g. evk-periphery): its HEAD commit and its
-                            submodule commits become candidates, built with its foundry profile.
-                            Repeatable.
+                            submodule commits become candidates, built with the deploy script's
+                            build and its foundry profile, also with its own pins of the libraries
+                            the deploy build can take from it. Repeatable.
   --candidate <repo>@<sha>  Another candidate commit, e.g. euler-xyz/euler-earn@<40-hex sha>
                             (owner defaults to euler-xyz). Repeatable.
   --repos-dir <dir>         Engine-managed source checkouts (default: <repo>/repos/engine).

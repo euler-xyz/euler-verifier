@@ -160,7 +160,7 @@ the guarantee.
 | `build-error: submodule` | nested gitlink force-pushed away upstream | best-effort fallback handles it; if the missing dep is actually imported, pin a mirror |
 | `rpc: all endpoints failed` | endpoints unavailable | rotate per above |
 | `no RPC endpoint for chain …` | chain missing from `EulerChains.json`, or viem doesn't resolve it | add the chain to euler-interfaces, set `viemName`, bump viem, or set `DEPLOYMENT_RPC_URL_<chainId>` |
-| `NOT PROVEN` from `add-entries` | no candidate is the deployed commit + profile | pass the deploying checkout (`--candidates-from`) or the commit (`--candidate`) |
+| `NOT PROVEN` from `add-entries` | no candidate is the deployed commit + profile | pass the deploying checkout (`--candidates-from`) or the commit (`--candidate`); a `cannot read the submodule pins` warning means the checkout's submodules need `git submodule update --init` |
 | `not a full 40-hex commit SHA` | branch/tag pin in manifest, submodule pin or baseline | resolve to the SHA; pins are immutable by design |
 | `EulerChains.json addresses differ …` | `node chains.js` not run after an address change | run it in euler-interfaces and commit the result |
 | `… has different addresses in …` | one key in two address files with different values (a zero address included) | keep the published one in euler-interfaces, remove the other |

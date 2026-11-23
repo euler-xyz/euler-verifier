@@ -1,4 +1,4 @@
-import { basename } from 'node:path'
+import { basename, join } from 'node:path'
 import { CONTRACT_SPECS } from './contracts.js'
 import { run } from './compile.js'
 import type { ProveCandidate } from './prove.js'
@@ -24,6 +24,8 @@ export interface ExplicitCommit {
   unpinnedSolc?: Omit<CompileProfile, 'solc'>
   /** Also try every profile the manifest uses for the key. */
   manifestProfiles?: boolean
+  /** For a submodule of a deploying checkout: the checkout's own pins that differ from the submodule's, by path. */
+  deployerPins?: Record<string, string>
   origin: string
 }
 
@@ -135,27 +137,42 @@ function commitProfiles(manifest: Manifest, key: string, c: ExplicitCommit): Arr
   return all.filter((p, i) => all.findIndex((q) => buildFields(q) === buildFields(p)) === i)
 }
 
+function deployerOverrides(key: string, c: ExplicitCommit): SubmoduleOverride[] {
+  return (CONTRACT_SPECS[key]?.deployerSubmodules ?? []).flatMap((path) => {
+    const ref = c.deployerPins?.[path]
+    return ref ? [{ path, ref }] : []
+  })
+}
+
+function isDeployProfile(key: string, profile: CompileProfile | 'native'): boolean {
+  return profile !== 'native' && (CONTRACT_SPECS[key]?.deployProfiles ?? []).some((p) => buildFields(p) === buildFields(profile))
+}
+
 /** Candidates for `key` from explicitly offered commits of the repos that can hold it. */
 export function explicitCandidates(manifest: Manifest, key: string, commits: ExplicitCommit[]): Candidate[] {
   const repos = keyRepos(manifest, key)
   const names = keyContractNames(manifest, key)
   return commits
     .filter((c) => repos.has(c.repo))
-    .flatMap((c) =>
-      commitProfiles(manifest, key, c).flatMap((profile) =>
-        names.map((contractName) => ({
-          ...(profile === 'native' ? {} : { profile }),
-          prove: {
-            repo: c.repo,
-            commit: c.commit,
-            contractName,
-            profile,
-            recursiveSubmodules: CONTRACT_SPECS[key]?.recursiveSubmodules,
-            origin: c.origin,
-          },
-        })),
-      ),
-    )
+    .flatMap((c) => {
+      const overrides = deployerOverrides(key, c)
+      return commitProfiles(manifest, key, c).flatMap((profile) =>
+        (overrides.length && isDeployProfile(key, profile) ? [undefined, overrides] : [undefined]).flatMap((submoduleOverrides) =>
+          names.map((contractName) => ({
+            ...(profile === 'native' ? {} : { profile }),
+            prove: {
+              repo: c.repo,
+              commit: c.commit,
+              contractName,
+              profile,
+              recursiveSubmodules: CONTRACT_SPECS[key]?.recursiveSubmodules,
+              ...(submoduleOverrides ? { submoduleOverrides } : {}),
+              origin: c.origin,
+            },
+          })),
+        ),
+      )
+    })
 }
 
 /** `--candidate owner/repo@sha` or `repo@sha` (owner defaults to euler-xyz). */
@@ -217,14 +234,44 @@ export async function checkoutCommits(dir: string): Promise<ExplicitCommit[]> {
     if (m) byName.set(m[1]!, { ...byName.get(m[1]!), [m[2]!]: m[3]!.trim() })
   }
   const urlByPath = new Map([...byName.values()].filter((v) => v.path && v.url).map((v): [string, string] => [v.path!, v.url!]))
-  const gitlinks = (await run('git', ['ls-tree', '-r', 'HEAD'], { cwd: dir }))
-    .split('\n')
-    .map((line) => /^160000 commit ([0-9a-f]{40})\t(.+)$/.exec(line))
-    .filter((m): m is RegExpExecArray => m !== null)
+  const gitlinks = parseGitlinks(await run('git', ['ls-tree', '-r', 'HEAD'], { cwd: dir }))
+  const pinnedRepos = new Set(Object.values(CONTRACT_SPECS).filter((s) => s.deployerSubmodules?.length).map((s) => s.defaultRepo))
 
-  const submodules = gitlinks.flatMap(([, commit, path]) => {
-    const slug = githubSlug(urlByPath.get(path!) ?? '')
-    return slug ? [offer(slug, commit!, ['native'])] : []
-  })
-  return [offer(repo, head, pinned.length ? [] : ['native']), ...submodules]
+  const submodules = await Promise.all(
+    [...gitlinks].map(async ([path, commit]): Promise<ExplicitCommit[]> => {
+      const slug = githubSlug(urlByPath.get(path) ?? '')
+      if (!slug) return []
+      const nested = await run('git', ['ls-tree', '-r', commit], { cwd: join(dir, path) }).then(parseGitlinks, () => {
+        if (pinnedRepos.has(slug)) {
+          console.error(
+            `--candidates-from ${dir}: cannot read the submodule pins of ${path} at ${commit.slice(0, 8)}; its deploy builds are tried without this checkout's pins (run git submodule update --init ${path})`,
+          )
+        }
+        return new Map<string, string>()
+      })
+      const pins = deployerPins(gitlinks, nested)
+      return [{ ...offer(slug, commit, ['native']), ...(Object.keys(pins).length ? { deployerPins: pins } : {}) }]
+    }),
+  )
+  return [offer(repo, head, pinned.length ? [] : ['native']), ...submodules.flat()]
+}
+
+/** Submodule path -> pinned commit, from `git ls-tree -r <tree-ish>` output. */
+function parseGitlinks(lsTree: string): Map<string, string> {
+  const pins = new Map<string, string>()
+  for (const line of lsTree.split('\n')) {
+    const m = /^160000 commit ([0-9a-f]{40})\t(.+)$/.exec(line)
+    if (m) pins.set(m[2]!, m[1]!)
+  }
+  return pins
+}
+
+/** The deploying checkout's pins for paths a submodule also pins, where the two differ. */
+export function deployerPins(checkout: ReadonlyMap<string, string>, submodule: ReadonlyMap<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    [...submodule].flatMap(([path, commit]): Array<[string, string]> => {
+      const pin = checkout.get(path)
+      return pin && pin !== commit ? [[path, pin]] : []
+    }),
+  )
 }

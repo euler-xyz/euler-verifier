@@ -100,9 +100,14 @@ the first that proves is written:
 
 - `--candidates-from <checkout>`: the checkout's HEAD commit and the commits
   its GitHub submodules point at (EVC, EVK, reward-streams, euler-earn,
-  euler-swap, …). They are built with the checkout's foundry profile, then
-  each submodule's own, then every profile the manifest uses for that
-  contract. Repeatable.
+  euler-swap, …). They are built with the build the deploy script makes for
+  that contract, if it has its own (`deployProfiles` in `src/contracts.ts`),
+  then the checkout's foundry profile, each submodule's own, and every profile
+  the manifest uses for that contract. Where the deploy build can take a
+  library from the checkout instead of the submodule's own copy
+  (`deployerSubmodules`, e.g. OpenZeppelin for euler-earn), it is also tried
+  with the checkout's pin, and a proof records it in
+  `evidence.submoduleOverrides`. Repeatable.
 - `--candidate <repo>@<sha>`: any other commit, e.g.
   `euler-xyz/euler-earn@<sha>` (owner defaults to `euler-xyz`). It is built
   with the repo's own profile and every profile the manifest uses for that
