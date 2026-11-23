@@ -111,8 +111,8 @@ the first that proves is written:
   `evidence.submoduleOverrides`. Repeatable.
 - `--candidate <repo>@<sha>`: any other commit, e.g.
   `euler-xyz/euler-earn@<sha>` (owner defaults to `euler-xyz`). It is built
-  with the repo's own profile and every profile the manifest uses for that
-  contract. Repeatable.
+  with the contract's deploy build first, if it has one, then the repo's own
+  profile and every profile the manifest uses for that contract. Repeatable.
 - For a redeploy, the entry's own pin next.
 - Then the pins other chains use for the same contract, with their profiles,
   declared submodule pins and proxy declarations. A pin this chain already
